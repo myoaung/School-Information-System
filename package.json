@@ -1,0 +1,36 @@
+{
+  "name": "school-information-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "seed": "cd server && npm run seed",
+    "build": "cd client && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myoaung/School-Information-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/myoaung/School-Information-System/issues"
+  },
+  "homepage": "https://github.com/myoaung/School-Information-System#readme",
+  "dependencies": {
+    "axios": "^1.18.1",
+    "codebase-memory-mcp": "^0.8.1",
+    "concurrently": "^10.0.3",
+    "react-router-dom": "^7.18.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "tailwindcss": "^4.3.1"
+  }
+}

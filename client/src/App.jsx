@@ -1,0 +1,47 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import AnnouncementsPage from './pages/AnnouncementsPage';
+import AnnouncementDetailPage from './pages/AnnouncementDetailPage';
+import ClassesPage from './pages/ClassesPage';
+import ContactPage from './pages/ContactPage';
+import ProtectedRoute from './components/ProtectedRoute';
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/announcements" element={<AnnouncementsPage />} />
+              <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
+              <Route path="/classes" element={<ClassesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
