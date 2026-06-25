@@ -2,7 +2,7 @@
 marp: true
 theme: default
 paginate: true
-auto_advance: 20
+auto-advance: 20
 size: 16:9
 ---
 
