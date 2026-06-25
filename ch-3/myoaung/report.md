@@ -3,7 +3,7 @@
 github_username: myoaung
 personal_repo_url: https://github.com/myoaung/School-Information-System
 project_summary: A school information system where students, teachers, and parents can access class updates, announcements, and school information in one place.
-slides_url: slides/presentation.md
+slides_url: slides/pitch.md
 
 ## Methodology
 
