@@ -1,0 +1,12 @@
+{
+  "name": "schoolhub-tools",
+  "version": "1.0.0",
+  "description": "CLI tools for SchoolHub project",
+  "type": "module",
+  "bin": {
+    "standup": "./daily-standup.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0"
+  }
+}
