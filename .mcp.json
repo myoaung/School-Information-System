@@ -11,6 +11,14 @@
     "playwright": {
       "command": "npx",
       "args": ["-y", "@anthropic-ai/mcp-server-playwright"]
+    },
+    "codebase-memory": {
+      "command": "npx",
+      "args": ["-y", "codebase-memory-mcp", "--project-path", "."]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"]
     }
   }
 }
