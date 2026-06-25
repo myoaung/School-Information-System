@@ -16,6 +16,16 @@
 4. ✅ Contact form
 5. ✅ Responsive design (mobile + desktop)
 
+### Repository
+- **personal_repo_url:** https://github.com/myoaung/School-Information-System
+- **slides_url:** https://github.com/myoaung/School-Information-System/blob/main/slides/presentation.md
+
+---
+
+## Methodology
+
+I followed a vertical-slice approach, building one feature end-to-end before moving to the next. First, I set up the project structure with Express backend, SQLite database, and React frontend scaffolded by Vite. Then I implemented authentication (register/login with JWT), followed by announcements CRUD, class listings, and contact form. Each feature was built as a complete stack from database schema to API route to frontend component. Throughout development, I used Claude Code skills and agents to automate repetitive tasks like standup generation, API testing, and code cleanup.
+
 ---
 
 ## How I Used Skills, Agents, and MCP
@@ -32,6 +42,15 @@
 | `/api-contract` | Backend development | Kept API routes in sync with documentation |
 | `/style-guide` | Frontend development | Enforced consistent Tailwind CSS styling patterns |
 
+**Evidence — skill paths:**
+- path: .claude/skills/daily-standup/SKILL.md
+- path: .claude/skills/release-notes/SKILL.md
+- path: .claude/skills/deploy-checklist/SKILL.md
+- path: .claude/skills/file-renamer/SKILL.md
+- path: .claude/skills/data-validate/SKILL.md
+- path: .claude/skills/api-contract/SKILL.md
+- path: .claude/skills/style-guide/SKILL.md
+
 ### Agents Used
 
 | Agent | Where Used | How Used |
@@ -42,6 +61,13 @@
 | `endpoint-tester` | API testing | Tested all API endpoints for correct status codes and response shapes |
 | `doc-updater` | Documentation | Updated README and API docs as code changed |
 
+**Evidence — agent paths:**
+- path: .claude/agents/data-cleaner.md
+- path: .claude/agents/ui-reviewer.md
+- path: .claude/agents/refactor-cleaner.md
+- path: .claude/agents/endpoint-tester.md
+- path: .claude/agents/doc-updater.md
+
 ### MCP Servers Used
 
 | MCP Server | Where Used | How Used |
@@ -50,6 +76,9 @@
 | `fetch` | API testing | Tested backend endpoints and fetched external resources |
 | `playwright` | UI verification | Automated browser testing for responsive design |
 | `git` | Version control | Git operations for commits and branch management |
+
+**Evidence — MCP config:**
+- path: .mcp.json
 
 ---
 
