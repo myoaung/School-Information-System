@@ -22,7 +22,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Initialize database
-initDatabase();
+try {
+  initDatabase();
+} catch (err) {
+  console.error('Database init error:', err);
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -41,12 +45,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
+// For local development only
+if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
 
-// Export for Vercel
+// Export for Vercel serverless
 module.exports = app;
