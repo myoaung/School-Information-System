@@ -1,5 +1,6 @@
 const express = require('express');
 const { getDb } = require('../db');
+const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -34,8 +35,8 @@ router.post('/', (req, res) => {
   }
 });
 
-// Get all contacts (admin only - for future use)
-router.get('/', (req, res) => {
+// Get all contacts — admin only
+router.get('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
   try {
     const db = getDb();
     const contacts = db.prepare('SELECT * FROM contacts ORDER BY created_at DESC').all();

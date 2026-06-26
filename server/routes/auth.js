@@ -2,27 +2,34 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDb } = require('../db');
-const { authMiddleware, JWT_SECRET } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+
+// JWT secret — same source as auth middleware (random at startup if not in env)
+const JWT_SECRET = process.env.JWT_SECRET || require('crypto').randomBytes(64).toString('hex');
 
 const router = express.Router();
 
-// Register
+// Register — defaults to 'student' role. Admin/teacher roles assigned by existing admins only.
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name } = req.body;
 
     // Validation
-    if (!email || !password || !name || !role) {
+    if (!email || !password || !name) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    if (!['student', 'teacher', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' });
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    // Require at least one uppercase, one lowercase, one digit
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({ error: 'Password must include uppercase, lowercase, and a number' });
     }
+
+    // Default to 'student' — admin/teacher roles require existing admin assignment
+    const role = 'student';
 
     const db = getDb();
 
@@ -45,7 +52,7 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign(
       { id: result.lastInsertRowid, email, name, role },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '2h' }
     );
 
     res.status(201).json({
@@ -86,7 +93,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, role: user.role },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '2h' }
     );
 
     res.json({

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'schoolhub-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || require('crypto').randomBytes(64).toString('hex');
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -34,4 +34,4 @@ function roleMiddleware(...roles) {
   };
 }
 
-module.exports = { authMiddleware, roleMiddleware, JWT_SECRET };
+module.exports = { authMiddleware, roleMiddleware };
