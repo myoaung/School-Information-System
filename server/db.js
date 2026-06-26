@@ -110,6 +110,60 @@ function initDatabase() {
       file_path TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      student_id TEXT UNIQUE,
+      grade_id INTEGER REFERENCES grades(id),
+      section TEXT DEFAULT 'A',
+      date_of_birth TEXT,
+      gender TEXT CHECK(gender IN ('male','female','other')),
+      phone TEXT,
+      address TEXT,
+      emergency_contact TEXT,
+      emergency_phone TEXT,
+      parent_name TEXT,
+      parent_phone TEXT,
+      parent_email TEXT,
+      status TEXT CHECK(status IN ('active','suspended','graduated','transferred')) DEFAULT 'active',
+      enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS teachers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      teacher_id TEXT UNIQUE,
+      phone TEXT,
+      qualification TEXT,
+      specialization TEXT,
+      hire_date TEXT,
+      status TEXT CHECK(status IN ('active','on_leave','resigned')) DEFAULT 'active'
+    );
+
+    CREATE TABLE IF NOT EXISTS attendance (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      status TEXT CHECK(status IN ('present','absent','late','leave')) NOT NULL,
+      note TEXT,
+      marked_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, class_id, date)
+    );
+
+    CREATE TABLE IF NOT EXISTS timetable (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+      subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+      teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      day_of_week INTEGER NOT NULL,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
+      room TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Seed data if empty (for demo purposes)
@@ -196,6 +250,45 @@ function seedDatabase(db) {
 
   for (const announcement of announcements) {
     insertAnnouncement.run(announcement.title, announcement.content, announcement.author_id);
+  }
+
+  // Create student profile for the student user
+  const studentGrade = db.prepare('SELECT id FROM grades WHERE code = ?').get('G10');
+  db.prepare(`
+    INSERT INTO students (user_id, student_id, grade_id, section, date_of_birth, gender, phone, address, parent_name, parent_phone, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(userIds['student@school.com'], 'STU-2026-001', studentGrade?.id, 'A', '2010-03-15', 'female', '09123456789', '123 School Street', 'U Aye', '09987654321', 'active');
+
+  // Create teacher profile for the teacher user
+  db.prepare(`
+    INSERT INTO teachers (user_id, teacher_id, phone, qualification, specialization, hire_date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(userIds['teacher@school.com'], 'TCH-2026-001', '09111111111', 'M.Ed Mathematics', 'Mathematics', '2020-06-01', 'active');
+
+  // Create demo timetable entries
+  const mathClass = db.prepare('SELECT id FROM classes WHERE name = ?').get('Mathematics 101');
+  const engClass = db.prepare('SELECT id FROM classes WHERE name = ?').get('English Literature');
+  const mathSubject = db.prepare('SELECT id FROM subjects WHERE code = ?').get('MATH');
+  const engSubject = db.prepare('SELECT id FROM subjects WHERE code = ?').get('ENG');
+
+  if (mathClass && mathSubject) {
+    const insertTimetable = db.prepare(
+      'INSERT INTO timetable (class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+    insertTimetable.run(mathClass.id, mathSubject.id, userIds['teacher@school.com'], 0, '09:00', '10:00', 'Room 101');
+    insertTimetable.run(mathClass.id, mathSubject.id, userIds['teacher@school.com'], 2, '09:00', '10:00', 'Room 101');
+    insertTimetable.run(mathClass.id, mathSubject.id, userIds['teacher@school.com'], 4, '09:00', '10:00', 'Room 101');
+    if (engClass && engSubject) {
+      insertTimetable.run(engClass.id, engSubject.id, userIds['teacher@school.com'], 1, '10:00', '11:30', 'Room 205');
+      insertTimetable.run(engClass.id, engSubject.id, userIds['teacher@school.com'], 3, '10:00', '11:30', 'Room 205');
+    }
+  }
+
+  // Create demo attendance
+  if (mathClass) {
+    const today = new Date().toISOString().split('T')[0];
+    db.prepare('INSERT OR IGNORE INTO attendance (user_id, class_id, date, status, marked_by) VALUES (?, ?, ?, ?, ?)')
+      .run(userIds['student@school.com'], mathClass.id, today, 'present', userIds['teacher@school.com']);
   }
 }
 

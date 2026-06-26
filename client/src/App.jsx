@@ -13,6 +13,11 @@ import ClassesPage from './pages/ClassesPage';
 import CurriculumPage from './pages/CurriculumPage';
 import ContactPage from './pages/ContactPage';
 import ChatLogsPage from './pages/ChatLogsPage';
+import StudentsPage from './pages/StudentsPage';
+import StudentDetailPage from './pages/StudentDetailPage';
+import TeachersPage from './pages/TeachersPage';
+import AttendancePage from './pages/AttendancePage';
+import TimetablePage from './pages/TimetablePage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -46,6 +51,46 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <ChatLogsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students"
+                  element={
+                    <ProtectedRoute>
+                      <StudentsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students/:id"
+                  element={
+                    <ProtectedRoute>
+                      <StudentDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/teachers"
+                  element={
+                    <ProtectedRoute>
+                      <TeachersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/attendance"
+                  element={
+                    <ProtectedRoute>
+                      <AttendancePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/timetable"
+                  element={
+                    <ProtectedRoute>
+                      <TimetablePage />
                     </ProtectedRoute>
                   }
                 />
