@@ -1,7 +1,7 @@
 # ch-4 Make it real — Report
 
 github_username: myoaung
-repo_url: https://github.com/myoaung/School-Information-System
+repo_url: https://github.com/myoaung/
 personal_repo_url: https://github.com/myoaung/
 project_summary: A school information system where students, teachers, and parents can access class updates, announcements, and school information in one place.
 live_url: https://schoolhub-mu.vercel.app
