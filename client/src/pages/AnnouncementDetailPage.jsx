@@ -6,65 +6,35 @@ import { useTranslation } from '../context/LanguageContext';
 export default function AnnouncementDetailPage() {
   const { id } = useParams();
   const { t, formatDate } = useTranslation();
-  const [announcement, setAnnouncement] = useState(null);
+  const [ann, setAnn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchAnnouncement();
-  }, [id]);
-
-  const fetchAnnouncement = async () => {
-    try {
-      const res = await api.get(`/announcements/${id}`);
-      setAnnouncement(res.data.announcement);
-    } catch (err) {
-      setError(t('announcements.loadDetailError'));
-      console.error('Error fetching announcement:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (error || !announcement) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <p className="text-red-500 text-lg">{error || t('announcements.notFound')}</p>
-          <Link to="/announcements" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
-            {t('announcements.backToAnnouncements')}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+  useEffect(() => { api.get(`/announcements/${id}`).then(r => setAnn(r.data.announcement)).catch(() => setError(t('announcements.loadDetailError'))).finally(() => setLoading(false)); }, [id]);
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-[60vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+    </div>
+  );
+  if (error || !ann) return (
+    <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+      <p className="text-red-500 text-lg mb-4">{error || t('announcements.notFound')}</p>
+      <Link to="/announcements" className="text-purple-600 hover:text-purple-800 font-semibold cursor-pointer">{t('announcements.backToAnnouncements')}</Link>
+    </div>
+  );
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Link to="/announcements" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
+      <Link to="/announcements" className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 mb-6 font-medium transition-colors cursor-pointer">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         {t('announcements.backToAnnouncements')}
       </Link>
-      <article className="bg-white rounded-lg shadow-md p-6 md:p-8">
-        <h1 className="text-3xl font-bold mb-4">{announcement.title}</h1>
-        <div className="flex items-center text-gray-500 mb-6">
-          <span>{t('announcements.by')} {announcement.author_name}</span>
-          <span className="mx-2">•</span>
-          <span>{formatDate(announcement.created_at)}</span>
+      <article className="bg-white rounded-2xl shadow-md shadow-purple-100/50 p-6 md:p-8">
+        <div className="flex items-center gap-2 text-sm text-purple-500 mb-4">
+          <span className="bg-purple-50 px-2.5 py-1 rounded-full text-xs font-medium">{formatDate(ann.created_at)}</span>
+          <span className="text-purple-600/60">{t('announcements.by')} {ann.author_name}</span>
         </div>
-        <div className="prose max-w-none">
-          {announcement.content.split('\n').map((paragraph, index) => (
-            <p key={index} className="mb-4">
-              {paragraph}
-            </p>
-          ))}
+        <h1 className="text-3xl font-extrabold text-purple-900 mb-6">{ann.title}</h1>
+        <div className="prose max-w-none text-purple-800/80 leading-relaxed">
+          {ann.content.split('\n').map((p, i) => <p key={i} className="mb-4">{p}</p>)}
         </div>
       </article>
     </div>
