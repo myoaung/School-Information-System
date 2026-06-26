@@ -98,6 +98,18 @@ function initDatabase() {
       is_required INTEGER DEFAULT 1,
       UNIQUE(grade_id, subject_id)
     );
+
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      user_name TEXT NOT NULL,
+      user_role TEXT NOT NULL,
+      message TEXT NOT NULL,
+      reply TEXT,
+      file_name TEXT,
+      file_path TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Seed data if empty (for demo purposes)

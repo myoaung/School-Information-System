@@ -12,6 +12,8 @@ import AnnouncementDetailPage from './pages/AnnouncementDetailPage';
 import ClassesPage from './pages/ClassesPage';
 import CurriculumPage from './pages/CurriculumPage';
 import ContactPage from './pages/ContactPage';
+import ChatLogsPage from './pages/ChatLogsPage';
+import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -39,9 +41,18 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/admin/chat-logs"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ChatLogsPage />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </main>
             <Footer />
+            <ChatWidget />
           </div>
         </Router>
       </FontProvider>

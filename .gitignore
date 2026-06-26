@@ -6,4 +6,5 @@ dist/
 server/*.db
 server/*.db-wal
 server/*.db-shm
+server/uploads/
 .vercel

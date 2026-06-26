@@ -63,6 +63,11 @@ export default function DashboardPage() {
                   {t('dashboard.manageClasses')}
                 </Link>
               )}
+              {isAdmin && (
+                <Link to="/admin/chat-logs" className="card-interactive bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer">
+                  {t('dashboard.chatLogs')}
+                </Link>
+              )}
             </div>
           </div>
         )}

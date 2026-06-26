@@ -10,6 +10,7 @@ const announcementRoutes = require('./routes/announcements');
 const classRoutes = require('./routes/classes');
 const contactRoutes = require('./routes/contact');
 const curriculumRoutes = require('./routes/curriculum');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,12 +30,16 @@ try {
   console.error('Database init error:', err);
 }
 
+// Static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/curriculum', curriculumRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
