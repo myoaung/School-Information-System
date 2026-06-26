@@ -7,28 +7,37 @@ const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { getReply } = require('../chatbot');
 
-// File upload setup
-const uploadDir = path.join(__dirname, '..', 'uploads', 'chat');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// File upload setup — use /tmp on Vercel (read-only filesystem elsewhere)
+const uploadDir = process.env.VERCEL
+  ? path.join('/tmp', 'uploads', 'chat')
+  : path.join(__dirname, '..', 'uploads', 'chat');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  },
-});
+let upload;
+try {
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|pdf|doc|docx|txt|xls|xlsx|ppt|pptx/;
-    const ext = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowed.test(file.mimetype.split('/')[1]);
-    cb(null, ext || mime || true);
-  },
-});
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+      const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, unique + path.extname(file.originalname));
+    },
+  });
+
+  upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+      const allowed = /jpeg|jpg|png|gif|pdf|doc|docx|txt|xls|xlsx|ppt|pptx/;
+      const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+      const mime = allowed.test(file.mimetype.split('/')[1]);
+      cb(null, ext || mime || true);
+    },
+  });
+} catch {
+  // Fallback: memory storage if disk is not writable
+  upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+}
 
 // POST /api/chat — send message, get AI reply
 router.post('/', authMiddleware, upload.single('file'), (req, res) => {

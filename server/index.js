@@ -30,8 +30,10 @@ try {
   console.error('Database init error:', err);
 }
 
-// Static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static files for uploads (skip on Vercel — ephemeral /tmp)
+if (!process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
