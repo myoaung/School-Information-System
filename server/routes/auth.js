@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 
-// JWT secret — same source as auth middleware (random at startup if not in env)
-const JWT_SECRET = process.env.JWT_SECRET || require('crypto').randomBytes(64).toString('hex');
+// JWT secret — must match auth middleware (fixed fallback for Vercel cold starts)
+const JWT_SECRET = process.env.JWT_SECRET || 'schoolhub-jwt-secret-2026';
 
 const router = express.Router();
 
