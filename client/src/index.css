@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* MyanmarSabae font — from saturngod/myanmar-unicode-fonts */
+/* MyanmarSabae font — bundled locally from saturngod/myanmar-unicode-fonts */
 @font-face {
   font-family: 'MyanmarSabae';
-  src: url('https://raw.githubusercontent.com/saturngod/myanmar-unicode-fonts/master/MyanmarSabae/MyanmarSabae.ttf') format('truetype');
+  src: url('/fonts/MyanmarSabae.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
