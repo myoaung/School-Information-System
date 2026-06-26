@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const announcementRoutes = require('./routes/announcements');
 const classRoutes = require('./routes/classes');
 const contactRoutes = require('./routes/contact');
+const curriculumRoutes = require('./routes/curriculum');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/curriculum', curriculumRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

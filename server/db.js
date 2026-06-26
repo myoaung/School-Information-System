@@ -66,12 +66,50 @@ function initDatabase() {
       message TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS education_levels (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS grades (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      education_level_id INTEGER REFERENCES education_levels(id) ON DELETE CASCADE,
+      code TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      display_order INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS subjects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      category TEXT,
+      description TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS grade_subjects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
+      subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+      academic_year TEXT,
+      weekly_periods INTEGER,
+      is_required INTEGER DEFAULT 1,
+      UNIQUE(grade_id, subject_id)
+    );
   `);
 
   // Seed data if empty (for demo purposes)
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (userCount.count === 0) {
     seedDatabase(db);
+  }
+
+  // Seed curriculum data if empty
+  const gradeCount = db.prepare('SELECT COUNT(*) as count FROM grades').get();
+  if (gradeCount.count === 0) {
+    seedCurriculum(db);
   }
 
   console.log('Database initialized successfully');
@@ -147,6 +185,104 @@ function seedDatabase(db) {
   for (const announcement of announcements) {
     insertAnnouncement.run(announcement.title, announcement.content, announcement.author_id);
   }
+}
+
+function seedCurriculum(db) {
+  // Education Levels
+  const insertLevel = db.prepare('INSERT OR IGNORE INTO education_levels (code, name) VALUES (?, ?)');
+  const levels = [
+    ['KG', 'Kindergarten'],
+    ['PRI', 'Primary School'],
+    ['LS', 'Lower Secondary School'],
+    ['US', 'Upper Secondary School']
+  ];
+  for (const level of levels) {
+    insertLevel.run(level[0], level[1]);
+  }
+
+  // Grades
+  const insertGrade = db.prepare(
+    'INSERT OR IGNORE INTO grades (code, name, education_level_id, display_order) VALUES (?, ?, ?, ?)'
+  );
+  const grades = [
+    ['KG', 'Kindergarten', 'KG', 0],
+    ['G1', 'Grade 1', 'PRI', 1], ['G2', 'Grade 2', 'PRI', 2],
+    ['G3', 'Grade 3', 'PRI', 3], ['G4', 'Grade 4', 'PRI', 4],
+    ['G5', 'Grade 5', 'PRI', 5], ['G6', 'Grade 6', 'LS', 6],
+    ['G7', 'Grade 7', 'LS', 7], ['G8', 'Grade 8', 'LS', 8],
+    ['G9', 'Grade 9', 'LS', 9], ['G10', 'Grade 10', 'US', 10],
+    ['G11', 'Grade 11', 'US', 11], ['G12', 'Grade 12', 'US', 12]
+  ];
+  for (const g of grades) {
+    const levelId = db.prepare('SELECT id FROM education_levels WHERE code = ?').get(g[2]);
+    if (levelId) {
+      insertGrade.run(g[0], g[1], levelId.id, g[3]);
+    }
+  }
+
+  // Subjects
+  const insertSubject = db.prepare(
+    'INSERT OR IGNORE INTO subjects (code, name, category) VALUES (?, ?, ?)'
+  );
+  const subjects = [
+    ['MM', 'Myanmar', 'Language'],
+    ['ENG', 'English', 'Language'],
+    ['MATH', 'Mathematics', 'Mathematics'],
+    ['SCI', 'Science', 'Science'],
+    ['PHY', 'Physics', 'Science'],
+    ['CHEM', 'Chemistry', 'Science'],
+    ['BIO', 'Biology', 'Science'],
+    ['HIST', 'History', 'Social Science'],
+    ['GEO', 'Geography', 'Social Science'],
+    ['ECO', 'Economics', 'Social Science'],
+    ['SS', 'Social Studies', 'Social Science'],
+    ['MCE', 'Moral & Civic Education', 'General'],
+    ['PE', 'Physical Education', 'General'],
+    ['LS', 'Life Skills', 'General'],
+    ['ART', 'Art & Music', 'Arts'],
+    ['LC', 'Local Curriculum', 'Local'],
+    ['ENV', 'Environmental Studies', 'Kindergarten'],
+    ['CRA', 'Creative Arts', 'Kindergarten'],
+    ['MUSIC', 'Music', 'Kindergarten'],
+    ['PA', 'Physical Activities', 'Kindergarten']
+  ];
+  for (const s of subjects) {
+    insertSubject.run(s[0], s[1], s[2]);
+  }
+
+  // Grade-Subject mapping
+  const insertGS = db.prepare(
+    'INSERT OR IGNORE INTO grade_subjects (grade_id, subject_id) VALUES (?, ?)'
+  );
+  const getGradeId = (code) => db.prepare('SELECT id FROM grades WHERE code = ?').get(code)?.id;
+  const getSubjectId = (code) => db.prepare('SELECT id FROM subjects WHERE code = ?').get(code)?.id;
+
+  const gradeSubjectMap = {
+    'KG': ['MM','ENG','MATH','ENV','CRA','MUSIC','PA','LS'],
+    'G1': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
+    'G2': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
+    'G3': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
+    'G4': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
+    'G5': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
+    'G6': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
+    'G7': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
+    'G8': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
+    'G9': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
+    'G10': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC'],
+    'G11': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC'],
+    'G12': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC']
+  };
+
+  for (const [gradeCode, subjectCodes] of Object.entries(gradeSubjectMap)) {
+    const gId = getGradeId(gradeCode);
+    if (!gId) continue;
+    for (const sCode of subjectCodes) {
+      const sId = getSubjectId(sCode);
+      if (sId) insertGS.run(gId, sId);
+    }
+  }
+
+  console.log('Curriculum seeded successfully');
 }
 
 module.exports = { getDb, initDatabase };

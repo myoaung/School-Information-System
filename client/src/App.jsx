@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import AnnouncementDetailPage from './pages/AnnouncementDetailPage';
 import ClassesPage from './pages/ClassesPage';
+import CurriculumPage from './pages/CurriculumPage';
 import ContactPage from './pages/ContactPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -26,6 +27,7 @@ function App() {
               <Route path="/announcements" element={<AnnouncementsPage />} />
               <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
               <Route path="/classes" element={<ClassesPage />} />
+              <Route path="/curriculum" element={<CurriculumPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route
                 path="/dashboard"

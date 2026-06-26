@@ -35,6 +35,9 @@ export default function Navbar() {
             <Link to="/classes" className="hover:bg-blue-700 px-3 py-2 rounded-md">
               Classes
             </Link>
+            <Link to="/curriculum" className="hover:bg-blue-700 px-3 py-2 rounded-md">
+              Curriculum
+            </Link>
             <Link to="/contact" className="hover:bg-blue-700 px-3 py-2 rounded-md">
               Contact
             </Link>
