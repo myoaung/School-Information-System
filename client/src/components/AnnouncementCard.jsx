@@ -5,30 +5,30 @@ export default function AnnouncementCard({ announcement }) {
   const { t, formatDateShort } = useTranslation();
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <Link
+      to={`/announcements/${announcement.id}`}
+      className="card-interactive bg-white rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden block cursor-pointer"
+    >
       <div className="p-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-500">{formatDateShort(announcement.created_at)}</span>
-          <span className="text-sm text-blue-600">{announcement.author_name}</span>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs text-purple-500 bg-purple-50 px-2.5 py-1 rounded-full font-medium">
+            {formatDateShort(announcement.created_at)}
+          </span>
+          <span className="text-xs text-purple-600/60">{announcement.author_name}</span>
         </div>
-        <h3 className="text-xl font-semibold mb-2">
-          <Link
-            to={`/announcements/${announcement.id}`}
-            className="text-gray-900 hover:text-blue-600"
-          >
-            {announcement.title}
-          </Link>
+        <h3 className="text-lg font-bold mb-2 text-purple-900 group-hover:text-purple-600 transition-colors">
+          {announcement.title}
         </h3>
-        <p className="text-gray-600 line-clamp-3">
+        <p className="text-purple-700/60 text-sm line-clamp-2 leading-relaxed">
           {announcement.content}
         </p>
-        <Link
-          to={`/announcements/${announcement.id}`}
-          className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium"
-        >
+        <div className="mt-4 flex items-center gap-1 text-purple-600 font-semibold text-sm">
           {t('announcements.readMore')}
-        </Link>
+          <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
