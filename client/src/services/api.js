@@ -21,11 +21,12 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor — don't redirect on 401 for chat endpoints (widget handles its own errors)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isChatEndpoint = error.config?.url?.startsWith('/chat');
+    if (error.response?.status === 401 && !isChatEndpoint) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
