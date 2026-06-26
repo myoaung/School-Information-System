@@ -1,11 +1,13 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useFont } from '../context/FontContext';
 import { useState } from 'react';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const { t, locale, setLocale } = useTranslation();
+  const { fontSize, setFontSize } = useFont();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -91,6 +93,23 @@ export default function Navbar() {
                 </>
               )}
 
+              {/* Font Size Toggle */}
+              <div className="flex items-center bg-white/10 rounded-lg overflow-hidden ml-1" role="group" aria-label={t('common.fontSize.label')}>
+                {['sm', 'md', 'lg'].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setFontSize(size)}
+                    className={`px-2 py-1.5 text-xs font-bold transition-colors duration-200 cursor-pointer ${
+                      fontSize === size ? 'bg-white/30 text-white' : 'text-purple-200 hover:bg-white/10'
+                    }`}
+                    style={{ fontSize: size === 'sm' ? '10px' : size === 'md' ? '13px' : '16px' }}
+                    title={size === 'sm' ? 'Small text' : size === 'md' ? 'Default text' : 'Large text'}
+                  >
+                    A
+                  </button>
+                ))}
+              </div>
+
               {/* Language Toggle */}
               <button
                 onClick={toggleLanguage}
@@ -104,6 +123,21 @@ export default function Navbar() {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-1">
+              {/* Font Size Toggle (mobile) */}
+              <div className="flex items-center bg-white/10 rounded-lg overflow-hidden" role="group" aria-label={t('common.fontSize.label')}>
+                {['sm', 'md', 'lg'].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setFontSize(size)}
+                    className={`px-1.5 py-1.5 text-xs font-bold transition-colors duration-200 cursor-pointer ${
+                      fontSize === size ? 'bg-white/30 text-white' : 'text-purple-200 hover:bg-white/10'
+                    }`}
+                    style={{ fontSize: size === 'sm' ? '10px' : size === 'md' ? '13px' : '16px' }}
+                  >
+                    A
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={toggleLanguage}
                 className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 cursor-pointer"

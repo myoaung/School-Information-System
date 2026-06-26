@@ -141,6 +141,7 @@ const mm = {
     loading: 'တင်နေသည်...',
     error: 'တစ်ခုခု မှားယွင်းနေပါသည်',
     role: { student: 'ကျောင်းသား', teacher: 'ဆရာ', admin: 'အက်ဒမင်' },
+    fontSize: { sm: 'က', md: 'က', lg: 'က', label: 'စာလုံးအရွယ်' },
   },
 };
 export default mm;

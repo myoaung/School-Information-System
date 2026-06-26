@@ -141,6 +141,7 @@ const en = {
     loading: 'Loading...',
     error: 'Something went wrong',
     role: { student: 'Student', teacher: 'Teacher', admin: 'Admin' },
+    fontSize: { sm: 'A', md: 'A', lg: 'A', label: 'Font size' },
   },
 };
 export default en;
