@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import api from '../services/api';
+import { useTranslation } from '../context/LanguageContext';
 
 export default function ContactPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,10 +26,10 @@ export default function ContactPage() {
 
     try {
       await api.post('/contact', formData);
-      setSuccess('Message sent successfully! We will get back to you soon.');
+      setSuccess(t('contact.success'));
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send message. Please try again.');
+      setError(err.response?.data?.error || t('contact.error'));
     } finally {
       setLoading(false);
     }
@@ -35,28 +37,27 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold mb-8">Contact Us</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('contact.title')}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h2 className="text-xl font-semibold mb-4">Get in Touch</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('contact.getInTouch')}</h2>
           <p className="text-gray-600 mb-6">
-            Have questions or feedback? We'd love to hear from you. Fill out the form
-            and we'll get back to you as soon as possible.
+            {t('contact.description')}
           </p>
 
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium text-gray-900">Address</h3>
-              <p className="text-gray-600">123 School Street, City, State 12345</p>
+              <h3 className="font-medium text-gray-900">{t('contact.address')}</h3>
+              <p className="text-gray-600">{t('footer.address')}</p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">Email</h3>
-              <p className="text-gray-600">info@schoolhub.com</p>
+              <h3 className="font-medium text-gray-900">{t('contact.email')}</h3>
+              <p className="text-gray-600">{t('footer.email')}</p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">Phone</h3>
-              <p className="text-gray-600">(555) 123-4567</p>
+              <h3 className="font-medium text-gray-900">{t('contact.phone')}</h3>
+              <p className="text-gray-600">{t('footer.phone')}</p>
             </div>
           </div>
         </div>
@@ -77,70 +78,49 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
+                  {t('contact.name')}
                 </label>
                 <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
+                  type="text" id="name" name="name" required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  value={formData.name}
-                  onChange={handleChange}
+                  value={formData.name} onChange={handleChange}
                 />
               </div>
-
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  {t('contact.email')}
                 </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
+                  type="email" id="email" name="email" required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={formData.email} onChange={handleChange}
                 />
               </div>
-
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-                  Subject
+                  {t('contact.subject')}
                 </label>
                 <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  required
+                  type="text" id="subject" name="subject" required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  value={formData.subject}
-                  onChange={handleChange}
+                  value={formData.subject} onChange={handleChange}
                 />
               </div>
-
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
+                  {t('contact.message')}
                 </label>
                 <textarea
-                  id="message"
-                  name="message"
-                  rows="4"
-                  required
+                  id="message" name="message" rows="4" required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  value={formData.message}
-                  onChange={handleChange}
+                  value={formData.message} onChange={handleChange}
                 />
               </div>
-
               <button
-                type="submit"
-                disabled={loading}
+                type="submit" disabled={loading}
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : 'Send Message'}
+                {loading ? t('contact.sending') : t('contact.sendMessage')}
               </button>
             </div>
           </form>

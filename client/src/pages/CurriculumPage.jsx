@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useTranslation } from '../context/LanguageContext';
 
 export default function CurriculumPage() {
+  const { t } = useTranslation();
   const [curriculum, setCurriculum] = useState([]);
   const [levels, setLevels] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -21,7 +23,7 @@ export default function CurriculumPage() {
       setLevels(res.data.levels || []);
       setSubjects(res.data.subjects || []);
     } catch (err) {
-      setError('Failed to load curriculum');
+      setError(t('curriculum.loadError'));
       console.error('Error fetching curriculum:', err);
     } finally {
       setLoading(false);
@@ -36,7 +38,6 @@ export default function CurriculumPage() {
     ? curriculum.find(g => g.code === selectedGrade)
     : null;
 
-  // Group subjects by category for the selected grade detail
   const groupedSubjects = {};
   if (selectedGradeData?.subjects) {
     selectedGradeData.subjects.forEach(s => {
@@ -55,10 +56,8 @@ export default function CurriculumPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold mb-2">Myanmar Basic Education Curriculum</h1>
-      <p className="text-gray-600 mb-8">
-        Education levels, grades, and subjects for the Myanmar Basic Education system.
-      </p>
+      <h1 className="text-3xl font-bold mb-2">{t('curriculum.title')}</h1>
+      <p className="text-gray-600 mb-8">{t('curriculum.subtitle')}</p>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6">
@@ -71,26 +70,43 @@ export default function CurriculumPage() {
         <button
           onClick={() => { setSelectedLevel('all'); setSelectedGrade(null); }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            selectedLevel === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            selectedLevel === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          All Levels
+          {t('curriculum.allLevels')}
         </button>
-        {levels.map(level => (
-          <button
-            key={level.code}
-            onClick={() => { setSelectedLevel(level.code); setSelectedGrade(null); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              selectedLevel === level.code
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {level.name}
-          </button>
-        ))}
+        <button
+          onClick={() => { setSelectedLevel('KG'); setSelectedGrade(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            selectedLevel === 'KG' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('curriculum.kg')}
+        </button>
+        <button
+          onClick={() => { setSelectedLevel('PRI'); setSelectedGrade(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            selectedLevel === 'PRI' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('curriculum.primary')}
+        </button>
+        <button
+          onClick={() => { setSelectedLevel('LS'); setSelectedGrade(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            selectedLevel === 'LS' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('curriculum.lowerSecondary')}
+        </button>
+        <button
+          onClick={() => { setSelectedLevel('US'); setSelectedGrade(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            selectedLevel === 'US' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('curriculum.upperSecondary')}
+        </button>
       </div>
 
       {/* Grade cards with subjects */}
@@ -122,14 +138,14 @@ export default function CurriculumPage() {
                 ))}
               </div>
               <p className="text-xs text-gray-400 mt-3">
-                {grade.subjects.length} subjects
+                {grade.subjects.length} {t('curriculum.subjects')}
               </p>
             </div>
 
             {/* Expanded detail */}
             {selectedGrade === grade.code && (
               <div className="border-t border-gray-100 bg-gray-50 p-6">
-                <h3 className="text-sm font-semibold mb-3">Subjects by Category</h3>
+                <h3 className="text-sm font-semibold mb-3">{t('curriculum.subjectsByCategory')}</h3>
                 <div className="space-y-3">
                   {Object.entries(groupedSubjects).map(([category, catSubjects]) => (
                     <div key={category}>
@@ -155,7 +171,7 @@ export default function CurriculumPage() {
 
       {filteredCurriculum.length === 0 && (
         <div className="text-center py-12 bg-white rounded-lg">
-          <p className="text-gray-500 text-lg">No curriculum data available.</p>
+          <p className="text-gray-500 text-lg">{t('curriculum.noData')}</p>
         </div>
       )}
     </div>

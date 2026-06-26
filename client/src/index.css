@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
+/* MyanmarSabae font — from saturngod/myanmar-unicode-fonts */
+@font-face {
+  font-family: 'MyanmarSabae';
+  src: url('https://raw.githubusercontent.com/saturngod/myanmar-unicode-fonts/master/MyanmarSabae/MyanmarSabae.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'MyanmarSabae', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', 'Zawgyi-One', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

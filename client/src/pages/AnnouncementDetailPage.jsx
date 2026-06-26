@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { useTranslation } from '../context/LanguageContext';
 
 export default function AnnouncementDetailPage() {
   const { id } = useParams();
+  const { t, formatDate } = useTranslation();
   const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,7 +19,7 @@ export default function AnnouncementDetailPage() {
       const res = await api.get(`/announcements/${id}`);
       setAnnouncement(res.data.announcement);
     } catch (err) {
-      setError('Failed to load announcement');
+      setError(t('announcements.loadDetailError'));
       console.error('Error fetching announcement:', err);
     } finally {
       setLoading(false);
@@ -36,35 +38,26 @@ export default function AnnouncementDetailPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
-          <p className="text-red-500 text-lg">{error || 'Announcement not found'}</p>
+          <p className="text-red-500 text-lg">{error || t('announcements.notFound')}</p>
           <Link to="/announcements" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
-            ← Back to Announcements
+            {t('announcements.backToAnnouncements')}
           </Link>
         </div>
       </div>
     );
   }
 
-  const date = new Date(announcement.created_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link to="/announcements" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-        ← Back to Announcements
+        {t('announcements.backToAnnouncements')}
       </Link>
-
       <article className="bg-white rounded-lg shadow-md p-6 md:p-8">
         <h1 className="text-3xl font-bold mb-4">{announcement.title}</h1>
         <div className="flex items-center text-gray-500 mb-6">
-          <span>By {announcement.author_name}</span>
+          <span>{t('announcements.by')} {announcement.author_name}</span>
           <span className="mx-2">•</span>
-          <span>{date}</span>
+          <span>{formatDate(announcement.created_at)}</span>
         </div>
         <div className="prose max-w-none">
           {announcement.content.split('\n').map((paragraph, index) => (
