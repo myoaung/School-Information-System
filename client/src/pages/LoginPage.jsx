@@ -31,45 +31,45 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl mb-4">
-            <svg className="w-8 h-8 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 dark:bg-purple-900/50 rounded-2xl mb-4">
+            <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
               <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
             </svg>
           </div>
-          <h2 className="text-2xl font-extrabold text-purple-900">{t('login.title')}</h2>
-          <p className="mt-2 text-sm text-purple-600/60">
-            <Link to="/register" className="font-semibold text-purple-600 hover:text-purple-800 transition-colors cursor-pointer">
+          <h2 className="text-2xl font-extrabold text-purple-900 dark:text-purple-100">{t('login.title')}</h2>
+          <p className="mt-2 text-sm text-purple-600/60 dark:text-purple-300/60">
+            <Link to="/register" className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800 transition-colors cursor-pointer">
               {t('login.createNew')}
             </Link>
           </p>
         </div>
 
-        <form className="bg-white rounded-2xl shadow-lg shadow-purple-100/50 p-8" onSubmit={handleSubmit}>
+        <form className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg shadow-purple-100/50 p-8" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-4 text-sm">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-4 text-sm">
               {error}
             </div>
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-purple-900 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1.5">
                 {t('login.email')}
               </label>
               <input
                 id="email" name="email" type="email" autoComplete="email" required
-                className="w-full px-4 py-3 border border-purple-200 rounded-xl placeholder-purple-300 text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl placeholder-purple-300 text-purple-900 dark:text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
                 placeholder={t('login.email')}
                 value={email} onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-purple-900 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1.5">
                 {t('login.password')}
               </label>
               <input
                 id="password" name="password" type="password" autoComplete="current-password" required
-                className="w-full px-4 py-3 border border-purple-200 rounded-xl placeholder-purple-300 text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl placeholder-purple-300 text-purple-900 dark:text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
                 placeholder={t('login.password')}
                 value={password} onChange={(e) => setPassword(e.target.value)}
               />
@@ -86,9 +86,9 @@ export default function LoginPage() {
               ) : t('login.signIn')}
             </button>
           </div>
-          <div className="mt-6 p-4 bg-purple-50 rounded-xl text-center">
-            <p className="text-xs font-semibold text-purple-600 mb-1">{t('login.demoTitle')}</p>
-            <p className="text-xs text-purple-500 font-mono">{t('login.demoAccounts')}</p>
+          <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-950/40 rounded-xl text-center">
+            <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">{t('login.demoTitle')}</p>
+            <p className="text-xs text-purple-500 dark:text-purple-400 font-mono">{t('login.demoAccounts')}</p>
           </div>
         </form>
       </div>

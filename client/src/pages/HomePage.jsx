@@ -173,20 +173,20 @@ export default function HomePage() {
 
         {/* Wave divider */}
         <div className="absolute bottom-0 left-0 right-0 leading-[0]">
-          <svg viewBox="0 0 1440 80" fill="#FAF5FF" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full h-16 lg:h-20">
+          <svg viewBox="0 0 1440 80" fill="currentColor" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full h-16 lg:h-20 text-[var(--color-bg)]">
             <path d="M0 40c240-40 480-40 720 0s480 40 720 0v40H0z"/>
           </svg>
         </div>
       </section>
 
       {/* ============ FEATURES ============ */}
-      <section className="py-24 bg-purple-50/50">
+      <section className="py-24 bg-purple-50/50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-purple-900">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-purple-900 dark:text-purple-100">
               {t('home.features.title')}
             </h2>
-            <p className="text-purple-600/60 max-w-lg mx-auto text-lg">
+            <p className="text-purple-600/60 dark:text-purple-300/60 max-w-lg mx-auto text-lg">
               Everything you need to manage and participate in your school community
             </p>
           </div>
@@ -196,12 +196,12 @@ export default function HomePage() {
               { icon: <BookIcon />, title: t('home.features.classInfo.title'), desc: t('home.features.classInfo.desc') },
               { icon: <UsersIcon />, title: t('home.features.connect.title'), desc: t('home.features.connect.desc') },
             ].map((feature, i) => (
-              <div key={i} className="group bg-white rounded-2xl shadow-md shadow-purple-100/50 p-8 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
-                <div className="w-14 h-14 bg-purple-50 group-hover:bg-purple-100 rounded-xl flex items-center justify-center mb-5 transition-colors">
+              <div key={i} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-md shadow-purple-100/50 p-8 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
+                <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/50 group-hover:bg-purple-100 rounded-xl flex items-center justify-center mb-5 transition-colors">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-purple-900">{feature.title}</h3>
-                <p className="text-purple-700/60 leading-relaxed">{feature.desc}</p>
+                <h3 className="text-xl font-bold mb-3 text-purple-900 dark:text-purple-100">{feature.title}</h3>
+                <p className="text-purple-700/60 dark:text-purple-300/60 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -209,18 +209,18 @@ export default function HomePage() {
       </section>
 
       {/* ============ RECENT ANNOUNCEMENTS ============ */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 mb-2">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 dark:text-purple-100 mb-2">
                 {t('home.recent.title')}
               </h2>
-              <p className="text-purple-600/60 text-lg">Latest updates from your school</p>
+              <p className="text-purple-600/60 dark:text-purple-300/60 text-lg">Latest updates from your school</p>
             </div>
             <Link
               to="/announcements"
-              className="hidden sm:inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 font-semibold transition-colors text-sm"
+              className="hidden sm:inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-800 font-semibold transition-colors text-sm"
             >
               {t('home.recent.viewAll')}
               <ArrowRight />
@@ -250,7 +250,7 @@ export default function HomePage() {
           <div className="text-center mt-10 sm:hidden">
             <Link
               to="/announcements"
-              className="inline-flex items-center text-purple-600 hover:text-purple-800 font-semibold transition-colors"
+              className="inline-flex items-center text-purple-600 dark:text-purple-400 hover:text-purple-800 font-semibold transition-colors"
             >
               {t('home.recent.viewAll')}
               <ArrowRight />

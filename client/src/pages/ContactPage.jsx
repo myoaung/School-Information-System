@@ -14,15 +14,15 @@ export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-          <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+          <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </div>
-        <h1 className="text-3xl font-extrabold text-purple-900">{t('contact.title')}</h1>
+        <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">{t('contact.title')}</h1>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white rounded-2xl shadow-md shadow-purple-100/50 p-8">
-          <h2 className="text-xl font-bold text-purple-900 mb-4">{t('contact.getInTouch')}</h2>
-          <p className="text-purple-600/60 mb-8 leading-relaxed">{t('contact.description')}</p>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-8">
+          <h2 className="text-xl font-bold text-purple-900 dark:text-purple-100 mb-4">{t('contact.getInTouch')}</h2>
+          <p className="text-purple-600/60 dark:text-purple-300/60 mb-8 leading-relaxed">{t('contact.description')}</p>
           <div className="space-y-4">
             {[
               {icon:'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z',sub:'M12 13a3 3 0 100-6 3 3 0 000 6z',l:t('contact.address'),v:t('footer.address')},
@@ -30,20 +30,20 @@ export default function ContactPage() {
               {icon:'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07',sub:'',l:t('contact.phone'),v:t('footer.phone')},
             ].map((o,i) => (
               <div key={i} className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={o.icon}/>{o.sub && <path d={o.sub}/>}</svg>
+                <div className="w-10 h-10 bg-purple-50 dark:bg-purple-950/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={o.icon}/>{o.sub && <path d={o.sub}/>}</svg>
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-purple-900">{o.l}</p>
-                  <p className="text-sm text-purple-600/70">{o.v}</p>
+                  <p className="text-sm font-bold text-purple-900 dark:text-purple-100">{o.l}</p>
+                  <p className="text-sm text-purple-600/70 dark:text-purple-300/70">{o.v}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <form onSubmit={hs} className="bg-white rounded-2xl shadow-md shadow-purple-100/50 p-8">
-          {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
-          {success && <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl mb-4 text-sm">{success}</div>}
+        <form onSubmit={hs} className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-8">
+          {error && <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
+          {success && <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-xl mb-4 text-sm">{success}</div>}
           <div className="space-y-4">
             {[{id:'name',l:t('contact.name'),t:'text'},{id:'email',l:t('contact.email'),t:'email'},{id:'subject',l:t('contact.subject'),t:'text'}].map(f => (
               <div key={f.id}>

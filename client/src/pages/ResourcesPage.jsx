@@ -36,12 +36,12 @@ const TYPE_ICONS = {
 };
 
 const TYPE_COLORS = {
-  pdf: 'bg-red-100 text-red-700',
-  video: 'bg-purple-100 text-purple-700',
-  audio: 'bg-green-100 text-green-700',
-  image: 'bg-blue-100 text-blue-700',
-  link: 'bg-amber-100 text-amber-700',
-  document: 'bg-indigo-100 text-indigo-700',
+  pdf: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+  video: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+  audio: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+  image: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  link: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  document: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',
 };
 
 export default function ResourcesPage() {
@@ -70,15 +70,15 @@ export default function ResourcesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-          <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+          <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
         </div>
-        <h1 className="text-3xl font-extrabold text-purple-900">{t('resources.title')}</h1>
+        <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">{t('resources.title')}</h1>
       </div>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm">{error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">{error}</div>}
 
       {/* Type filters */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -89,7 +89,7 @@ export default function ResourcesPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
               filter === type
                 ? 'bg-purple-600 text-white'
-                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                : 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:hover:bg-purple-900/30'
             }`}
           >
             {type === 'all' ? t('resources.allTypes') : type.toUpperCase()}
@@ -100,22 +100,22 @@ export default function ResourcesPage() {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(r => (
-            <div key={r.id} className="bg-white rounded-2xl shadow-md shadow-purple-100/50 p-6 card-interactive">
+            <div key={r.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 card-interactive">
               <div className="flex items-start gap-3 mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${TYPE_COLORS[r.type] || 'bg-gray-100 text-gray-700'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${TYPE_COLORS[r.type] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
                   {TYPE_ICONS[r.type] || TYPE_ICONS.document}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-purple-900 truncate">{r.title}</h3>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[r.type] || 'bg-gray-100 text-gray-700'}`}>
+                  <h3 className="font-bold text-purple-900 dark:text-purple-100 truncate">{r.title}</h3>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[r.type] || 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
                     {r.type.toUpperCase()}
                   </span>
                 </div>
               </div>
               {r.description && (
-                <p className="text-sm text-purple-600/70 mb-3 line-clamp-2">{r.description}</p>
+                <p className="text-sm text-purple-600/70 dark:text-purple-300/60 mb-3 line-clamp-2">{r.description}</p>
               )}
-              <div className="flex items-center gap-2 text-xs text-purple-500 mb-3">
+              <div className="flex items-center gap-2 text-xs text-purple-500 dark:text-purple-400 mb-3">
                 <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">{r.subject_code}</span>
                 <span className="truncate">{r.course_title}</span>
               </div>
@@ -136,11 +136,11 @@ export default function ResourcesPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-md">
-          <svg className="w-16 h-16 text-purple-300 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl shadow-md">
+          <svg className="w-16 h-16 text-purple-300 dark:text-purple-300 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
-          <p className="text-purple-600 text-lg">{t('resources.noResources')}</p>
+          <p className="text-purple-600 dark:text-purple-400 text-lg">{t('resources.noResources')}</p>
         </div>
       )}
     </div>

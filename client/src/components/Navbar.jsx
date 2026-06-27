@@ -154,19 +154,19 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {moreMenuOpen && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-purple-100 overflow-hidden z-50 py-1">
-                      <Link to="/dashboard" onClick={() => setMoreMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">
+                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden z-50 py-1">
+                      <Link to="/dashboard" onClick={() => setMoreMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                         {t('nav.dashboard')}
                       </Link>
-                      <Link to="/courses" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('courses.title')}</Link>
-                      <Link to="/assignments" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('assignments.title')}</Link>
-                      <Link to="/quizzes" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('quizzes.title')}</Link>
-                      <Link to="/gradebook" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('gradebook.title')}</Link>
-                      <Link to="/resources" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('resources.title')}</Link>
-                      <Link to="/reports" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors">{t('reports.title')}</Link>
+                      <Link to="/courses" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('courses.title')}</Link>
+                      <Link to="/assignments" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('assignments.title')}</Link>
+                      <Link to="/quizzes" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('quizzes.title')}</Link>
+                      <Link to="/gradebook" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('gradebook.title')}</Link>
+                      <Link to="/resources" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('resources.title')}</Link>
+                      <Link to="/reports" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('reports.title')}</Link>
                       {isAdmin && (
-                        <Link to="/academic" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors border-t border-purple-100">{t('academic.title')}</Link>
+                        <Link to="/academic" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors border-t border-purple-100 dark:border-gray-700">{t('academic.title')}</Link>
                       )}
                     </div>
                   )}
@@ -187,11 +187,11 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-purple-100 overflow-hidden z-50">
-                      <div className="px-4 py-3 border-b border-purple-100">
-                        <p className="text-sm font-bold text-purple-900">{user.name}</p>
-                        <p className="text-xs text-purple-500">{user.email}</p>
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-medium capitalize">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden z-50">
+                      <div className="px-4 py-3 border-b border-purple-100 dark:border-gray-700">
+                        <p className="text-sm font-bold text-purple-900 dark:text-purple-100">{user.name}</p>
+                        <p className="text-xs text-purple-500 dark:text-purple-400">{user.email}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-[10px] font-medium capitalize">
                           {t(`common.role.${user.role}`)}
                         </span>
                       </div>
@@ -199,14 +199,14 @@ export default function Navbar() {
                         <Link
                           to="/dashboard"
                           onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                           {t('nav.dashboard')}
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                           {t('nav.logout')}
@@ -224,7 +224,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="ml-1 bg-white text-purple-700 hover:bg-purple-50 px-4 py-2 rounded-full text-sm font-bold shadow-sm transition-all hover:scale-105"
+                  className="ml-1 bg-white dark:bg-gray-200 text-purple-700 hover:bg-purple-50 dark:hover:bg-gray-300 px-4 py-2 rounded-full text-sm font-bold shadow-sm transition-all hover:scale-105"
                 >
                   {t('nav.register')}
                 </Link>

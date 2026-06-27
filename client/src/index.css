@@ -3,6 +3,9 @@
 
 @import "tailwindcss";
 
+/* Dark mode: class-based strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* MyanmarSabae font — bundled locally from saturngod/myanmar-unicode-fonts */
 @font-face {
   font-family: 'MyanmarSabae';
