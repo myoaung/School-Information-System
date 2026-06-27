@@ -70,6 +70,10 @@ export default function DashboardPage() {
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
               {t('gradebook.title')}
             </Link>
+            <Link to="/reports" className="card-interactive bg-teal-50 hover:bg-teal-100 text-teal-700 py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              Reports
+            </Link>
           </div>
         </div>
         {/* Admin/Teacher Management */}

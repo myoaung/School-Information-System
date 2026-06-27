@@ -20,6 +20,7 @@ const courseRoutes = require('./routes/courses');
 const assignmentRoutes = require('./routes/assignments');
 const quizRoutes = require('./routes/quizzes');
 const gradebookRoutes = require('./routes/gradebook');
+const reportsRoutes = require('./routes/reports');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -60,6 +61,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/gradebook', gradebookRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

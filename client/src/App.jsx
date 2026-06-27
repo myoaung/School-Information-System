@@ -23,6 +23,7 @@ import CourseDetailPage from './pages/CourseDetailPage';
 import AssignmentsPage from './pages/AssignmentsPage';
 import QuizzesPage from './pages/QuizzesPage';
 import GradebookPage from './pages/GradebookPage';
+import ReportsPage from './pages/ReportsPage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -136,6 +137,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <GradebookPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reports"
+                  element={
+                    <ProtectedRoute>
+                      <ReportsPage />
                     </ProtectedRoute>
                   }
                 />

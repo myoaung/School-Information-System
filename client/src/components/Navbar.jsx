@@ -76,6 +76,9 @@ export default function Navbar() {
                   <Link to="/gradebook" className={navLinkClass('/gradebook')}>
                     {t('gradebook.title')}
                   </Link>
+                  <Link to="/reports" className={navLinkClass('/reports')}>
+                    Reports
+                  </Link>
                 </>
               )}
 
@@ -209,6 +212,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/gradebook" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
                     {t('gradebook.title')}
+                  </Link>
+                  <Link to="/reports" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
+                    Reports
                   </Link>
                 </>
               )}
