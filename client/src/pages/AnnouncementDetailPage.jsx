@@ -24,7 +24,7 @@ export default function AnnouncementDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link to="/announcements" className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 mb-6 font-medium transition-colors cursor-pointer">
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         {t('announcements.backToAnnouncements')}
       </Link>
       <article className="bg-white rounded-2xl shadow-md shadow-purple-100/50 p-6 md:p-8">
