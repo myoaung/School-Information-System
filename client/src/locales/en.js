@@ -10,6 +10,7 @@ const en = {
     logout: 'Logout',
     schoolHub: 'SchoolHub',
     more: 'More',
+    home: 'Home',
   },
   footer: {
     tagline: 'Your one-stop platform for school announcements, class information, and staying connected with your school community.',
