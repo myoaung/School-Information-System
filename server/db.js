@@ -164,6 +164,127 @@ function initDatabase() {
       room TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS academic_years (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      is_current INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS semesters (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      academic_year_id INTEGER REFERENCES academic_years(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      is_current INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS courses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
+      subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS lessons (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      content TEXT,
+      lesson_order INTEGER DEFAULT 0,
+      duration_minutes INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS resources (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      type TEXT CHECK(type IN ('pdf','video','audio','image','link','document')) NOT NULL,
+      url TEXT,
+      file_path TEXT,
+      description TEXT,
+      uploaded_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS assignments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      due_date TEXT,
+      max_score INTEGER DEFAULT 100,
+      allow_late INTEGER DEFAULT 0,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS submissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      assignment_id INTEGER REFERENCES assignments(id) ON DELETE CASCADE,
+      student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      content TEXT,
+      file_path TEXT,
+      score INTEGER,
+      feedback TEXT,
+      status TEXT CHECK(status IN ('submitted','graded','late','returned')) DEFAULT 'submitted',
+      submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      graded_at DATETIME,
+      graded_by INTEGER REFERENCES users(id),
+      UNIQUE(assignment_id, student_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      time_limit_minutes INTEGER,
+      max_score INTEGER DEFAULT 100,
+      due_date TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+      question_text TEXT NOT NULL,
+      question_type TEXT CHECK(question_type IN ('mcq','true_false','fill_blank','essay')) NOT NULL,
+      options TEXT,
+      correct_answer TEXT,
+      points INTEGER DEFAULT 1,
+      question_order INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+      student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      answers TEXT,
+      score INTEGER,
+      started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME
+    );
+
+    CREATE TABLE IF NOT EXISTS gradebook (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      assignment_score REAL DEFAULT 0,
+      quiz_score REAL DEFAULT 0,
+      exam_score REAL DEFAULT 0,
+      final_grade TEXT,
+      gpa REAL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(student_id, course_id)
+    );
   `);
 
   // Seed data if empty (for demo purposes)
@@ -289,6 +410,47 @@ function seedDatabase(db) {
     const today = new Date().toISOString().split('T')[0];
     db.prepare('INSERT OR IGNORE INTO attendance (user_id, class_id, date, status, marked_by) VALUES (?, ?, ?, ?, ?)')
       .run(userIds['student@school.com'], mathClass.id, today, 'present', userIds['teacher@school.com']);
+  }
+
+  // Academic Year & Semester
+  db.prepare('INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)')
+    .run('2026-2027', '2026-06-01', '2027-03-31', 1);
+  const ayId = db.prepare('SELECT id FROM academic_years WHERE is_current = 1').get()?.id;
+  if (ayId) {
+    db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)')
+      .run(ayId, 'Semester 1', '2026-06-01', '2026-10-31', 1);
+    db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)')
+      .run(ayId, 'Semester 2', '2026-11-01', '2027-03-31', 0);
+  }
+
+  // Courses
+  if (mathClass && mathSubject) {
+    db.prepare('INSERT INTO courses (class_id, subject_id, title, description) VALUES (?, ?, ?, ?)')
+      .run(mathClass.id, mathSubject.id, 'Algebra Fundamentals', 'Introduction to algebraic expressions and equations');
+    const courseId = db.prepare('SELECT id FROM courses WHERE class_id = ?').get(mathClass.id)?.id;
+    if (courseId) {
+      // Lessons
+      db.prepare('INSERT INTO lessons (course_id, title, content, lesson_order) VALUES (?, ?, ?, ?)').run(courseId, 'Variables & Expressions', 'Understanding variables and algebraic expressions', 1);
+      db.prepare('INSERT INTO lessons (course_id, title, content, lesson_order) VALUES (?, ?, ?, ?)').run(courseId, 'Solving Equations', 'Linear equations and methods to solve them', 2);
+      db.prepare('INSERT INTO lessons (course_id, title, content, lesson_order) VALUES (?, ?, ?, ?)').run(courseId, 'Word Problems', 'Applying algebra to real-world problems', 3);
+
+      // Assignment
+      db.prepare('INSERT INTO assignments (course_id, title, description, due_date, max_score, created_by) VALUES (?, ?, ?, ?, ?, ?)')
+        .run(courseId, 'Algebra Homework 1', 'Complete exercises 1-10 on page 25', '2026-07-15', 100, userIds['teacher@school.com']);
+
+      // Quiz
+      db.prepare('INSERT INTO quizzes (course_id, title, description, time_limit_minutes, max_score, due_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run(courseId, 'Algebra Basics Quiz', 'Test your understanding of basic algebra', 30, 50, '2026-07-20', userIds['teacher@school.com']);
+      const quizId = db.prepare('SELECT id FROM quizzes WHERE course_id = ?').get(courseId)?.id;
+      if (quizId) {
+        db.prepare('INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          .run(quizId, 'What is x if 2x = 10?', 'mcq', JSON.stringify(['3','5','10','20']), '5', 10, 1);
+        db.prepare('INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          .run(quizId, 'Solve: x + 5 = 12', 'mcq', JSON.stringify(['5','7','12','17']), '7', 10, 2);
+        db.prepare('INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          .run(quizId, 'Is 3x + 2 an expression or equation?', 'true_false', JSON.stringify(['Expression','Equation']), 'Expression', 10, 3);
+      }
+    }
   }
 }
 

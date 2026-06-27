@@ -18,6 +18,11 @@ import StudentDetailPage from './pages/StudentDetailPage';
 import TeachersPage from './pages/TeachersPage';
 import AttendancePage from './pages/AttendancePage';
 import TimetablePage from './pages/TimetablePage';
+import CoursesPage from './pages/CoursesPage';
+import CourseDetailPage from './pages/CourseDetailPage';
+import AssignmentsPage from './pages/AssignmentsPage';
+import QuizzesPage from './pages/QuizzesPage';
+import GradebookPage from './pages/GradebookPage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -91,6 +96,46 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <TimetablePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/courses"
+                  element={
+                    <ProtectedRoute>
+                      <CoursesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/courses/:id"
+                  element={
+                    <ProtectedRoute>
+                      <CourseDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/assignments"
+                  element={
+                    <ProtectedRoute>
+                      <AssignmentsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/quizzes"
+                  element={
+                    <ProtectedRoute>
+                      <QuizzesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/gradebook"
+                  element={
+                    <ProtectedRoute>
+                      <GradebookPage />
                     </ProtectedRoute>
                   }
                 />

@@ -62,6 +62,23 @@ export default function Navbar() {
                 {t('nav.contact')}
               </Link>
 
+              {isAuthenticated && (
+                <>
+                  <Link to="/courses" className={navLinkClass('/courses')}>
+                    {t('courses.title')}
+                  </Link>
+                  <Link to="/assignments" className={navLinkClass('/assignments')}>
+                    {t('assignments.title')}
+                  </Link>
+                  <Link to="/quizzes" className={navLinkClass('/quizzes')}>
+                    {t('quizzes.title')}
+                  </Link>
+                  <Link to="/gradebook" className={navLinkClass('/gradebook')}>
+                    {t('gradebook.title')}
+                  </Link>
+                </>
+              )}
+
               <div className="w-px h-6 bg-white/20 mx-1" />
 
               {isAuthenticated ? (
@@ -179,6 +196,22 @@ export default function Navbar() {
               <Link to="/contact" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
                 {t('nav.contact')}
               </Link>
+              {isAuthenticated && (
+                <>
+                  <Link to="/courses" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
+                    {t('courses.title')}
+                  </Link>
+                  <Link to="/assignments" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
+                    {t('assignments.title')}
+                  </Link>
+                  <Link to="/quizzes" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
+                    {t('quizzes.title')}
+                  </Link>
+                  <Link to="/gradebook" className="block hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200" onClick={closeMobileMenu}>
+                    {t('gradebook.title')}
+                  </Link>
+                </>
+              )}
               <div className="border-t border-white/10 my-1" />
               {isAuthenticated ? (
                 <>

@@ -15,6 +15,11 @@ const studentRoutes = require('./routes/students');
 const teacherRoutes = require('./routes/teachers');
 const attendanceRoutes = require('./routes/attendance');
 const timetableRoutes = require('./routes/timetable');
+const academicRoutes = require('./routes/academic');
+const courseRoutes = require('./routes/courses');
+const assignmentRoutes = require('./routes/assignments');
+const quizRoutes = require('./routes/quizzes');
+const gradebookRoutes = require('./routes/gradebook');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +55,11 @@ app.use('/api/students', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/timetable', timetableRoutes);
+app.use('/api/academic', academicRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/gradebook', gradebookRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
