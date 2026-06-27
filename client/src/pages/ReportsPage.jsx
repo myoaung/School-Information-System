@@ -8,6 +8,8 @@ export default function ReportsPage() {
   const { isAdmin, isTeacher, user } = useAuth();
   const [overview, setOverview] = useState(null);
   const [studentReport, setStudentReport] = useState(null);
+  const [teacherReport, setTeacherReport] = useState(null);
+  const [teacherList, setTeacherList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -15,6 +17,7 @@ export default function ReportsPage() {
   useEffect(() => {
     if (isAdmin || isTeacher) {
       fetchOverview();
+      fetchTeacherList();
     } else {
       fetchStudentReport(user.id);
     }
@@ -31,6 +34,10 @@ export default function ReportsPage() {
       .finally(() => setLoading(false));
   };
 
+  const fetchTeacherList = () => {
+    api.get('/teachers').then(r => setTeacherList(r.data.teachers)).catch(() => {});
+  };
+
   const fetchStudentReport = (studentId) => {
     setLoading(true);
     api.get(`/reports/student/${studentId}`)
@@ -39,6 +46,17 @@ export default function ReportsPage() {
         setActiveTab('student');
       })
       .catch(() => setError('Failed to load student report'))
+      .finally(() => setLoading(false));
+  };
+
+  const fetchTeacherReport = (teacherId) => {
+    setLoading(true);
+    api.get(`/reports/teacher/${teacherId}`)
+      .then(r => {
+        setTeacherReport(r.data.report);
+        setActiveTab('teacher');
+      })
+      .catch(() => setError('Failed to load teacher report'))
       .finally(() => setLoading(false));
   };
 
@@ -69,6 +87,12 @@ export default function ReportsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer ${activeTab === 'overview' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
           >
             School Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('teacher')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer ${activeTab === 'teacher' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+          >
+            Teacher Reports
           </button>
         </div>
       )}
@@ -320,6 +344,124 @@ export default function ReportsPage() {
                 </tbody>
               </table>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Teacher Report */}
+      {activeTab === 'teacher' && (
+        <div className="space-y-6">
+          {/* Teacher selector (admin only) */}
+          {isAdmin && (
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              <h3 className="text-lg font-semibold text-purple-900 mb-3">Select Teacher</h3>
+              <div className="flex flex-wrap gap-2">
+                {teacherList.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => fetchTeacherReport(t.id)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
+                      teacherReport?.teacher?.name === t.name
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                    }`}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+                {isTeacher && !teacherReport && (
+                  <button
+                    onClick={() => fetchTeacherReport(user.id)}
+                    className="px-4 py-2 rounded-xl text-sm font-medium cursor-pointer bg-purple-600 text-white"
+                  >
+                    View My Report
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {isTeacher && !isAdmin && !teacherReport && (
+            <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+              <button
+                onClick={() => fetchTeacherReport(user.id)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold cursor-pointer transition-colors"
+              >
+                View My Report
+              </button>
+            </div>
+          )}
+
+          {/* Teacher Report Content */}
+          {teacherReport && (
+            <>
+              {/* Teacher Info */}
+              <div className="bg-white rounded-2xl shadow-md p-6">
+                <h3 className="text-lg font-semibold text-purple-900 mb-4">Teacher Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-sm text-purple-600">Name</p>
+                    <p className="font-medium text-purple-900">{teacherReport.teacher.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-600">Teacher ID</p>
+                    <p className="font-medium text-purple-900">{teacherReport.teacher.teacherId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-600">Specialization</p>
+                    <p className="font-medium text-purple-900">{teacherReport.teacher.specialization || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-600">Qualification</p>
+                    <p className="font-medium text-purple-900">{teacherReport.teacher.qualification || '—'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label="Classes" value={teacherReport.classes.length} color="blue" />
+                <StatCard label="Courses" value={teacherReport.courses.length} color="green" />
+                <StatCard label="Students" value={teacherReport.totalStudents} color="purple" />
+                <StatCard label="Subjects" value={[...new Set(teacherReport.courses.map(c => c.subject_code))].length} color="orange" />
+              </div>
+
+              {/* Course Stats */}
+              {teacherReport.courseStats?.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                  <div className="p-4 bg-purple-50">
+                    <h3 className="text-lg font-semibold text-purple-900">Course Performance</h3>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-purple-50 text-purple-700">
+                        <th className="text-left px-4 py-3 font-semibold">Subject</th>
+                        <th className="text-left px-4 py-3 font-semibold">Course</th>
+                        <th className="text-center px-4 py-3 font-semibold">Students</th>
+                        <th className="text-center px-4 py-3 font-semibold">Avg GPA</th>
+                        <th className="text-center px-4 py-3 font-semibold">Avg Assignment</th>
+                        <th className="text-center px-4 py-3 font-semibold">Avg Quiz</th>
+                        <th className="text-center px-4 py-3 font-semibold">Avg Exam</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {teacherReport.courseStats.map((cs, i) => (
+                        <tr key={i} className="border-t border-purple-100">
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">{cs.subject_code}</span>
+                          </td>
+                          <td className="px-4 py-3 text-purple-800">{cs.course_title}</td>
+                          <td className="px-4 py-3 text-center text-purple-700">{cs.graded_students || 0}</td>
+                          <td className="px-4 py-3 text-center font-bold text-purple-900">{cs.avg_gpa || '—'}</td>
+                          <td className="px-4 py-3 text-center text-purple-700">{cs.avg_assignment || '—'}</td>
+                          <td className="px-4 py-3 text-center text-purple-700">{cs.avg_quiz || '—'}</td>
+                          <td className="px-4 py-3 text-center text-purple-700">{cs.avg_exam || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

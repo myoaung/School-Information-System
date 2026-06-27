@@ -182,6 +182,14 @@ function initDatabase() {
       is_current INTEGER DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS holidays (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      academic_year_id INTEGER REFERENCES academic_years(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      type TEXT CHECK(type IN ('public','school','exam')) DEFAULT 'school'
+    );
+
     CREATE TABLE IF NOT EXISTS courses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
@@ -287,16 +295,16 @@ function initDatabase() {
     );
   `);
 
-  // Seed data if empty (for demo purposes)
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (userCount.count === 0) {
-    seedDatabase(db);
-  }
-
-  // Seed curriculum data if empty
+  // Seed curriculum data first (subjects needed by seedDatabase)
   const gradeCount = db.prepare('SELECT COUNT(*) as count FROM grades').get();
   if (gradeCount.count === 0) {
     seedCurriculum(db);
+  }
+
+  // Seed demo data if empty
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+  if (userCount.count === 0) {
+    seedDatabase(db);
   }
 
   console.log('Database initialized successfully');
@@ -390,6 +398,14 @@ function seedDatabase(db) {
   if (ayId) {
     db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)').run(ayId, 'Semester 1', '2026-06-01', '2026-10-31', 1);
     db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)').run(ayId, 'Semester 2', '2026-11-01', '2027-03-31', 0);
+    // Holidays
+    const insertHoliday = db.prepare('INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)');
+    insertHoliday.run(ayId, 'Waso Full Moon Day', '2026-07-10', 'public');
+    insertHoliday.run(ayId, 'Teachers\' Day', '2026-09-05', 'school');
+    insertHoliday.run(ayId, 'Mid-Semester Break', '2026-09-20', 'school');
+    insertHoliday.run(ayId, 'Thadingyut Festival', '2026-10-07', 'public');
+    insertHoliday.run(ayId, 'Tazaungdaing Festival', '2026-11-05', 'public');
+    insertHoliday.run(ayId, 'Exam Week - Semester 1', '2026-10-25', 'exam');
   }
 
   // ── Helper lookups ──

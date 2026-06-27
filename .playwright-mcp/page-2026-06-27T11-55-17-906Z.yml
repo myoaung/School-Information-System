@@ -1,0 +1,306 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e6]:
+      - group "Font size" [ref=e7]:
+        - button "A" [ref=e8] [cursor=pointer]
+        - button "A" [ref=e9] [cursor=pointer]
+        - button "A" [ref=e10] [cursor=pointer]
+      - button "Switch to dark mode" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+      - button "🇬🇧 EN" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: 🇬🇧
+        - generic [ref=e18]: EN
+    - generic [ref=e20]:
+      - link "SchoolHub" [ref=e22] [cursor=pointer]:
+        - /url: /
+        - img [ref=e24]
+        - generic [ref=e27]: SchoolHub
+      - generic [ref=e212]:
+        - button "🇬🇧" [ref=e213] [cursor=pointer]
+        - button "Close menu" [active] [ref=e221] [cursor=pointer]:
+          - img [ref=e215]
+    - generic [ref=e223]:
+      - link "Announcements" [ref=e224] [cursor=pointer]:
+        - /url: /announcements
+      - link "Classes" [ref=e225] [cursor=pointer]:
+        - /url: /classes
+      - link "Curriculum" [ref=e226] [cursor=pointer]:
+        - /url: /curriculum
+      - link "Contact" [ref=e227] [cursor=pointer]:
+        - /url: /contact
+      - link "Login" [ref=e229] [cursor=pointer]:
+        - /url: /login
+      - link "Register" [ref=e230] [cursor=pointer]:
+        - /url: /register
+      - generic [ref=e231]:
+        - group [ref=e232]:
+          - button "A" [ref=e233] [cursor=pointer]
+          - button "A" [ref=e234] [cursor=pointer]
+          - button "A" [ref=e235] [cursor=pointer]
+        - button "Toggle dark mode" [ref=e236] [cursor=pointer]:
+          - img [ref=e237]
+  - main [ref=e36]:
+    - generic [ref=e239]:
+      - generic [ref=e240]:
+        - img [ref=e242]
+        - heading "Myanmar Basic Education Curriculum" [level=1] [ref=e247]
+      - paragraph [ref=e248]: Education levels, grades, and subjects for the Myanmar Basic Education system.
+      - generic [ref=e249]:
+        - button "All Levels" [ref=e250] [cursor=pointer]
+        - button "Kindergarten" [ref=e251] [cursor=pointer]
+        - button "Primary School" [ref=e252] [cursor=pointer]
+        - button "Lower Secondary School" [ref=e253] [cursor=pointer]
+        - button "Upper Secondary School" [ref=e254] [cursor=pointer]
+      - generic [ref=e255]:
+        - generic [ref=e257] [cursor=pointer]:
+          - generic [ref=e258]:
+            - heading "Kindergarten" [level=2] [ref=e259]
+            - generic [ref=e260]: Kindergarten
+          - generic [ref=e261]:
+            - generic "Life Skills" [ref=e262]: LS
+            - generic "Creative Arts" [ref=e263]: CRA
+            - generic "Environmental Studies" [ref=e264]: ENV
+            - generic "Music" [ref=e265]: MUSIC
+            - generic "Physical Activities" [ref=e266]: PA
+            - generic "English" [ref=e267]: ENG
+            - generic "Myanmar" [ref=e268]: MM
+            - generic "Mathematics" [ref=e269]: MATH
+          - paragraph [ref=e270]: 8 subjects
+        - generic [ref=e272] [cursor=pointer]:
+          - generic [ref=e273]:
+            - heading "Grade 1" [level=2] [ref=e274]
+            - generic [ref=e275]: Primary School
+          - generic [ref=e276]:
+            - generic "Art & Music" [ref=e277]: ART
+            - generic "Life Skills" [ref=e278]: LS
+            - generic "Moral & Civic Education" [ref=e279]: MCE
+            - generic "Physical Education" [ref=e280]: PE
+            - generic "English" [ref=e281]: ENG
+            - generic "Myanmar" [ref=e282]: MM
+            - generic "Local Curriculum" [ref=e283]: LC
+            - generic "Mathematics" [ref=e284]: MATH
+            - generic "Science" [ref=e285]: SCI
+            - generic "Social Studies" [ref=e286]: SS
+          - paragraph [ref=e287]: 10 subjects
+        - generic [ref=e289] [cursor=pointer]:
+          - generic [ref=e290]:
+            - heading "Grade 2" [level=2] [ref=e291]
+            - generic [ref=e292]: Primary School
+          - generic [ref=e293]:
+            - generic "Art & Music" [ref=e294]: ART
+            - generic "Life Skills" [ref=e295]: LS
+            - generic "Moral & Civic Education" [ref=e296]: MCE
+            - generic "Physical Education" [ref=e297]: PE
+            - generic "English" [ref=e298]: ENG
+            - generic "Myanmar" [ref=e299]: MM
+            - generic "Local Curriculum" [ref=e300]: LC
+            - generic "Mathematics" [ref=e301]: MATH
+            - generic "Science" [ref=e302]: SCI
+            - generic "Social Studies" [ref=e303]: SS
+          - paragraph [ref=e304]: 10 subjects
+        - generic [ref=e306] [cursor=pointer]:
+          - generic [ref=e307]:
+            - heading "Grade 3" [level=2] [ref=e308]
+            - generic [ref=e309]: Primary School
+          - generic [ref=e310]:
+            - generic "Art & Music" [ref=e311]: ART
+            - generic "Life Skills" [ref=e312]: LS
+            - generic "Moral & Civic Education" [ref=e313]: MCE
+            - generic "Physical Education" [ref=e314]: PE
+            - generic "English" [ref=e315]: ENG
+            - generic "Myanmar" [ref=e316]: MM
+            - generic "Local Curriculum" [ref=e317]: LC
+            - generic "Mathematics" [ref=e318]: MATH
+            - generic "Science" [ref=e319]: SCI
+            - generic "Social Studies" [ref=e320]: SS
+          - paragraph [ref=e321]: 10 subjects
+        - generic [ref=e323] [cursor=pointer]:
+          - generic [ref=e324]:
+            - heading "Grade 4" [level=2] [ref=e325]
+            - generic [ref=e326]: Primary School
+          - generic [ref=e327]:
+            - generic "Art & Music" [ref=e328]: ART
+            - generic "Life Skills" [ref=e329]: LS
+            - generic "Moral & Civic Education" [ref=e330]: MCE
+            - generic "Physical Education" [ref=e331]: PE
+            - generic "English" [ref=e332]: ENG
+            - generic "Myanmar" [ref=e333]: MM
+            - generic "Local Curriculum" [ref=e334]: LC
+            - generic "Mathematics" [ref=e335]: MATH
+            - generic "Science" [ref=e336]: SCI
+            - generic "Social Studies" [ref=e337]: SS
+          - paragraph [ref=e338]: 10 subjects
+        - generic [ref=e340] [cursor=pointer]:
+          - generic [ref=e341]:
+            - heading "Grade 5" [level=2] [ref=e342]
+            - generic [ref=e343]: Primary School
+          - generic [ref=e344]:
+            - generic "Art & Music" [ref=e345]: ART
+            - generic "Life Skills" [ref=e346]: LS
+            - generic "Moral & Civic Education" [ref=e347]: MCE
+            - generic "Physical Education" [ref=e348]: PE
+            - generic "English" [ref=e349]: ENG
+            - generic "Myanmar" [ref=e350]: MM
+            - generic "Local Curriculum" [ref=e351]: LC
+            - generic "Mathematics" [ref=e352]: MATH
+            - generic "Science" [ref=e353]: SCI
+            - generic "Social Studies" [ref=e354]: SS
+          - paragraph [ref=e355]: 10 subjects
+        - generic [ref=e357] [cursor=pointer]:
+          - generic [ref=e358]:
+            - heading "Grade 6" [level=2] [ref=e359]
+            - generic [ref=e360]: Lower Secondary School
+          - generic [ref=e361]:
+            - generic "Art & Music" [ref=e362]: ART
+            - generic "Life Skills" [ref=e363]: LS
+            - generic "Moral & Civic Education" [ref=e364]: MCE
+            - generic "Physical Education" [ref=e365]: PE
+            - generic "English" [ref=e366]: ENG
+            - generic "Myanmar" [ref=e367]: MM
+            - generic "Local Curriculum" [ref=e368]: LC
+            - generic "Mathematics" [ref=e369]: MATH
+            - generic "Science" [ref=e370]: SCI
+            - generic "Geography" [ref=e371]: GEO
+            - generic "History" [ref=e372]: HIST
+          - paragraph [ref=e373]: 11 subjects
+        - generic [ref=e375] [cursor=pointer]:
+          - generic [ref=e376]:
+            - heading "Grade 7" [level=2] [ref=e377]
+            - generic [ref=e378]: Lower Secondary School
+          - generic [ref=e379]:
+            - generic "Art & Music" [ref=e380]: ART
+            - generic "Life Skills" [ref=e381]: LS
+            - generic "Moral & Civic Education" [ref=e382]: MCE
+            - generic "Physical Education" [ref=e383]: PE
+            - generic "English" [ref=e384]: ENG
+            - generic "Myanmar" [ref=e385]: MM
+            - generic "Local Curriculum" [ref=e386]: LC
+            - generic "Mathematics" [ref=e387]: MATH
+            - generic "Science" [ref=e388]: SCI
+            - generic "Geography" [ref=e389]: GEO
+            - generic "History" [ref=e390]: HIST
+          - paragraph [ref=e391]: 11 subjects
+        - generic [ref=e393] [cursor=pointer]:
+          - generic [ref=e394]:
+            - heading "Grade 8" [level=2] [ref=e395]
+            - generic [ref=e396]: Lower Secondary School
+          - generic [ref=e397]:
+            - generic "Art & Music" [ref=e398]: ART
+            - generic "Life Skills" [ref=e399]: LS
+            - generic "Moral & Civic Education" [ref=e400]: MCE
+            - generic "Physical Education" [ref=e401]: PE
+            - generic "English" [ref=e402]: ENG
+            - generic "Myanmar" [ref=e403]: MM
+            - generic "Local Curriculum" [ref=e404]: LC
+            - generic "Mathematics" [ref=e405]: MATH
+            - generic "Science" [ref=e406]: SCI
+            - generic "Geography" [ref=e407]: GEO
+            - generic "History" [ref=e408]: HIST
+          - paragraph [ref=e409]: 11 subjects
+        - generic [ref=e411] [cursor=pointer]:
+          - generic [ref=e412]:
+            - heading "Grade 9" [level=2] [ref=e413]
+            - generic [ref=e414]: Lower Secondary School
+          - generic [ref=e415]:
+            - generic "Art & Music" [ref=e416]: ART
+            - generic "Life Skills" [ref=e417]: LS
+            - generic "Moral & Civic Education" [ref=e418]: MCE
+            - generic "Physical Education" [ref=e419]: PE
+            - generic "English" [ref=e420]: ENG
+            - generic "Myanmar" [ref=e421]: MM
+            - generic "Local Curriculum" [ref=e422]: LC
+            - generic "Mathematics" [ref=e423]: MATH
+            - generic "Science" [ref=e424]: SCI
+            - generic "Geography" [ref=e425]: GEO
+            - generic "History" [ref=e426]: HIST
+          - paragraph [ref=e427]: 11 subjects
+        - generic [ref=e429] [cursor=pointer]:
+          - generic [ref=e430]:
+            - heading "Grade 10" [level=2] [ref=e431]
+            - generic [ref=e432]: Upper Secondary School
+          - generic [ref=e433]:
+            - generic "Moral & Civic Education" [ref=e434]: MCE
+            - generic "Physical Education" [ref=e435]: PE
+            - generic "English" [ref=e436]: ENG
+            - generic "Myanmar" [ref=e437]: MM
+            - generic "Local Curriculum" [ref=e438]: LC
+            - generic "Mathematics" [ref=e439]: MATH
+            - generic "Biology" [ref=e440]: BIO
+            - generic "Chemistry" [ref=e441]: CHEM
+            - generic "Physics" [ref=e442]: PHY
+            - generic "Economics" [ref=e443]: ECO
+            - generic "Geography" [ref=e444]: GEO
+            - generic "History" [ref=e445]: HIST
+          - paragraph [ref=e446]: 12 subjects
+        - generic [ref=e448] [cursor=pointer]:
+          - generic [ref=e449]:
+            - heading "Grade 11" [level=2] [ref=e450]
+            - generic [ref=e451]: Upper Secondary School
+          - generic [ref=e452]:
+            - generic "Moral & Civic Education" [ref=e453]: MCE
+            - generic "Physical Education" [ref=e454]: PE
+            - generic "English" [ref=e455]: ENG
+            - generic "Myanmar" [ref=e456]: MM
+            - generic "Local Curriculum" [ref=e457]: LC
+            - generic "Mathematics" [ref=e458]: MATH
+            - generic "Biology" [ref=e459]: BIO
+            - generic "Chemistry" [ref=e460]: CHEM
+            - generic "Physics" [ref=e461]: PHY
+            - generic "Economics" [ref=e462]: ECO
+            - generic "Geography" [ref=e463]: GEO
+            - generic "History" [ref=e464]: HIST
+          - paragraph [ref=e465]: 12 subjects
+        - generic [ref=e467] [cursor=pointer]:
+          - generic [ref=e468]:
+            - heading "Grade 12" [level=2] [ref=e469]
+            - generic [ref=e470]: Upper Secondary School
+          - generic [ref=e471]:
+            - generic "Moral & Civic Education" [ref=e472]: MCE
+            - generic "Physical Education" [ref=e473]: PE
+            - generic "English" [ref=e474]: ENG
+            - generic "Myanmar" [ref=e475]: MM
+            - generic "Local Curriculum" [ref=e476]: LC
+            - generic "Mathematics" [ref=e477]: MATH
+            - generic "Biology" [ref=e478]: BIO
+            - generic "Chemistry" [ref=e479]: CHEM
+            - generic "Physics" [ref=e480]: PHY
+            - generic "Economics" [ref=e481]: ECO
+            - generic "Geography" [ref=e482]: GEO
+            - generic "History" [ref=e483]: HIST
+          - paragraph [ref=e484]: 12 subjects
+  - contentinfo [ref=e175]:
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e179]:
+            - img [ref=e180]
+            - heading "SchoolHub" [level=3] [ref=e183]
+          - paragraph [ref=e184]: Your one-stop platform for school announcements, class information, and staying connected with your school community.
+        - generic [ref=e185]:
+          - heading "Quick Links" [level=3] [ref=e186]
+          - list [ref=e187]:
+            - listitem [ref=e188]:
+              - link "Announcements" [ref=e189] [cursor=pointer]:
+                - /url: /announcements
+            - listitem [ref=e190]:
+              - link "Classes" [ref=e191] [cursor=pointer]:
+                - /url: /classes
+            - listitem [ref=e192]:
+              - link "Curriculum" [ref=e193] [cursor=pointer]:
+                - /url: /curriculum
+            - listitem [ref=e194]:
+              - link "Contact Us" [ref=e195] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e196]:
+          - heading "Contact" [level=3] [ref=e197]
+          - list [ref=e198]:
+            - listitem [ref=e199]:
+              - img [ref=e200]
+              - text: 123 School Street
+            - listitem [ref=e203]:
+              - img [ref=e204]
+              - text: info@schoolhub.com
+            - listitem [ref=e207]:
+              - img [ref=e208]
+              - text: (555) 123-4567
+      - paragraph [ref=e211]: © 2026 SchoolHub. All rights reserved.

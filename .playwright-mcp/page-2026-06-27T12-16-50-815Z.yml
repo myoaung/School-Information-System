@@ -1,0 +1,122 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e6]:
+      - group "Font size" [ref=e7]:
+        - button "A" [ref=e8] [cursor=pointer]
+        - button "A" [ref=e9] [cursor=pointer]
+        - button "A" [ref=e10] [cursor=pointer]
+      - button "Switch to light mode" [active] [ref=e76] [cursor=pointer]:
+        - img [ref=e13]
+      - button "🇬🇧 EN" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: 🇬🇧
+        - generic [ref=e18]: EN
+    - generic [ref=e20]:
+      - link "SchoolHub" [ref=e22] [cursor=pointer]:
+        - /url: /
+        - img [ref=e24]
+        - generic [ref=e27]: SchoolHub
+      - generic [ref=e28]:
+        - link "Announcements" [ref=e29] [cursor=pointer]:
+          - /url: /announcements
+        - link "Classes" [ref=e30] [cursor=pointer]:
+          - /url: /classes
+        - link "Curriculum" [ref=e31] [cursor=pointer]:
+          - /url: /curriculum
+        - link "Contact" [ref=e32] [cursor=pointer]:
+          - /url: /contact
+        - link "Courses" [ref=e78] [cursor=pointer]:
+          - /url: /courses
+        - link "Assignments" [ref=e79] [cursor=pointer]:
+          - /url: /assignments
+        - link "Quizzes" [ref=e80] [cursor=pointer]:
+          - /url: /quizzes
+        - link "Gradebook" [ref=e81] [cursor=pointer]:
+          - /url: /gradebook
+        - link "Resources" [ref=e82] [cursor=pointer]:
+          - /url: /resources
+        - link "Reports" [ref=e83] [cursor=pointer]:
+          - /url: /reports
+        - link "Academic" [ref=e84] [cursor=pointer]:
+          - /url: /academic
+        - link "Dashboard" [ref=e85] [cursor=pointer]:
+          - /url: /dashboard
+        - button "A Admin User" [ref=e87] [cursor=pointer]:
+          - generic [ref=e88]: A
+          - generic [ref=e89]: Admin User
+          - img [ref=e90]
+  - main [ref=e36]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - img [ref=e95]
+        - heading "Assignments" [level=1] [ref=e98]
+      - generic [ref=e99]:
+        - generic [ref=e102]:
+          - heading "Myanmar Kingdoms Timeline" [level=3] [ref=e103]
+          - paragraph [ref=e104]: Ancient Myanmar Kingdoms
+          - paragraph [ref=e105]: Create a visual timeline of the major kingdoms from 849-1885 AD
+          - generic [ref=e106]:
+            - generic [ref=e107]: "Due: 2026-07-22"
+            - generic [ref=e108]: "Max Score: 100"
+            - generic [ref=e109]: "Created by: Daw Nwe"
+        - generic [ref=e112]:
+          - 'heading "Lab Report: Chemical Reactions" [level=3] [ref=e113]'
+          - paragraph [ref=e114]: Chemistry Basics
+          - paragraph [ref=e115]: Document the acid-base experiment from Lesson 3
+          - generic [ref=e116]:
+            - generic [ref=e117]: "Due: 2026-07-20"
+            - generic [ref=e118]: "Max Score: 100"
+            - generic [ref=e119]: "Created by: Mr. Smith"
+        - generic [ref=e122]:
+          - heading "Sonnet Analysis Essay" [level=3] [ref=e123]
+          - paragraph [ref=e124]: Shakespeare & Poetry
+          - paragraph [ref=e125]: Write a 500-word analysis of Shakespeare's Sonnet 18
+          - generic [ref=e126]:
+            - generic [ref=e127]: "Due: 2026-07-18"
+            - generic [ref=e128]: "Max Score: 100"
+            - generic [ref=e129]: "Created by: Ms. Johnson"
+        - generic [ref=e132]:
+          - heading "Algebra Homework 1" [level=3] [ref=e133]
+          - paragraph [ref=e134]: Algebra Fundamentals
+          - paragraph [ref=e135]: Complete exercises 1-10 on page 25
+          - generic [ref=e136]:
+            - generic [ref=e137]: "Due: 2026-07-15"
+            - generic [ref=e138]: "Max Score: 100"
+            - generic [ref=e139]: "Created by: Ms. Johnson"
+  - contentinfo [ref=e39]:
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - img [ref=e44]
+            - heading "SchoolHub" [level=3] [ref=e47]
+          - paragraph [ref=e48]: Your one-stop platform for school announcements, class information, and staying connected with your school community.
+        - generic [ref=e49]:
+          - heading "Quick Links" [level=3] [ref=e50]
+          - list [ref=e51]:
+            - listitem [ref=e52]:
+              - link "Announcements" [ref=e53] [cursor=pointer]:
+                - /url: /announcements
+            - listitem [ref=e54]:
+              - link "Classes" [ref=e55] [cursor=pointer]:
+                - /url: /classes
+            - listitem [ref=e56]:
+              - link "Curriculum" [ref=e57] [cursor=pointer]:
+                - /url: /curriculum
+            - listitem [ref=e58]:
+              - link "Contact Us" [ref=e59] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e60]:
+          - heading "Contact" [level=3] [ref=e61]
+          - list [ref=e62]:
+            - listitem [ref=e63]:
+              - img [ref=e64]
+              - text: 123 School Street
+            - listitem [ref=e67]:
+              - img [ref=e68]
+              - text: info@schoolhub.com
+            - listitem [ref=e71]:
+              - img [ref=e72]
+              - text: (555) 123-4567
+      - paragraph [ref=e75]: © 2026 SchoolHub. All rights reserved.
+  - button "Open chat" [ref=e140] [cursor=pointer]:
+    - img [ref=e141]

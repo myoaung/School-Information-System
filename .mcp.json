@@ -4,21 +4,13 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
     },
-    "fetch": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"]
-    },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-server-playwright"]
+      "args": ["-y", "@playwright/mcp"]
     },
     "codebase-memory": {
       "command": "npx",
       "args": ["-y", "codebase-memory-mcp", "--project-path", "."]
-    },
-    "git": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-git"]
     }
   }
 }

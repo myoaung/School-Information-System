@@ -24,6 +24,8 @@ import AssignmentsPage from './pages/AssignmentsPage';
 import QuizzesPage from './pages/QuizzesPage';
 import GradebookPage from './pages/GradebookPage';
 import ReportsPage from './pages/ReportsPage';
+import ResourcesPage from './pages/ResourcesPage';
+import AcademicPage from './pages/AcademicPage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -145,6 +147,22 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ReportsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/resources"
+                  element={
+                    <ProtectedRoute>
+                      <ResourcesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academic"
+                  element={
+                    <ProtectedRoute>
+                      <AcademicPage />
                     </ProtectedRoute>
                   }
                 />
