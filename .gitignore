@@ -13,3 +13,7 @@ server/uploads/
 ch-3/myoaung/
 ch-4/myoaung/
 docs/
+
+# Playwright MCP snapshots
+.playwright-mcp/
+home-page-check.png
