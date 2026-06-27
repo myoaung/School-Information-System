@@ -8,3 +8,8 @@ server/*.db-wal
 server/*.db-shm
 server/uploads/
 .vercel
+
+# Personal reports & docs (not for public repo)
+ch-3/myoaung/
+ch-4/myoaung/
+docs/
