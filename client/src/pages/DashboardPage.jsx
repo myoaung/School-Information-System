@@ -20,10 +20,10 @@ export default function DashboardPage() {
 
     // Load at-risk students for admin/teacher
     if (isAdmin || isTeacher) {
-      api.get('/ai/analytics/at-risk?minScore=30')
+      api.get('/ai/at-risk?minScore=30')
         .then(r => setAtRiskStudents(r.data.students || []))
         .catch(() => {});
-      api.get('/ai/analytics/stats')
+      api.get('/ai/stats')
         .then(r => setAnalyticsStats(r.data.stats))
         .catch(() => {});
     }
