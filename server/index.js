@@ -22,6 +22,9 @@ const quizRoutes = require('./routes/quizzes');
 const gradebookRoutes = require('./routes/gradebook');
 const reportsRoutes = require('./routes/reports');
 const resourceRoutes = require('./routes/resources');
+const aiReportRoutes = require('./routes/ai-reports');
+const aiAnalyticsRoutes = require('./routes/ai-analytics');
+const aiScheduleRoutes = require('./routes/ai-schedule');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -64,6 +67,9 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/gradebook', gradebookRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/resources', resourceRoutes);
+app.use('/api/ai', aiReportRoutes);
+app.use('/api/ai', aiAnalyticsRoutes);
+app.use('/api/ai', aiScheduleRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

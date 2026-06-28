@@ -1,7 +1,26 @@
 const { getDb } = require('./db');
+const { getAIReply } = require('./ai');
 
-// Rule-based chatbot that answers school questions from the database
-function getReply(message, userName, userRole) {
+// ─── Main Chat Handler ──────────────────────────────────────────────────────
+// Tries AI first, falls back to rule-based if AI fails or is unavailable
+
+async function getReply(message, userName, userRole, userId) {
+  // Try AI-powered response first
+  try {
+    if (process.env.ANTHROPIC_API_KEY) {
+      return await getAIReply(message, userName, userRole, userId);
+    }
+  } catch (err) {
+    console.error('[AI] Falling back to rule-based chatbot:', err.message);
+  }
+
+  // Fallback: rule-based responses
+  return getRuleBasedReply(message, userName, userRole);
+}
+
+// ─── Rule-Based Fallback ─────────────────────────────────────────────────────
+
+function getRuleBasedReply(message, userName, userRole) {
   const db = getDb();
   const msg = message.toLowerCase().trim();
 

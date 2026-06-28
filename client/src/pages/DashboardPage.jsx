@@ -9,12 +9,24 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [atRiskStudents, setAtRiskStudents] = useState([]);
+  const [analyticsStats, setAnalyticsStats] = useState(null);
 
   useEffect(() => {
     api.get('/reports/dashboard')
       .then(r => setStats(r.data.dashboard))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Load at-risk students for admin/teacher
+    if (isAdmin || isTeacher) {
+      api.get('/ai/analytics/at-risk?minScore=30')
+        .then(r => setAtRiskStudents(r.data.students || []))
+        .catch(() => {});
+      api.get('/ai/analytics/stats')
+        .then(r => setAnalyticsStats(r.data.stats))
+        .catch(() => {});
+    }
   }, []);
 
   return (
@@ -42,6 +54,68 @@ export default function DashboardPage() {
               <StatCard label={t('dashboard.stats.upcomingQuizzes')} value={stats.upcomingQuizzes} color="blue" />
             </>
           )}
+        </div>
+      )}
+
+      {/* Early Warning — At-Risk Students */}
+      {(isAdmin || isTeacher) && atRiskStudents.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-100 dark:bg-red-950/40 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100">Early Warning — At-Risk Students</h2>
+            </div>
+            {analyticsStats && (
+              <div className="flex gap-2">
+                <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-full font-medium">
+                  {analyticsStats.distribution.critical} Critical
+                </span>
+                <span className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 rounded-full font-medium">
+                  {analyticsStats.distribution.high} High
+                </span>
+                <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300 rounded-full font-medium">
+                  {analyticsStats.distribution.medium} Medium
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            {atRiskStudents.slice(0, 5).map(student => (
+              <Link key={student.userId} to={`/students/${student.userId}`}
+                className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30 rounded-xl transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                    student.riskLevel === 'critical' ? 'bg-red-500' :
+                    student.riskLevel === 'high' ? 'bg-orange-500' :
+                    'bg-yellow-500'
+                  }`}>
+                    {student.riskScore}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-purple-900 dark:text-purple-100">{student.name}</p>
+                    <p className="text-xs text-purple-500 dark:text-purple-400">
+                      {student.grade} • {student.studentCode}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {student.factors.slice(0, 2).map((f, i) => (
+                    <span key={i} className="text-xs px-2 py-0.5 bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 rounded-full">
+                      {f.type}
+                    </span>
+                  ))}
+                  <svg className="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

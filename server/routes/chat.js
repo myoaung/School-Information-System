@@ -52,8 +52,8 @@ router.post('/', authMiddleware, upload.single('file'), (req, res) => {
   const fileName = req.file ? req.file.originalname : null;
   const filePath = req.file ? `/uploads/chat/${req.file.filename}` : null;
 
-  // Get AI reply
-  const reply = getReply(message || '📎 File shared', userName, userRole);
+  // Get AI reply (async — uses Claude API if key is set, falls back to rule-based)
+  const reply = await getReply(message || '📎 File shared', userName, userRole, userId);
 
   // Save to database
   const result = db.prepare(`

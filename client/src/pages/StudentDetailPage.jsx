@@ -8,13 +8,41 @@ export default function StudentDetailPage() {
   const { t } = useTranslation();
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState([]);
+  const [generating, setGenerating] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
   useEffect(() => {
     api.get(`/students/${id}`)
       .then(r => setStudent(r.data.student))
       .catch(() => {})
       .finally(() => setLoading(false));
+    // Load existing reports
+    api.get(`/ai/report/${id}`).then(r => setReports(r.data.reports || [])).catch(() => {});
   }, [id]);
+
+  const generateReport = async () => {
+    setGenerating(true);
+    try {
+      const res = await api.post(`/ai/report/${id}`);
+      setReports(prev => [res.data.report, ...prev]);
+      setSelectedReport(res.data.report);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to generate report');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const approveReport = async (reportId) => {
+    try {
+      await api.put(`/ai/report/${reportId}/approve`);
+      setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'approved' } : r));
+      if (selectedReport?.id === reportId) setSelectedReport(prev => ({ ...prev, status: 'approved' }));
+    } catch (err) {
+      alert('Failed to approve report');
+    }
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-[60vh]">
@@ -65,6 +93,105 @@ export default function StudentDetailPage() {
               }`}>{student.status}</span>
             </p>
           </div>
+        </div>
+
+        {/* AI Report Generation */}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6">
+            <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100 mb-4">🤖 AI Report Card</h2>
+            <button
+              onClick={generateReport}
+              disabled={generating}
+              className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {generating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  Generate Report
+                </>
+              )}
+            </button>
+
+            {reports.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-medium text-purple-500 dark:text-purple-400 uppercase">Previous Reports</p>
+                {reports.slice(0, 5).map(r => (
+                  <div key={r.id} className="flex items-center justify-between p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg">
+                    <button onClick={() => setSelectedReport(r)} className="text-sm text-left hover:text-purple-700 dark:hover:text-purple-300">
+                      <span className="font-medium">#{r.id}</span>
+                      <span className="text-purple-500 dark:text-purple-400 ml-2">
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </span>
+                    </button>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      r.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300' :
+                      r.status === 'sent' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' :
+                      'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300'
+                    }`}>{r.status}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Report Viewer */}
+          {selectedReport && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">Report #{selectedReport.id}</h3>
+                <button onClick={() => setSelectedReport(null)} className="text-purple-400 hover:text-purple-600">✕</button>
+              </div>
+
+              {/* Stats Summary */}
+              {selectedReport.data && (
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg">
+                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{selectedReport.data.gpa}</p>
+                    <p className="text-xs text-purple-500">GPA</p>
+                  </div>
+                  <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg">
+                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{selectedReport.data.attendanceRate}%</p>
+                    <p className="text-xs text-purple-500">Attendance</p>
+                  </div>
+                  <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg">
+                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{selectedReport.data.avgAssignmentScore}%</p>
+                    <p className="text-xs text-purple-500">Assignments</p>
+                  </div>
+                  <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg">
+                    <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{selectedReport.data.avgQuizScore}%</p>
+                    <p className="text-xs text-purple-500">Quizzes</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Narrative */}
+              <div className="prose prose-sm dark:prose-invert max-w-none text-purple-800 dark:text-purple-200"
+                   dangerouslySetInnerHTML={{ __html: selectedReport.narrative }} />
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-4 pt-4 border-t border-purple-100 dark:border-purple-800">
+                {selectedReport.status === 'draft' && (
+                  <button onClick={() => approveReport(selectedReport.id)}
+                    className="flex-1 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+                    ✓ Approve
+                  </button>
+                )}
+                <a href={`/api/ai/report/${selectedReport.id}/html`} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 text-center">
+                  🖨️ Print / PDF
+                </a>
+                <span className={`self-center text-xs px-2 py-0.5 rounded-full font-medium ${
+                  selectedReport.source === 'ai' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' :
+                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                }`}>{selectedReport.source === 'ai' ? 'AI' : 'Template'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Parent Info + Attendance */}

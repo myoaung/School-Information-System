@@ -10,6 +10,9 @@ export default function TimetablePage() {
   const [selectedClass, setSelectedClass] = useState('');
   const [timetable, setTimetable] = useState({});
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const dayNames = [
     t('timetable.monday'), t('timetable.tuesday'), t('timetable.wednesday'),
@@ -23,11 +26,59 @@ export default function TimetablePage() {
   useEffect(() => {
     if (!selectedClass) return;
     setLoading(true);
+    setSuggestions(null);
+    setShowSuggestions(false);
     api.get('/timetable', { params: { class_id: selectedClass } })
       .then(r => setTimetable(r.data.timetable))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [selectedClass]);
+
+  const generateSchedule = async () => {
+    if (!selectedClass) return;
+    setGenerating(true);
+    try {
+      // Generate schedule
+      const genRes = await api.post('/ai/schedule/generate', {
+        class_id: parseInt(selectedClass),
+        respect_existing: false,
+      });
+
+      const schedule = genRes.data.schedule;
+
+      if (schedule.proposed && schedule.proposed.length > 0) {
+        // Apply the generated schedule
+        await api.post('/ai/schedule/apply', {
+          class_id: parseInt(selectedClass),
+          entries: schedule.proposed,
+          clear_existing: true,
+        });
+
+        // Reload timetable
+        const ttRes = await api.get('/timetable', { params: { class_id: selectedClass } });
+        setTimetable(ttRes.data.timetable);
+
+        alert(`Generated ${schedule.new_periods} periods for ${schedule.class.name}`);
+      } else {
+        alert('No schedule could be generated. Check constraints.');
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to generate schedule');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const loadSuggestions = async () => {
+    if (!selectedClass) return;
+    try {
+      const res = await api.get(`/ai/schedule/suggestions/${selectedClass}`);
+      setSuggestions(res.data.suggestions);
+      setShowSuggestions(true);
+    } catch (err) {
+      alert('Failed to load suggestions');
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -38,20 +89,67 @@ export default function TimetablePage() {
         <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">{t('timetable.title')}</h1>
       </div>
 
-      {/* Class selector */}
+      {/* Class selector + AI Actions */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 mb-6">
-        <div className="max-w-sm">
-          <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">{t('timetable.selectClass')}</label>
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="w-full px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 dark:bg-gray-800"
-          >
-            <option value="">{t('timetable.selectClassPlaceholder')}</option>
-            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">{t('timetable.selectClass')}</label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 dark:bg-gray-800"
+            >
+              <option value="">{t('timetable.selectClassPlaceholder')}</option>
+              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {isAdmin && selectedClass && (
+            <div className="flex gap-2">
+              <button
+                onClick={generateSchedule}
+                disabled={generating}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-medium hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {generating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    Auto-Generate
+                  </>
+                )}
+              </button>
+              <button
+                onClick={loadSuggestions}
+                className="px-4 py-2 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-all flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                AI Tips
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* AI Suggestions */}
+      {showSuggestions && suggestions && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100">🤖 AI Schedule Suggestions</h2>
+            <button onClick={() => setShowSuggestions(false)} className="text-purple-400 hover:text-purple-600">✕</button>
+          </div>
+          <div className="prose prose-sm dark:prose-invert max-w-none text-purple-800 dark:text-purple-200"
+               dangerouslySetInnerHTML={{ __html: suggestions }} />
+        </div>
+      )}
 
       {/* Timetable Grid */}
       {selectedClass && (
