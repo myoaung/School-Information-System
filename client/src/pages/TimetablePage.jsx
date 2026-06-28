@@ -39,7 +39,7 @@ export default function TimetablePage() {
     setGenerating(true);
     try {
       // Generate schedule
-      const genRes = await api.post('/ai/schedule/generate', {
+      const genRes = await api.post('/ai/generate', {
         class_id: parseInt(selectedClass),
         respect_existing: false,
       });
@@ -48,7 +48,7 @@ export default function TimetablePage() {
 
       if (schedule.proposed && schedule.proposed.length > 0) {
         // Apply the generated schedule
-        await api.post('/ai/schedule/apply', {
+        await api.post('/ai/apply', {
           class_id: parseInt(selectedClass),
           entries: schedule.proposed,
           clear_existing: true,
@@ -72,7 +72,7 @@ export default function TimetablePage() {
   const loadSuggestions = async () => {
     if (!selectedClass) return;
     try {
-      const res = await api.get(`/ai/schedule/suggestions/${selectedClass}`);
+      const res = await api.get(`/ai/suggestions/${selectedClass}`);
       setSuggestions(res.data.suggestions);
       setShowSuggestions(true);
     } catch (err) {
