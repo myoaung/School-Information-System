@@ -40,35 +40,40 @@ try {
 }
 
 // POST /api/chat — send message, get AI reply
-router.post('/', authMiddleware, upload.single('file'), (req, res) => {
-  const db = getDb();
-  const { message } = req.body;
-  const { id: userId, name: userName, role: userRole } = req.user;
+router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
+  try {
+    const db = getDb();
+    const { message } = req.body;
+    const { id: userId, name: userName, role: userRole } = req.user;
 
-  if (!message && !req.file) {
-    return res.status(400).json({ error: 'Message or file is required' });
+    if (!message && !req.file) {
+      return res.status(400).json({ error: 'Message or file is required' });
+    }
+
+    const fileName = req.file ? req.file.originalname : null;
+    const filePath = req.file ? `/uploads/chat/${req.file.filename}` : null;
+
+    // Get AI reply (async — uses Claude API if key is set, falls back to rule-based)
+    const reply = await getReply(message || '📎 File shared', userName, userRole, userId);
+
+    // Save to database
+    const result = db.prepare(`
+      INSERT INTO chat_messages (user_id, user_name, user_role, message, reply, file_name, file_path)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(userId, userName, userRole, message || '', reply, fileName, filePath);
+
+    res.json({
+      id: result.lastInsertRowid,
+      message: message || '',
+      reply,
+      fileName,
+      filePath,
+      created_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Chat error:', err);
+    res.status(500).json({ error: 'Failed to process message' });
   }
-
-  const fileName = req.file ? req.file.originalname : null;
-  const filePath = req.file ? `/uploads/chat/${req.file.filename}` : null;
-
-  // Get AI reply (async — uses Claude API if key is set, falls back to rule-based)
-  const reply = await getReply(message || '📎 File shared', userName, userRole, userId);
-
-  // Save to database
-  const result = db.prepare(`
-    INSERT INTO chat_messages (user_id, user_name, user_role, message, reply, file_name, file_path)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(userId, userName, userRole, message || '', reply, fileName, filePath);
-
-  res.json({
-    id: result.lastInsertRowid,
-    message: message || '',
-    reply,
-    fileName,
-    filePath,
-    created_at: new Date().toISOString(),
-  });
 });
 
 // GET /api/chat/history — current user's chat history
