@@ -79,7 +79,7 @@ export default function HomePage() {
                 {'✨'} Myanmar Basic Education Platform
               </div>
 
-              <h1 className="hero-animated-text text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight bg-[length:300%_300%] bg-clip-text text-transparent bg-gradient-to-r from-white via-fuchsia-200 to-amber-200 animate-[heroColorShift_6s_ease-in-out_infinite]">
+              <h1 className="hero-gradient-text text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight">
                 {t('home.hero.title')}
               </h1>
 
@@ -258,11 +258,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      {/* Hero text color animation */}
+      {/* Hero text gradient animation */}
       <style>{`
-        @keyframes heroColorShift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        .hero-gradient-text {
+          background: linear-gradient(
+            90deg,
+            #ffffff 0%,
+            #e9d5ff 15%,
+            #f0abfc 30%,
+            #f472b6 45%,
+            #fbbf24 60%,
+            #34d399 75%,
+            #67e8f9 90%,
+            #ffffff 100%
+          );
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: heroGradientShift 8s ease-in-out infinite;
+        }
+        @keyframes heroGradientShift {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-gradient-text {
+            animation: none;
+            background-position: 0% 50%;
+          }
         }
       `}</style>
     </div>
