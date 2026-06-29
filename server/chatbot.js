@@ -21,15 +21,17 @@ async function getReply(message, userName, userRole, userId) {
 // ─── Rule-Based Fallback ─────────────────────────────────────────────────────
 
 function getRuleBasedReply(message, userName, userRole) {
+  try {
   const db = getDb();
   const msg = message.toLowerCase().trim();
+  const safeName = String(userName || 'User').replace(/[<>]/g, '').slice(0, 50);
 
   // --- Greetings ---
   if (/^(hi|hello|hey|good\s*(morning|afternoon|evening)|mingalaba|မင်္ဂလာပါ)/i.test(msg)) {
     const roleGreeting = {
-      student: `Hello ${userName}! 👋 I'm your SchoolHub assistant. I can help you with announcements, classes, curriculum, and more. What would you like to know?`,
-      teacher: `Hello ${userName}! 👋 Welcome back. I can help you check announcements, class schedules, or curriculum details. How can I assist?`,
-      admin: `Hello ${userName}! 👋 Admin dashboard is ready. I can help with announcements, classes, curriculum, or system info. What do you need?`,
+      student: `Hello ${safeName}! 👋 I'm your SchoolHub assistant. I can help you with announcements, classes, curriculum, and more. What would you like to know?`,
+      teacher: `Hello ${safeName}! 👋 Welcome back. I can help you check announcements, class schedules, or curriculum details. How can I assist?`,
+      admin: `Hello ${safeName}! 👋 Admin dashboard is ready. I can help with announcements, classes, curriculum, or system info. What do you need?`,
     };
     return roleGreeting[userRole] || roleGreeting.student;
   }
@@ -100,7 +102,10 @@ function getRuleBasedReply(message, userName, userRole) {
 
   // --- Password / Account ---
   if (/password|account|profile|login|အကောင့်/i.test(msg)) {
-    return '🔐 **Account Help:**\n\n• Your profile info is on the **Dashboard** page\n• To change your password, please contact the admin\n• Demo accounts use password: `password123`';
+    const demoHint = process.env.NODE_ENV !== 'production'
+      ? '\n• Demo accounts use password: `password123`'
+      : '';
+    return `🔐 **Account Help:**\n\n• Your profile info is on the **Dashboard** page\n• To change your password, please contact the admin${demoHint}`;
   }
 
   // --- Help / What can you do ---
@@ -110,11 +115,15 @@ function getRuleBasedReply(message, userName, userRole) {
 
   // --- Thank you ---
   if (/thank|thanks|ကျေးဇူး/i.test(msg)) {
-    return `You're welcome, ${userName}! 😊 Let me know if you need anything else.`;
+    return `You're welcome, ${safeName}! 😊 Let me know if you need anything else.`;
   }
 
   // --- Default fallback ---
-  return `I'm not sure I understand that, ${userName}. Here's what I can help with:\n\n• 📢 Announcements — type "announcements"\n• 📚 Classes — type "classes"\n• 🎓 Curriculum — type "curriculum"\n• 📝 Enrollment — type "enroll"\n• 📞 Contact — type "contact"\n• ❓ Help — type "help"\n\nTry asking in English or Myanmar!`;
+  return `I'm not sure I understand that, ${safeName}. Here's what I can help with:\n\n• 📢 Announcements — type "announcements"\n• 📚 Classes — type "classes"\n• 🎓 Curriculum — type "curriculum"\n• 📝 Enrollment — type "enroll"\n• 📞 Contact — type "contact"\n• ❓ Help — type "help"\n\nTry asking in English or Myanmar!`;
+  } catch (err) {
+    console.error('[Chatbot] Rule-based handler error:', err.message);
+    return 'Sorry, I encountered an error. Please try again.';
+  }
 }
 
 module.exports = { getReply };

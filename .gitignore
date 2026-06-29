@@ -1,13 +1,19 @@
 node_modules/
 .env
+.env.local
+.env.*.local
 *.log
 dist/
+coverage/
 .DS_Store
 server/*.db
 server/*.db-wal
 server/*.db-shm
 server/uploads/
 .vercel
+server/tests/test.db
+server/tests/test.db-wal
+server/tests/test.db-shm
 
 # Personal reports & docs (not for public repo)
 ch-3/myoaung/

@@ -1,3 +1,4 @@
+const { sendError } = require('../utils/errorHandler');
 /**
  * AI Report Routes
  * Phase 3 — POST /api/ai/report, review gate, PDF export
@@ -176,12 +177,16 @@ router.get('/report/:reportId/html', authMiddleware, (req, res) => {
 
     const studentData = aggregateStudentData(report.student_id);
 
+    // Escape HTML in user-controlled fields
+    const escHtml = (str) => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report Card — ${report.student_name}</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'none'; object-src 'none';">
+  <title>Report Card — ${escHtml(report.student_name)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -214,7 +219,7 @@ router.get('/report/:reportId/html', authMiddleware, (req, res) => {
   </div>
 
   <div class="student-info">
-    <p><strong>Name:</strong> ${report.student_name}</p>
+    <p><strong>Name:</strong> ${escHtml(report.student_name)}</p>
     <p><strong>Student ID:</strong> ${studentData?.student.studentId || '-'}</p>
     <p><strong>Grade:</strong> ${studentData?.student.grade || '-'}, Section ${studentData?.student.section || '-'}</p>
     <p><strong>Status:</strong> ${report.status.toUpperCase()}</p>

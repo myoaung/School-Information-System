@@ -1,3 +1,4 @@
+const { sendError } = require('../utils/errorHandler');
 /**
  * AI Schedule Routes
  * Phase 5 — Constraint-based timetable generation and optimization

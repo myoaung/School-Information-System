@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { courseRules, lessonRules } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -48,7 +49,7 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // Create course (admin/teacher)
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), courseRules, (req, res) => {
   try {
     const db = getDb();
     const { class_id, subject_id, title, description } = req.body;
@@ -61,7 +62,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) 
 });
 
 // Add lesson to course
-router.post('/:id/lessons', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/:id/lessons', authMiddleware, roleMiddleware('admin', 'teacher'), lessonRules, (req, res) => {
   try {
     const db = getDb();
     const { title, content, lesson_order, duration_minutes } = req.body;

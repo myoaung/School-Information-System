@@ -10,9 +10,9 @@ function getClient() {
   if (!client) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY is not set. Add it to your .env file.');
+      throw new Error('ANTHROPIC_API_KEY is not set');
     }
-    client = new Anthropic({ apiKey });
+    client = new Anthropic({ apiKey, timeout: 30000 }); // 30s timeout
   }
   return client;
 }
@@ -20,12 +20,13 @@ function getClient() {
 // ─── Configuration ───────────────────────────────────────────────────────────
 
 const CONFIG = {
-  model: 'claude-haiku-4-5-20251001', // Fast + cheap for chat
+  model: 'claude-haiku-4-5-20251001',
   maxTokens: 1024,
   maxHistoryMessages: 10,
-  maxToolRounds: 5, // Max tool call rounds per request
+  maxToolRounds: 5,
   cacheMaxSize: 200,
-  cacheTTLms: 5 * 60 * 1000, // 5 minutes
+  cacheTTLms: 5 * 60 * 1000,
+  maxInputLength: 2000,
 };
 
 // ─── Simple Response Cache ───────────────────────────────────────────────────
@@ -55,12 +56,21 @@ function setCachedResponse(message, userRole, reply) {
   responseCache.set(key, { reply, timestamp: Date.now() });
 }
 
+// ─── Input Sanitization ─────────────────────────────────────────────────────
+
+function sanitizeInput(text) {
+  if (typeof text !== 'string') return '';
+  // Truncate and strip control characters (except newlines/tabs)
+  return text
+    .slice(0, CONFIG.maxInputLength)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
 // ─── System Prompt Builder ───────────────────────────────────────────────────
 
 function buildSystemPrompt(userName, userRole) {
   const db = getDb();
 
-  // Gather school context
   const announcementCount = db.prepare('SELECT COUNT(*) as c FROM announcements').get().c;
   const classCount = db.prepare('SELECT COUNT(*) as c FROM classes').get().c;
   const studentCount = db.prepare('SELECT COUNT(*) as c FROM students').get().c;
@@ -77,6 +87,10 @@ function buildSystemPrompt(userName, userRole) {
     ORDER BY c.name
   `).all();
 
+  // Sanitize user name to prevent prompt injection
+  const safeName = String(userName || 'User').replace(/[<>{}[\]\\]/g, '').slice(0, 50);
+  const safeRole = String(userRole || 'student').replace(/[^a-z]/g, '');
+
   return `You are SchoolHub AI, the intelligent assistant for a school management system.
 
 ## Your Role
@@ -86,8 +100,8 @@ function buildSystemPrompt(userName, userRole) {
 - Support both English and Myanmar language
 
 ## Current User
-- Name: ${userName}
-- Role: ${userRole}
+- Name: ${safeName}
+- Role: ${safeRole}
 
 ## School Context
 - ${announcementCount} announcements posted
@@ -113,13 +127,6 @@ You have access to these database query tools. USE THEM when users ask about dat
 - query_assignments: Assignments and submissions (filter by course, student, status)
 - query_stats: School statistics (total students, teachers, attendance rate)
 
-## When to Use Tools
-- "How many students?" → use query_stats
-- "Show absent students" → use query_attendance with status=absent
-- "What classes does Ms. Johnson teach?" → use query_classes with teacher_name
-- "John Doe's grades" → use query_grades with student_name
-- "Today's schedule" → use query_timetable
-
 ## Rules
 - NEVER make up data — always use query tools for factual information
 - Never share passwords or sensitive personal data
@@ -143,74 +150,42 @@ function getConversationHistory(userId) {
     LIMIT ?
   `).all(userId, CONFIG.maxHistoryMessages);
 
-  return rows.reverse(); // Oldest first
+  return rows.reverse();
 }
 
 // ─── Tool-Augmented Chat ─────────────────────────────────────────────────────
 
 async function getAIReply(message, userName, userRole, userId) {
-  // 1. Check cache (only for non-data queries)
-  const cached = getCachedResponse(message, userRole);
+  // Sanitize input
+  const cleanMessage = sanitizeInput(message);
+  if (!cleanMessage) {
+    return 'Please enter a message.';
+  }
+
+  // Check cache
+  const cached = getCachedResponse(cleanMessage, userRole);
   if (cached) {
     return cached;
   }
 
-  // 2. Build messages array with conversation history
+  // Build messages with history
   const history = getConversationHistory(userId);
   const messages = [];
 
   for (const row of history) {
-    if (row.message) {
-      messages.push({ role: 'user', content: row.message });
-    }
-    if (row.reply) {
-      messages.push({ role: 'assistant', content: row.reply });
-    }
+    if (row.message) messages.push({ role: 'user', content: row.message });
+    if (row.reply) messages.push({ role: 'assistant', content: row.reply });
   }
 
-  // Add current message
-  messages.push({ role: 'user', content: message });
+  messages.push({ role: 'user', content: cleanMessage });
 
-  // 3. Get tool definitions
   const tools = getToolDefinitions();
-
-  // 4. Build user context for role-based filtering
   const userContext = { id: userId, name: userName, role: userRole };
-
-  // 5. Call Claude API with tool loop
   const anthropic = getClient();
   const systemPrompt = buildSystemPrompt(userName, userRole);
 
-  let response = await anthropic.messages.create({
-    model: CONFIG.model,
-    max_tokens: CONFIG.maxTokens,
-    system: systemPrompt,
-    messages,
-    tools,
-  });
-
-  // 6. Handle tool calls (loop until Claude stops calling tools)
-  let rounds = 0;
-  while (response.stop_reason === 'tool_use' && rounds < CONFIG.maxToolRounds) {
-    rounds++;
-    const toolResults = [];
-
-    for (const block of response.content) {
-      if (block.type === 'tool_use') {
-        console.log(`[AI] Calling tool: ${block.name}`, block.input);
-        const result = executeTool(block.name, userContext, block.input);
-        toolResults.push({
-          type: 'tool_result',
-          tool_use_id: block.id,
-          content: JSON.stringify(result, null, 2),
-        });
-      }
-    }
-
-    // Continue conversation with tool results
-    messages.push({ role: 'assistant', content: response.content });
-    messages.push({ role: 'user', content: toolResults });
-
+  let response;
+  try {
     response = await anthropic.messages.create({
       model: CONFIG.model,
       max_tokens: CONFIG.maxTokens,
@@ -218,20 +193,66 @@ async function getAIReply(message, userName, userRole, userId) {
       messages,
       tools,
     });
+  } catch (err) {
+    console.error('[AI] API call failed:', err.message);
+    throw err;
   }
 
-  // 7. Extract final text response
+  // Handle tool calls with error protection
+  let rounds = 0;
+  while (response.stop_reason === 'tool_use' && rounds < CONFIG.maxToolRounds) {
+    rounds++;
+    const toolResults = [];
+
+    for (const block of response.content) {
+      if (block.type === 'tool_use') {
+        try {
+          console.log(`[AI] Tool call: ${block.name}`);
+          const result = executeTool(block.name, userContext, block.input);
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: block.id,
+            content: JSON.stringify(result, null, 2),
+          });
+        } catch (toolErr) {
+          console.error(`[AI] Tool ${block.name} failed:`, toolErr.message);
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: block.id,
+            content: JSON.stringify({ error: 'Tool execution failed' }),
+            is_error: true,
+          });
+        }
+      }
+    }
+
+    messages.push({ role: 'assistant', content: response.content });
+    messages.push({ role: 'user', content: toolResults });
+
+    try {
+      response = await anthropic.messages.create({
+        model: CONFIG.model,
+        max_tokens: CONFIG.maxTokens,
+        system: systemPrompt,
+        messages,
+        tools,
+      });
+    } catch (err) {
+      console.error('[AI] Follow-up API call failed:', err.message);
+      break;
+    }
+  }
+
+  // Extract response
   const textBlock = response.content.find(b => b.type === 'text');
   const reply = textBlock ? textBlock.text : 'I could not generate a response. Please try again.';
 
-  // 8. Cache the response (only if no tools were called — data queries vary)
+  // Cache if no tools used
   if (rounds === 0) {
-    setCachedResponse(message, userRole, reply);
+    setCachedResponse(cleanMessage, userRole, reply);
   }
 
   return reply;
 }
-
-// ─── Exports ─────────────────────────────────────────────────────────────────
 
 module.exports = { getAIReply, CONFIG };

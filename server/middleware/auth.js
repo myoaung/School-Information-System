@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-// Fixed fallback so tokens survive Vercel cold starts (set JWT_SECRET env var for production)
-const JWT_SECRET = process.env.JWT_SECRET || 'schoolhub-jwt-secret-2026';
+const { JWT_SECRET } = require('../config');
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;

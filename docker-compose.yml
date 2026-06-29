@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CLIENT_URL=http://localhost:5000
+    volumes:
+      - app-data:/app/server/data
+    restart: unless-stopped
+
+volumes:
+  app-data:

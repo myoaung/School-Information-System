@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 
@@ -171,7 +172,7 @@ export default function StudentDetailPage() {
 
               {/* Narrative */}
               <div className="prose prose-sm dark:prose-invert max-w-none text-purple-800 dark:text-purple-200"
-                   dangerouslySetInnerHTML={{ __html: selectedReport.narrative }} />
+                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedReport.narrative) }} />
 
               {/* Actions */}
               <div className="flex gap-2 mt-4 pt-4 border-t border-purple-100 dark:border-purple-800">

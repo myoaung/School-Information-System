@@ -32,8 +32,8 @@ export function AuthProvider({ children }) {
     return user;
   };
 
-  const register = async (email, password, name, role) => {
-    const res = await api.post('/auth/register', { email, password, name, role });
+  const register = async (email, password, name, role, phone) => {
+    const res = await api.post('/auth/register', { email, password, name, role, phone });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -56,7 +56,8 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     isTeacher: user?.role === 'teacher',
-    isStudent: user?.role === 'student'
+    isStudent: user?.role === 'student',
+    isParent: user?.role === 'parent'
   };
 
   return (

@@ -4,6 +4,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useFont } from '../context/FontContext';
 import { useTheme } from '../context/ThemeContext';
 import { useState, useRef, useEffect } from 'react';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
@@ -150,6 +151,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <div className="w-px h-5 bg-white/20 mx-1.5" />
+                <NotificationBell />
 
                 {/* User dropdown */}
                 <div className="relative ml-1" ref={userMenuRef}>
@@ -189,8 +191,17 @@ export default function Navbar() {
                         <Link to="/gradebook" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('gradebook.title')}</Link>
                         <Link to="/resources" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('resources.title')}</Link>
                         <Link to="/reports" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('reports.title')}</Link>
+                        <Link to="/messages" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('nav.messages')}</Link>
+                        <Link to="/finance" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('nav.finance')}</Link>
+                        <Link to="/certificates" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('nav.certificates')}</Link>
+                        {user.role === 'parent' && (
+                          <Link to="/parent" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('nav.parentPortal')}</Link>
+                        )}
                         {isAdmin && (
                           <Link to="/academic" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10 border-t border-purple-100 dark:border-gray-700">{t('academic.title')}</Link>
+                        )}
+                        {(isAdmin || isTeacher) && (
+                          <Link to="/analytics" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('nav.analytics')}</Link>
                         )}
                         <div className="border-t border-purple-100 dark:border-gray-700 mt-1" />
                         <button
@@ -283,6 +294,25 @@ export default function Navbar() {
                 <Link to="/reports" className="mobile-nav-link" onClick={closeMobileMenu}>
                   {t('reports.title')}
                 </Link>
+                <Link to="/messages" className="mobile-nav-link" onClick={closeMobileMenu}>
+                  {t('nav.messages')}
+                </Link>
+                <Link to="/finance" className="mobile-nav-link" onClick={closeMobileMenu}>
+                  {t('nav.finance')}
+                </Link>
+                <Link to="/certificates" className="mobile-nav-link" onClick={closeMobileMenu}>
+                  {t('nav.certificates')}
+                </Link>
+                {user.role === 'parent' && (
+                  <Link to="/parent" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    {t('nav.parentPortal')}
+                  </Link>
+                )}
+                {(isAdmin || isTeacher) && (
+                  <Link to="/analytics" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    {t('nav.analytics')}
+                  </Link>
+                )}
               </>
             )}
             <div className="border-t border-white/10 my-1" />

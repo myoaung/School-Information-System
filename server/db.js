@@ -27,7 +27,8 @@ function initDatabase() {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       name TEXT NOT NULL,
-      role TEXT CHECK(role IN ('student', 'teacher', 'admin')) NOT NULL,
+      role TEXT CHECK(role IN ('student', 'teacher', 'admin', 'parent')) NOT NULL,
+      phone TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -36,6 +37,8 @@ function initDatabase() {
       title TEXT NOT NULL,
       content TEXT NOT NULL,
       author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      grade_id INTEGER REFERENCES grades(id),
+      class_id INTEGER REFERENCES classes(id),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -293,6 +296,87 @@ function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(student_id, course_id)
     );
+
+    CREATE TABLE IF NOT EXISTS parent_students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      relationship TEXT DEFAULT 'parent',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(parent_id, student_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      subject TEXT,
+      body TEXT NOT NULL,
+      is_read INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      title TEXT,
+      message TEXT,
+      is_read INTEGER DEFAULT 0,
+      link TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS fee_structures (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
+      fee_type TEXT NOT NULL,
+      amount REAL NOT NULL,
+      academic_year_id INTEGER REFERENCES academic_years(id) ON DELETE CASCADE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS invoices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      fee_structure_id INTEGER REFERENCES fee_structures(id) ON DELETE SET NULL,
+      amount REAL NOT NULL,
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending','paid','overdue','cancelled')),
+      due_date TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+      amount REAL NOT NULL,
+      payment_method TEXT,
+      reference TEXT,
+      paid_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS certificates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL CHECK(type IN ('completion','achievement','transcript','graduation')),
+      template TEXT,
+      data TEXT,
+      issued_by INTEGER REFERENCES users(id),
+      issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      serial_number TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS teacher_attendance (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      teacher_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      check_in TEXT,
+      check_out TEXT,
+      status TEXT DEFAULT 'present' CHECK(status IN ('present','absent','late','leave')),
+      note TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(teacher_id, date)
+    );
   `);
 
   // Seed curriculum data first (subjects needed by seedDatabase)
@@ -305,6 +389,60 @@ function initDatabase() {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (userCount.count === 0) {
     seedDatabase(db);
+  }
+
+  // Migration: add phone column to users if missing
+  try {
+    db.prepare("SELECT phone FROM users LIMIT 1").get();
+  } catch {
+    db.exec("ALTER TABLE users ADD COLUMN phone TEXT");
+    console.log('Migration: added phone column to users');
+  }
+
+  // Migration: add grade_id and class_id to announcements if missing
+  try {
+    db.prepare("SELECT grade_id FROM announcements LIMIT 1").get();
+  } catch {
+    db.exec("ALTER TABLE announcements ADD COLUMN grade_id INTEGER REFERENCES grades(id)");
+    db.exec("ALTER TABLE announcements ADD COLUMN class_id INTEGER REFERENCES classes(id)");
+    console.log('Migration: added grade_id/class_id to announcements');
+  }
+
+  // Migration: ensure parent users exist (for existing databases)
+  const parentExists = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'parent'").get();
+  if (parentExists.count === 0 && userCount.count > 0) {
+    const bcrypt = require('bcryptjs');
+    const salt = bcrypt.genSaltSync(10);
+    const password = bcrypt.hashSync('password123', salt);
+    const insertUser = db.prepare('INSERT OR IGNORE INTO users (email, password, name, role) VALUES (?, ?, ?, ?)');
+    const r1 = insertUser.run('parent@school.com', password, 'U Aye (Parent)', 'parent');
+    const r2 = insertUser.run('parent2@school.com', password, 'U Hla (Parent)', 'parent');
+
+    // Link parents to students
+    const insertPS = db.prepare('INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)');
+    const parentId1 = r1.lastInsertRowid || db.prepare("SELECT id FROM users WHERE email = 'parent@school.com'").get()?.id;
+    const parentId2 = r2.lastInsertRowid || db.prepare("SELECT id FROM users WHERE email = 'parent2@school.com'").get()?.id;
+    const student1Id = db.prepare("SELECT id FROM users WHERE email = 'student@school.com'").get()?.id;
+    const student2Id = db.prepare("SELECT id FROM users WHERE email = 'student2@school.com'").get()?.id;
+    if (parentId1 && student1Id) insertPS.run(parentId1, student1Id, 'father');
+    if (parentId2 && student2Id) insertPS.run(parentId2, student2Id, 'father');
+
+    // Seed fee structures if missing
+    const feeCount = db.prepare('SELECT COUNT(*) as count FROM fee_structures').get();
+    if (feeCount.count === 0) {
+      const ayId = db.prepare('SELECT id FROM academic_years WHERE is_current = 1').get()?.id;
+      const g10 = db.prepare("SELECT id FROM grades WHERE code = 'G10'").get()?.id;
+      const g9 = db.prepare("SELECT id FROM grades WHERE code = 'G9'").get()?.id;
+      if (ayId) {
+        const insertFee = db.prepare('INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)');
+        insertFee.run(g10, 'Tuition', 500000, ayId);
+        insertFee.run(g10, 'Lab Fee', 50000, ayId);
+        insertFee.run(g10, 'Library Fee', 25000, ayId);
+        insertFee.run(g9, 'Tuition', 450000, ayId);
+      }
+    }
+
+    console.log('Parent users migrated successfully');
   }
 
   console.log('Database initialized successfully');
@@ -582,6 +720,54 @@ function seedDatabase(db) {
   insertContact.run('U Win', 'uwin@gmail.com', 'Admission Inquiry', 'I would like to inquire about admission for my daughter who is entering Grade 5 next year.');
   insertContact.run('Daw Aye', 'dawaye@gmail.com', 'Fee Structure', 'Could you please send me the fee structure for the upcoming academic year?');
   insertContact.run('Maung Maung', 'maung@gmail.com', 'Transfer Certificate', 'I need a transfer certificate for my son. What documents are required?');
+
+  // ── Parent Users ──
+  const parentEmails = [
+    { email: 'parent@school.com', name: 'U Aye (Parent)', role: 'parent' },
+    { email: 'parent2@school.com', name: 'U Hla (Parent)', role: 'parent' }
+  ];
+  for (const p of parentEmails) {
+    const r = insertUser.run(p.email, password, p.name, p.role);
+    userIds[p.email] = r.lastInsertRowid;
+  }
+
+  // ── Parent-Student Links ──
+  const insertPS = db.prepare('INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)');
+  insertPS.run(userIds['parent@school.com'], userIds['student@school.com'], 'father');
+  insertPS.run(userIds['parent2@school.com'], userIds['student2@school.com'], 'father');
+
+  // ── Fee Structures ──
+  const insertFee = db.prepare('INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)');
+  if (ayId) {
+    insertFee.run(g10, 'Tuition', 500000, ayId);
+    insertFee.run(g10, 'Lab Fee', 50000, ayId);
+    insertFee.run(g10, 'Library Fee', 25000, ayId);
+    insertFee.run(g9, 'Tuition', 450000, ayId);
+  }
+
+  // ── Invoices ──
+  const insertInvoice = db.prepare('INSERT INTO invoices (student_id, fee_structure_id, amount, status, due_date) VALUES (?, ?, ?, ?, ?)');
+  const inv1 = insertInvoice.run(userIds['student@school.com'], 1, 500000, 'pending', '2026-08-15').lastInsertRowid;
+  const inv2 = insertInvoice.run(userIds['student@school.com'], 2, 50000, 'paid', '2026-08-15').lastInsertRowid;
+  insertInvoice.run(userIds['student2@school.com'], 1, 500000, 'pending', '2026-08-15');
+
+  // ── Payments ──
+  const insertPayment = db.prepare('INSERT INTO payments (invoice_id, amount, payment_method, reference) VALUES (?, ?, ?, ?)');
+  insertPayment.run(inv2, 50000, 'bank_transfer', 'PAY-2026-001');
+
+  // ── Teacher Attendance ──
+  const insertTA = db.prepare('INSERT OR IGNORE INTO teacher_attendance (teacher_id, date, check_in, check_out, status) VALUES (?, ?, ?, ?, ?)');
+  for (const d of dates) {
+    insertTA.run(userIds['teacher@school.com'], d, '08:30', '16:30', 'present');
+    insertTA.run(userIds['teacher2@school.com'], d, '08:45', '16:30', 'present');
+    insertTA.run(userIds['teacher3@school.com'], d, '08:30', '16:00', 'present');
+  }
+
+  // ── Notifications ──
+  const insertNotif = db.prepare('INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)');
+  insertNotif.run(userIds['student@school.com'], 'announcement', 'New Announcement', 'Welcome to the New School Year!', '/announcements');
+  insertNotif.run(userIds['student@school.com'], 'grade', 'Grade Posted', 'Your Algebra Homework 1 has been graded', '/gradebook');
+  insertNotif.run(userIds['teacher@school.com'], 'submission', 'New Submission', 'Aye Aye submitted Sonnet Analysis Essay', '/assignments');
 
   console.log('Sample data seeded successfully');
 }

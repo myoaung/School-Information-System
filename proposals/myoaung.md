@@ -36,10 +36,10 @@ This project makes school communication faster and more organized. It reduces mi
 
 **Main Pieces:**
 
-- **User Accounts:** Separate roles for students, teachers, and admins.
+- **User Accounts:** Separate roles for students, teachers, and admins, Parents.
 - **Announcements:** Teachers or admins can post school news and class updates.
-- **Class Information:** Students can view schedules, notices, and important documents.
-- **Contact & Support:** A simple contact page for school inquiries.
+- **Class Information:** Students, Parents can view schedules, notices, and important documents which is set only for them.
+- **Contact & Support:** A simple contact page for school inquiries. School Location Map.
 
 ## Definition of Done
 

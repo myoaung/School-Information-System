@@ -86,10 +86,12 @@ export default function LoginPage() {
               ) : t('login.signIn')}
             </button>
           </div>
-          <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-950/40 rounded-xl text-center">
-            <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">{t('login.demoTitle')}</p>
-            <p className="text-xs text-purple-500 dark:text-purple-400 font-mono">{t('login.demoAccounts')}</p>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-950/40 rounded-xl text-center">
+              <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">{t('login.demoTitle')}</p>
+              <p className="text-xs text-purple-500 dark:text-purple-400 font-mono">{t('login.demoAccounts')}</p>
+            </div>
+          )}
         </form>
       </div>
     </div>

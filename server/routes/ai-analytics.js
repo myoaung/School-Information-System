@@ -1,3 +1,4 @@
+const { sendError } = require('../utils/errorHandler');
 /**
  * AI Analytics Routes
  * Phase 4 — At-risk detection, trend analysis, interventions

@@ -3,18 +3,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDb } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
-
-// JWT secret — must match auth middleware (fixed fallback for Vercel cold starts)
-const JWT_SECRET = process.env.JWT_SECRET || 'schoolhub-jwt-secret-2026';
+const { JWT_SECRET } = require('../config');
+const { registerRules, loginRules } = require('../middleware/validate');
 
 const router = express.Router();
 
 // Register — defaults to 'student' role. Admin/teacher roles assigned by existing admins only.
-router.post('/register', async (req, res) => {
+router.post('/register', registerRules, async (req, res) => {
   try {
-    const { email, password, name } = req.body;
-
-    // Validation
+    const { email, password, name, phone } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -28,8 +25,9 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must include uppercase, lowercase, and a number' });
     }
 
-    // Default to 'student' — admin/teacher roles require existing admin assignment
-    const role = 'student';
+    // Allow student/parent self-registration; admin/teacher roles require existing admin assignment
+    const requestedRole = req.body.role;
+    const role = (requestedRole === 'parent') ? 'parent' : 'student';
 
     const db = getDb();
 
@@ -45,8 +43,8 @@ router.post('/register', async (req, res) => {
 
     // Insert user
     const result = db.prepare(
-      'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)'
-    ).run(email, hashedPassword, name, role);
+      'INSERT INTO users (email, password, name, role, phone) VALUES (?, ?, ?, ?, ?)'
+    ).run(email, hashedPassword, name, role, phone || null);
 
     // Generate token
     const token = jwt.sign(
@@ -67,7 +65,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', loginRules, async (req, res) => {
   try {
     const { email, password } = req.body;
 

@@ -1,24 +1,14 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { contactRules } = require('../middleware/validate');
 
 const router = express.Router();
 
 // Submit contact form
-router.post('/', (req, res) => {
+router.post('/', contactRules, (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
-
-    // Validation
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
 
     const db = getDb();
     const result = db.prepare(

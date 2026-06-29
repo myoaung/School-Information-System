@@ -280,9 +280,13 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
+      // Admin gets full details; others get limited info
+      const fields = user.role === 'admin'
+        ? 'u.name, u.email, t.teacher_id, t.phone, t.qualification, t.specialization, t.hire_date, t.status'
+        : 'u.name, t.teacher_id, t.qualification, t.specialization, t.status';
+
       return db.prepare(`
-        SELECT u.name, u.email, t.teacher_id, t.phone, t.qualification,
-               t.specialization, t.hire_date, t.status
+        SELECT ${fields}
         FROM teachers t
         JOIN users u ON t.user_id = u.id
         ${whereClause}

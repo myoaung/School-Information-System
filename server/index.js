@@ -2,7 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { initDatabase } = require('./db');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const { initDatabase, getDb } = require('./db');
+const { NODE_ENV } = require('./config');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -25,37 +29,97 @@ const resourceRoutes = require('./routes/resources');
 const aiReportRoutes = require('./routes/ai-reports');
 const aiAnalyticsRoutes = require('./routes/ai-analytics');
 const aiScheduleRoutes = require('./routes/ai-schedule');
+const parentRoutes = require('./routes/parent');
+const messageRoutes = require('./routes/messages');
+const notificationRoutes = require('./routes/notifications');
+const financeRoutes = require('./routes/finance');
+const certificateRoutes = require('./routes/certificates');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
-  credentials: true
+// ── Security Middleware ──
+app.use(helmet({
+  contentSecurityPolicy: false, // Let the client handle CSP
+  crossOriginEmbedderPolicy: false,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Initialize database
+// ── CORS ──
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://localhost:5174'];
+
+app.use(cors({
+  origin: process.env.VERCEL ? true : allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ── Request Parsing ──
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ── Logging ──
+if (NODE_ENV !== 'test') {
+  app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
+
+// ── Rate Limiting ──
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Please try again in 15 minutes.' },
+});
+
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Too many submissions. Please try again later.' },
+});
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many messages. Please try again later.' },
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 60,
+  message: { error: 'Too many requests. Please try again later.' },
+});
+
+// ── Database Init ──
 try {
   initDatabase();
 } catch (err) {
   console.error('Database init error:', err);
+  if (NODE_ENV === 'production') {
+    process.exit(1);
+  }
 }
 
-// Static files for uploads (skip on Vercel — ephemeral /tmp)
+// ── Static Files ──
 if (!process.env.VERCEL) {
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Serve built client in production (Docker)
+const publicDir = path.join(__dirname, 'public');
+if (require('fs').existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
+
+// ── Routes ──
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/classes', classRoutes);
-app.use('/api/contact', contactRoutes);
+app.use('/api/contact', contactLimiter, contactRoutes);
 app.use('/api/curriculum', curriculumRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/api/chat', chatLimiter, chatRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
@@ -67,27 +131,103 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/gradebook', gradebookRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/resources', resourceRoutes);
-app.use('/api/ai', aiReportRoutes);
-app.use('/api/ai', aiAnalyticsRoutes);
-app.use('/api/ai', aiScheduleRoutes);
+app.use('/api/ai', aiLimiter, aiReportRoutes);
+app.use('/api/ai', aiLimiter, aiAnalyticsRoutes);
+app.use('/api/ai', aiLimiter, aiScheduleRoutes);
+app.use('/api/parent', parentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/certificates', certificateRoutes);
 
-// Health check
+// ── Health Check ──
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const healthcheck = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: NODE_ENV,
+    version: require('./package.json').version || '1.0.0',
+  };
+
+  // Check database connectivity
+  try {
+    const db = getDb();
+    db.prepare('SELECT 1').get();
+    healthcheck.database = 'connected';
+  } catch (err) {
+    healthcheck.status = 'degraded';
+    healthcheck.database = 'disconnected';
+  }
+
+  const statusCode = healthcheck.status === 'ok' ? 200 : 503;
+  res.status(statusCode).json(healthcheck);
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+// ── 404 Handler ──
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// For local development only
-if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// SPA fallback — serve index.html for client-side routing
+if (require('fs').existsSync(publicDir)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
   });
 }
+
+// ── Global Error Handler ──
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${req.method} ${req.path}:`, err.message);
+  if (NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    error: NODE_ENV === 'production' ? 'Internal server error' : err.message,
+  });
+});
+
+// ── Server Start ──
+if (process.env.VERCEL !== '1') {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} [${NODE_ENV}]`);
+  });
+
+  // Graceful shutdown
+  const shutdown = (signal) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+      console.log('HTTP server closed.');
+      try {
+        const db = getDb();
+        db.close();
+        console.log('Database connection closed.');
+      } catch {}
+      process.exit(0);
+    });
+    // Force exit after 10s
+    setTimeout(() => {
+      console.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+// Process-level error handlers
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  if (NODE_ENV === 'production') process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled Rejection:', reason);
+  if (NODE_ENV === 'production') process.exit(1);
+});
 
 // Export for Vercel serverless
 module.exports = app;

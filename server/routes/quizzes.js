@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { quizRules, quizQuestionRules } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -53,7 +54,7 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // Create quiz (admin/teacher)
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), quizRules, (req, res) => {
   try {
     const db = getDb();
     const { course_id, title, description, time_limit_minutes, max_score, due_date } = req.body;
@@ -66,7 +67,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) 
 });
 
 // Add question to quiz (admin/teacher)
-router.post('/:id/questions', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/:id/questions', authMiddleware, roleMiddleware('admin', 'teacher'), quizQuestionRules, (req, res) => {
   try {
     const db = getDb();
     const { question_text, question_type, options, correct_answer, points, question_order } = req.body;

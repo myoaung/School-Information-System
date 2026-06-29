@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { classRules } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -55,7 +56,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create class (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin'), classRules, (req, res) => {
   try {
     const { name, description, teacher_id, schedule, room } = req.body;
 

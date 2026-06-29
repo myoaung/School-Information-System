@@ -26,6 +26,11 @@ import GradebookPage from './pages/GradebookPage';
 import ReportsPage from './pages/ReportsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import AcademicPage from './pages/AcademicPage';
+import ParentPortalPage from './pages/ParentPortalPage';
+import MessagesPage from './pages/MessagesPage';
+import FinancePage from './pages/FinancePage';
+import CertificatesPage from './pages/CertificatesPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -163,6 +168,46 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <AcademicPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/parent"
+                  element={
+                    <ProtectedRoute requiredRole="parent">
+                      <ParentPortalPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/messages"
+                  element={
+                    <ProtectedRoute>
+                      <MessagesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance"
+                  element={
+                    <ProtectedRoute>
+                      <FinancePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/certificates"
+                  element={
+                    <ProtectedRoute>
+                      <CertificatesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <AnalyticsPage />
                     </ProtectedRoute>
                   }
                 />

@@ -1,6 +1,8 @@
+const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { gradeRules } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -37,7 +39,7 @@ router.get('/', authMiddleware, (req, res) => {
 });
 
 // Set/update grade (admin/teacher)
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), gradeRules, (req, res) => {
   try {
     const db = getDb();
     const { student_id, course_id, assignment_score, quiz_score, exam_score, final_grade, gpa } = req.body;
@@ -75,6 +77,41 @@ router.get('/student/:id', authMiddleware, (req, res) => {
     res.json({ grades });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch student grades' });
+  }
+});
+
+// Export grades as CSV (admin/teacher)
+router.get('/export', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+  try {
+    const db = getDb();
+    const { course_id } = req.query;
+
+    let sql = `
+      SELECT u.name as student_name, s.student_id as student_code,
+             c.title as course_title, sub.code as subject_code,
+             g.assignment_score, g.quiz_score, g.exam_score, g.final_grade, g.gpa
+      FROM gradebook g
+      JOIN users u ON g.student_id = u.id
+      JOIN courses c ON g.course_id = c.id
+      JOIN subjects sub ON c.subject_id = sub.id
+      LEFT JOIN students s ON s.user_id = u.id
+    `;
+    const params = [];
+    if (course_id) { sql += ' WHERE g.course_id = ?'; params.push(course_id); }
+    sql += ' ORDER BY u.name, c.title';
+
+    const grades = db.prepare(sql).all(...params);
+
+    const header = 'Student Name,Student ID,Course,Subject,Assignment Score,Quiz Score,Exam Score,Final Grade,GPA\n';
+    const rows = grades.map(g =>
+      `"${g.student_name}","${g.student_code || ''}","${g.course_title}","${g.subject_code}",${g.assignment_score || 0},${g.quiz_score || 0},${g.exam_score || 0},"${g.final_grade || ''}",${g.gpa || ''}`
+    ).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=grades.csv');
+    res.send(header + rows);
+  } catch (err) {
+    sendError(res, err);
   }
 });
 

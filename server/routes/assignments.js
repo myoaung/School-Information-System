@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDb } = require('../db');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { assignmentRules } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -51,7 +52,7 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // Create assignment (admin/teacher)
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), assignmentRules, (req, res) => {
   try {
     const db = getDb();
     const { course_id, title, description, due_date, max_score, allow_late } = req.body;

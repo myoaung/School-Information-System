@@ -1,0 +1,193 @@
+╭─── Claude Code v2.1.195 ─────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│                    Welcome back!                   │ started                 │
+│                                                    │ Run /init to create a … │
+│                       ▐▛███▜▌                      │ ─────────────────────── │
+│                      ▝▜█████▛▘                     │ What's new              │
+│                        ▘▘ ▝▝                       │ Added `CLAUDE_CODE_DIS… │
+│                                                    │ Fixed hook matchers wi… │
+│         mimo-v2.5-pro · API Usage Billing          │ Fixed voice dictation … │
+│  ~/VibeCodeTour/team-18/School-Information-System  │ /release-notes for more │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+❯ /model                                                                        
+  ⎿  Set model to Opus 4.8 (1M context) and saved as your default for new
+     sessions
+
+❯ scan the project and let me know your finding and improvement plan.           
+
+  Thought for 7s (ctrl+o to expand)
+
+● I'll scan the project from multiple angles in parallel to give you a
+  comprehensive picture.
+
+● 3 Explore agents finished (ctrl+o to expand)
+   ├ Explore project structure · 57 tool uses · 0 tokens
+   │ ⎿  Done
+   ├ Analyze code quality issues · 57 tool uses · 0 tokens
+   │ ⎿  Done
+   └ Review AI layer and features · 48 tool uses · 0 tokens
+     ⎿  Done
+
+  Thought for 10m 0s (ctrl+o to expand)
+
+● ---
+  🔍 Project Scan: SchoolHub — Findings & Improvement Plan
+
+  What You Built
+
+  A full-stack School Information System with impressive scope:
+
+  ┌────────────┬─────────────────────────────────────────────────────────────┐
+  │    Area    │                            Stats                            │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Frontend   │ React 19 SPA, 22 pages, 5 components, 4 contexts            │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Backend    │ Express.js, 19 route modules, 22 SQLite tables              │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ AI Layer   │ 5-phase Claude integration (chatbot, NL queries, reports,   │
+  │            │ analytics, scheduling)                                      │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Features   │ Auth + RBAC, dark mode, i18n (Myanmar/English), responsive  │
+  │            │ design                                                      │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Deployment │ Vercel serverless                                           │
+  └────────────┴─────────────────────────────────────────────────────────────┘
+
+  The architecture is solid — graceful AI fallbacks, parameterized SQL,
+  consistent role-based access control, and a well-structured monorepo.
+
+  ---
+  ⚠️ Findings by Severity
+
+  🔴 CRITICAL — Fix Before Demo/Production
+
+  ┌─────┬────────────────────────────────────┬──────────────────────────────┐
+  │  #  │               Issue                │            Where             │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │     │ XSS via dangerouslySetInnerHTML —  │ TimetablePage.jsx:150,       │
+  │ 1   │ AI-generated HTML rendered without │ StudentDetailPage.jsx:174    │
+  │     │  sanitization                      │                              │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │     │ Hardcoded JWT secret fallback —    │ middleware/auth.js:4,        │
+  │ 2   │ auth is disabled if env var is     │ routes/auth.js:8             │
+  │     │ missing; duplicated in 2 files     │                              │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │ 3   │ Wildcard CORS — origin: '*' when   │ server/index.js:34           │
+  │     │ CLIENT_URL is unset                │                              │
+  ├─────┼────────────────────────────────────┼──────────────────────────────┤
+  │     │ Demo credentials exposed —         │                              │
+  │ 4   │ password123 shown in chatbot       │ chatbot.js:103, locale files │
+  │     │ responses and login page           │                              │
+  └─────┴────────────────────────────────────┴──────────────────────────────┘
+
+  🟠 HIGH — Fix Soon
+
+  ┌─────┬───────────────────────────────────┬───────────────────────────────┐
+  │  #  │               Issue               │             Where             │
+  ├─────┼───────────────────────────────────┼───────────────────────────────┤
+  │ 5   │ No rate limiting — login/register │ All API endpoints             │
+  │     │  vulnerable to brute force        │                               │
+  ├─────┼───────────────────────────────────┼───────────────────────────────┤
+  │     │ Missing try/catch on 4 route      │ routes/auth.js (GET /me),     │
+  │ 6   │ handlers — unhandled errors can   │ routes/chat.js (3 endpoints)  │
+  │     │ crash requests                    │                               │
+  ├─────┼───────────────────────────────────┼───────────────────────────────┤
+  │ 7   │ Sync bcrypt blocks the event loop │ routes/teachers.js,           │
+  │     │  during password hashing          │ routes/students.js, db.js     │
+  ├─────┼───────────────────────────────────┼───────────────────────────────┤
+  │ 8   │ SQLite on Vercel is ephemeral —   │ db.js (uses /tmp/school.db)   │
+  │     │ all data lost on cold starts      │                               │
+  └─────┴───────────────────────────────────┴───────────────────────────────┘
+
+  🟡 MEDIUM — Improve When Possible
+
+  ┌─────┬────────────────────────────────────────┬──────────────────────────┐
+  │  #  │                 Issue                  │          Where           │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 9   │ No tests at all — zero unit,           │ Project-wide             │
+  │     │ integration, or e2e tests              │                          │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 10  │ No CI/CD pipeline — no automated       │ No .github/workflows/    │
+  │     │ quality gates                          │                          │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 11  │ console.log in production — AI tool    │ server/ai.js:200         │
+  │     │ calls logged with user data            │                          │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 12  │ Accessibility gaps — divs with onClick │ Navbar, tabs in 5+ pages │
+  │     │  lack role/keyboard support            │                          │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 13  │ Duplicate seed logic — seed.js and     │ server/seed.js,          │
+  │     │ db.js have nearly identical data       │ server/db.js             │
+  ├─────┼────────────────────────────────────────┼──────────────────────────┤
+  │ 14  │ Path traversal risk in file deletion — │ routes/chat.js:130-132   │
+  │     │  file_path from DB used unsanitized    │                          │
+  └─────┴────────────────────────────────────────┴──────────────────────────┘
+
+  🟢 LOW — Polish
+
+  ┌─────┬────────────────────────────────────────────────┬───────────────────┐
+  │  #  │                     Issue                      │       Where       │
+  ├─────┼────────────────────────────────────────────────┼───────────────────┤
+  │ 15  │ Math.random() for file naming (not             │ routes/chat.js:22 │
+  │     │ crypto-secure)                                 │                   │
+  ├─────┼────────────────────────────────────────────────┼───────────────────┤
+  │ 16  │ requirements.txt references Python libs with   │ Root              │
+  │     │ no Python code in repo                         │                   │
+  ├─────┼────────────────────────────────────────────────┼───────────────────┤
+  │ 17  │ Empty hooks/ directory                         │ client/src/hooks/ │
+  ├─────┼────────────────────────────────────────────────┼───────────────────┤
+  │ 18  │ client/dist/ build artifact may be tracked in  │ client/dist/      │
+  │     │ git                                            │                   │
+  └─────┴────────────────────────────────────────────────┴───────────────────┘
+
+  ---
+  📋 Improvement Plan (Prioritized)
+
+  Phase 1: Security Hardening (do first)
+
+  1. Install DOMPurify and sanitize all dangerouslySetInnerHTML usage
+  2. Centralize JWT_SECRET — single source in server/config.js, no hardcoded
+  fallback
+  3. Add express-rate-limit to /api/auth/* endpoints
+  4. Fix CORS — default to CLIENT_URL only, remove '*' fallback
+  5. Sanitize file paths in chat deletion (path.resolve + prefix check)
+  6. Gate demo credentials behind NODE_ENV !== 'production'
+
+  Phase 2: Reliability
+
+  7. Add try/catch to the 4 unprotected route handlers
+  8. Replace bcrypt.*Sync with async variants in teachers.js, students.js, db.js
+  9. Replace console.log with a leveled logger (or at minimum console.debug for
+  dev-only)
+  10. Decide on production DB — Turso/LibSQL, Neon, or D1 for Vercel persistence
+
+  Phase 3: Quality Infrastructure
+
+  11. Add Vitest — start with API route unit tests and auth middleware tests
+  12. Add GitHub Actions — lint → test → build pipeline
+  13. Extract shared hooks — useFetch, usePagination into the empty hooks/ dir
+  14. Deduplicate seed logic — have seed.js import from db.js or vice versa
+  15. Fix accessibility — replace clickable divs with <button> elements
+
+  Phase 4: Polish
+
+  16. Remove requirements.txt or add Python tooling if needed
+  17. Remove tracked dist/ from git (git rm -r --cached client/dist)
+  18. Add crypto.randomUUID() for file naming
+
+  ---
+  Quick Win: Want Me to Start?
+
+  I can tackle any of these phases right now. The highest-impact, lowest-effort
+  starting point would be:
+
+  ▎ Phase 1 (Security) — ~30 min of work to fix XSS, centralize JWT, add rate 
+  ▎ limiting, and lock down CORS.
+
+  Which phase would you like me to begin with?
+
+✻ Churned for 3m 43s
+
+※ recap: You asked me to scan your SchoolHub project. I completed a full audit and delivered a prioritized improvement plan across 4 phases — security, reliability, quality infrastructure, and polish. The recommended next step is Phase 1 (security hardening), and I'm waiting for your go-ahead to start. (disable recaps in /config)

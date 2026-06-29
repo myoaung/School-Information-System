@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'student' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', role: 'student' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -16,9 +16,9 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
     if (formData.password !== formData.confirmPassword) { setError(t('register.passwordsDontMatch')); return; }
-    if (formData.password.length < 6) { setError(t('register.passwordTooShort')); return; }
+    if (formData.password.length < 8) { setError(t('register.passwordTooShort')); return; }
     setLoading(true);
-    try { await register(formData.email, formData.password, formData.name, formData.role); navigate('/dashboard'); }
+    try { await register(formData.email, formData.password, formData.name, formData.role, formData.phone); navigate('/dashboard'); }
     catch (err) { setError(err.response?.data?.error || t('register.error')); }
     finally { setLoading(false); }
   };
@@ -43,13 +43,15 @@ export default function RegisterPage() {
             {[
               { id: 'name', type: 'text', label: t('register.fullName'), ph: t('register.fullName'), ac: 'name' },
               { id: 'email', type: 'email', label: t('register.email'), ph: t('register.email'), ac: 'email' },
+              { id: 'phone', type: 'tel', label: t('register.phone'), ph: t('register.phonePlaceholder'), ac: 'tel' },
               { id: 'password', type: 'password', label: t('register.password'), ph: t('register.password'), ac: 'new-password' },
               { id: 'confirmPassword', type: 'password', label: t('register.confirmPassword'), ph: t('register.confirmPassword'), ac: 'new-password' },
             ].map(field => (
               <div key={field.id}>
                 <label htmlFor={field.id} className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1.5">{field.label}</label>
                 <input
-                  id={field.id} name={field.id} type={field.type} autoComplete={field.ac} required
+                  id={field.id} name={field.id} type={field.type} autoComplete={field.ac}
+                  required={field.id !== 'phone'}
                   className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl placeholder-purple-300 text-purple-900 dark:text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
                   placeholder={field.ph} value={formData[field.id]} onChange={handleChange}
                 />
@@ -63,9 +65,9 @@ export default function RegisterPage() {
                 value={formData.role} onChange={handleChange}
               >
                 <option value="student">{t('register.student')}</option>
-                <option value="teacher">{t('register.teacher')}</option>
-                <option value="admin">{t('register.admin')}</option>
+                <option value="parent">{t('register.parent')}</option>
               </select>
+              <p className="text-xs text-purple-400 dark:text-purple-500 mt-1">{t('register.roleNote')}</p>
             </div>
             <button
               type="submit" disabled={loading}

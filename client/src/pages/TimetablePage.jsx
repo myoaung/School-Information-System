@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -147,7 +148,7 @@ export default function TimetablePage() {
             <button onClick={() => setShowSuggestions(false)} className="text-purple-400 hover:text-purple-600">✕</button>
           </div>
           <div className="prose prose-sm dark:prose-invert max-w-none text-purple-800 dark:text-purple-200"
-               dangerouslySetInnerHTML={{ __html: suggestions }} />
+               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(suggestions) }} />
         </div>
       )}
 
