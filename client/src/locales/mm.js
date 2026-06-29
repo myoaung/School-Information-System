@@ -64,8 +64,8 @@ const mm = {
     signIn: 'အကောင့်ဝင်ရန်',
     signingIn: 'ဝင်ရောက်နေသည်...',
     error: 'အကောင့်ဝင်ရောက်မှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။',
-    demoTitle: 'စမ်းသပ်အကောင့်များ (စကားဝှက်: password123):',
-    demoAccounts: 'admin@school.com | teacher@school.com | student@school.com | parent@school.com',
+    demoTitle: 'စမ်းသပ်အကောင့်များ',
+    demoAccounts: 'အကောင့်အားလုံးအတွက် စကားဝှက်: password123',
   },
   register: {
     title: 'အကောင့်အသစ် ဖွင့်ပါ',

@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "framework": null,
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
   "installCommand": "npm install && cd server && npm install",
@@ -8,6 +9,7 @@
       "maxDuration": 10
     }
   },
+  "ignoreCommand": "git diff --quiet HEAD~1 -- . ':!.claude'",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }

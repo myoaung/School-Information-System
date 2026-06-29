@@ -64,8 +64,8 @@ const en = {
     signIn: 'Sign in',
     signingIn: 'Signing in...',
     error: 'Login failed. Please try again.',
-    demoTitle: 'Demo accounts (password: password123):',
-    demoAccounts: 'admin@school.com | teacher@school.com | student@school.com | parent@school.com',
+    demoTitle: 'Demo Accounts',
+    demoAccounts: 'Password for all accounts: password123',
   },
   register: {
     title: 'Create a new account',
