@@ -14,18 +14,13 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
-  const moreMenuRef = useRef(null);
 
   // Close menus on outside click
   useEffect(() => {
     const handleClick = (e) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
-      }
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) {
-        setMoreMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -37,7 +32,6 @@ export default function Navbar() {
     navigate('/');
     setMobileMenuOpen(false);
     setUserMenuOpen(false);
-    setMoreMenuOpen(false);
   };
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -55,55 +49,72 @@ export default function Navbar() {
     }`;
 
   return (
-    <nav className="sticky top-0 z-50 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 shadow-lg shadow-purple-900/20">
-      {/* Top utility bar */}
-      <div className="bg-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-end gap-1 py-1">
-          {/* Font size */}
-          <div className="flex items-center rounded-md overflow-hidden" role="group" aria-label={t('common.fontSize.label')}>
-            {['sm', 'md', 'lg'].map((size) => (
-              <button
-                key={size}
-                onClick={() => setFontSize(size)}
-                className={`px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
-                  fontSize === size ? 'bg-white/20 text-white' : 'text-purple-300 hover:bg-white/10'
-                }`}
-                title={size === 'sm' ? 'Small text' : size === 'md' ? 'Default text' : 'Large text'}
-              >
-                A
-              </button>
-            ))}
+    <>
+    {/* Floating utility sidebar (right side) */}
+    <div className="fixed right-3 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-center gap-1.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 dark:border-gray-700 p-1.5">
+      {/* Font size */}
+      {['sm', 'md', 'lg'].map((size) => (
+        <div key={size} className="relative group">
+          <button
+            onClick={() => setFontSize(size)}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+              fontSize === size
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-purple-500 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            A
+          </button>
+          <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+              {size === 'sm' ? 'Small text' : size === 'md' ? 'Default text' : 'Large text'}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+            </div>
           </div>
-          <div className="w-px h-4 bg-white/15 mx-1.5" />
-          {/* Dark mode */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-1 rounded-md hover:bg-white/10 transition-colors cursor-pointer"
-            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {darkMode ? (
-              <svg className="w-3.5 h-3.5 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              <svg className="w-3.5 h-3.5 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-          </button>
-          <div className="w-px h-4 bg-white/15 mx-1.5" />
-          {/* Language */}
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-white/10 text-[11px] font-medium text-purple-200 transition-colors cursor-pointer"
-            title={locale === 'mm' ? 'Switch to English' : 'မြန်မာဘာသာသို့ပြောင်းပါ'}
-          >
-            <span>{locale === 'mm' ? '🇲🇲' : '🇬🇧'}</span>
-            <span>{locale === 'mm' ? 'မြန်မာ' : 'EN'}</span>
-          </button>
+        </div>
+      ))}
+      <div className="w-6 h-px bg-purple-200 dark:bg-gray-600" />
+      {/* Dark mode */}
+      <div className="relative group">
+        <button
+          onClick={toggleDarkMode}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-purple-500 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        >
+          {darkMode ? (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
+        <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+            {darkMode ? 'Light mode' : 'Dark mode'}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+          </div>
         </div>
       </div>
+      {/* Language */}
+      <div className="relative group">
+        <button
+          onClick={toggleLanguage}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-purple-500 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        >
+          <span className="text-sm">{locale === 'mm' ? '🇲🇲' : '🇬🇧'}</span>
+        </button>
+        <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+            {locale === 'mm' ? 'English' : 'မြန်မာ'}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 shadow-lg shadow-purple-900/20">
       {/* Main nav bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between h-12 items-center">
@@ -140,38 +151,6 @@ export default function Navbar() {
               <>
                 <div className="w-px h-5 bg-white/20 mx-1.5" />
 
-                {/* More menu dropdown */}
-                <div className="relative" ref={moreMenuRef}>
-                  <button
-                    onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 cursor-pointer ${
-                      moreMenuOpen ? 'text-white bg-white/10' : 'text-purple-100 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {t('nav.more')}
-                    <svg className={`w-3.5 h-3.5 transition-transform ${moreMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                  </button>
-                  {moreMenuOpen && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden z-50 py-1">
-                      <Link to="/dashboard" onClick={() => setMoreMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                        {t('nav.dashboard')}
-                      </Link>
-                      <Link to="/courses" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('courses.title')}</Link>
-                      <Link to="/assignments" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('assignments.title')}</Link>
-                      <Link to="/quizzes" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('quizzes.title')}</Link>
-                      <Link to="/gradebook" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('gradebook.title')}</Link>
-                      <Link to="/resources" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('resources.title')}</Link>
-                      <Link to="/reports" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors">{t('reports.title')}</Link>
-                      {isAdmin && (
-                        <Link to="/academic" onClick={() => setMoreMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors border-t border-purple-100 dark:border-gray-700">{t('academic.title')}</Link>
-                      )}
-                    </div>
-                  )}
-                </div>
-
                 {/* User dropdown */}
                 <div className="relative ml-1" ref={userMenuRef}>
                   <button
@@ -204,6 +183,16 @@ export default function Navbar() {
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                           {t('nav.dashboard')}
                         </Link>
+                        <Link to="/courses" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('courses.title')}</Link>
+                        <Link to="/assignments" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('assignments.title')}</Link>
+                        <Link to="/quizzes" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('quizzes.title')}</Link>
+                        <Link to="/gradebook" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('gradebook.title')}</Link>
+                        <Link to="/resources" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('resources.title')}</Link>
+                        <Link to="/reports" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10">{t('reports.title')}</Link>
+                        {isAdmin && (
+                          <Link to="/academic" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10 border-t border-purple-100 dark:border-gray-700">{t('academic.title')}</Link>
+                        )}
+                        <div className="border-t border-purple-100 dark:border-gray-700 mt-1" />
                         <button
                           onClick={handleLogout}
                           className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
@@ -373,5 +362,6 @@ export default function Navbar() {
         }
       `}</style>
     </nav>
+    </>
   );
 }
