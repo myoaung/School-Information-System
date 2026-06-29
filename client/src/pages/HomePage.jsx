@@ -79,7 +79,7 @@ export default function HomePage() {
                 {'✨'} Myanmar Basic Education Platform
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight">
+              <h1 className="hero-animated-text text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-[1.1] tracking-tight bg-[length:300%_300%] bg-clip-text text-transparent bg-gradient-to-r from-white via-fuchsia-200 to-amber-200 animate-[heroColorShift_6s_ease-in-out_infinite]">
                 {t('home.hero.title')}
               </h1>
 
@@ -258,6 +258,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      {/* Hero text color animation */}
+      <style>{`
+        @keyframes heroColorShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
     </div>
   );
 }
