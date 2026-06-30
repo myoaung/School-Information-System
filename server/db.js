@@ -385,9 +385,9 @@ function initDatabase() {
     seedCurriculum(db);
   }
 
-  // Seed demo data if empty
+  // Seed demo data if empty (NEVER in production)
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (userCount.count === 0) {
+  if (userCount.count === 0 && process.env.NODE_ENV !== 'production') {
     seedDatabase(db);
   }
 
@@ -408,9 +408,9 @@ function initDatabase() {
     console.log('Migration: added grade_id/class_id to announcements');
   }
 
-  // Migration: ensure parent users exist (for existing databases)
+  // Migration: ensure parent users exist (for existing databases — skip in production)
   const parentExists = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'parent'").get();
-  if (parentExists.count === 0 && userCount.count > 0) {
+  if (parentExists.count === 0 && userCount.count > 0 && process.env.NODE_ENV !== 'production') {
     const bcrypt = require('bcryptjs');
     const salt = bcrypt.genSaltSync(10);
     const password = bcrypt.hashSync('password123', salt);

@@ -49,8 +49,16 @@ const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(s => s.trim())
   : ['http://localhost:5173', 'http://localhost:5174'];
 
+// Production origins for Vercel deployment
+const productionOrigins = [
+  'https://schoolhub-mu.vercel.app',
+  'https://www.schoolhub-mu.vercel.app',
+];
+
 app.use(cors({
-  origin: process.env.VERCEL ? true : allowedOrigins,
+  origin: process.env.VERCEL
+    ? (process.env.NODE_ENV === 'production' ? productionOrigins : true)
+    : allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
