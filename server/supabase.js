@@ -4,6 +4,9 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
+console.log('[supabase.js] SUPABASE_URL:', supabaseUrl ? 'SET' : 'NOT SET');
+console.log('[supabase.js] SUPABASE_ANON_KEY:', supabaseKey ? 'SET' : 'NOT SET');
+
 // Check if Supabase is configured
 const isSupabaseConfigured = !!(supabaseUrl && supabaseKey);
 
