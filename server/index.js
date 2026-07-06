@@ -164,6 +164,9 @@ app.get('/api/health', async (req, res) => {
     environment: NODE_ENV,
     version: require('./package.json').version || '1.0.0',
     database: isSupabaseConfigured ? 'supabase' : 'sqlite',
+    supabase_url: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
+    supabase_anon: process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
+    supabase_service: process.env.SUPABASE_SERVICE_KEY ? 'SET' : 'NOT SET',
   };
 
   // Check database connectivity
