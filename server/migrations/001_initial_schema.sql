@@ -1,6 +1,17 @@
 -- Supabase Migration: Initial Schema
 -- Converted from SQLite to PostgreSQL
 
+-- ─── Helper function for migrations ─────────────────────────────
+CREATE OR REPLACE FUNCTION execute_sql(query TEXT)
+RETURNS JSONB AS $$
+BEGIN
+  EXECUTE query;
+  RETURN '{"success": true}'::jsonb;
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('error', SQLERRM);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ─── Enable UUID extension (optional, for future use) ────────────
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -475,13 +486,13 @@ ALTER TABLE ai_interventions ENABLE ROW LEVEL SECURITY;
 -- Basic RLS Policies (customize as needed)
 -- Allow authenticated users to read their own data
 CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT USING (auth.uid() = id::text);
+  FOR SELECT USING (auth.uid()::text = id::text);
 
 CREATE POLICY "Students can view own data" ON students
-  FOR SELECT USING (user_id::text = auth.uid());
+  FOR SELECT USING (user_id::text = auth.uid()::text);
 
 CREATE POLICY "Teachers can view assigned classes" ON classes
-  FOR SELECT USING (teacher_id::text = auth.uid());
+  FOR SELECT USING (teacher_id::text = auth.uid()::text);
 
 -- Admin full access (use service key to bypass RLS)
 -- For now, service key will bypass all RLS policies

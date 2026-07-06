@@ -7,6 +7,7 @@
  *   node server/migrate.js --reset      # Drop all tables + re-run migrations
  */
 
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { supabaseAdmin, isSupabaseConfigured } = require('./supabase');
