@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware } = require('../middleware/auth');
 const { JWT_SECRET } = require('../config');
 const { registerRules, loginRules } = require('../middleware/validate');
@@ -29,10 +29,8 @@ router.post('/register', registerRules, async (req, res) => {
     const requestedRole = req.body.role;
     const role = (requestedRole === 'parent') ? 'parent' : 'student';
 
-    const db = getDb();
-
     // Check if user exists
-    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
     if (existingUser) {
       return res.status(409).json({ error: 'Email already registered' });
     }
@@ -42,9 +40,10 @@ router.post('/register', registerRules, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert user
-    const result = db.prepare(
-      'INSERT INTO users (email, password, name, role, phone) VALUES (?, ?, ?, ?, ?)'
-    ).run(email, hashedPassword, name, role, phone || null);
+    const result = await db.run(
+      'INSERT INTO users (email, password, name, role, phone) VALUES (?, ?, ?, ?, ?)',
+      [email, hashedPassword, name, role, phone || null]
+    );
 
     // Generate token
     const token = jwt.sign(
@@ -73,10 +72,8 @@ router.post('/login', loginRules, async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const db = getDb();
-
     // Find user
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -106,9 +103,8 @@ router.post('/login', loginRules, async (req, res) => {
 });
 
 // Get current user
-router.get('/me', authMiddleware, (req, res) => {
-  const db = getDb();
-  const user = db.prepare('SELECT id, email, name, role, created_at FROM users WHERE id = ?').get(req.user.id);
+router.get('/me', authMiddleware, async (req, res) => {
+  const user = await db.get('SELECT id, email, name, role, created_at FROM users WHERE id = ?', [req.user.id]);
 
   if (!user) {
     return res.status(404).json({ error: 'User not found' });

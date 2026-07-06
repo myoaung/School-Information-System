@@ -1,14 +1,13 @@
 const express = require('express');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all academic years
-router.get('/years', authMiddleware, (req, res) => {
+router.get('/years', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    const years = db.prepare('SELECT * FROM academic_years ORDER BY start_date DESC').all();
+    const years = await db.all('SELECT * FROM academic_years ORDER BY start_date DESC');
     res.json({ years });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch academic years' });
@@ -16,13 +15,12 @@ router.get('/years', authMiddleware, (req, res) => {
 });
 
 // Create academic year (admin)
-router.post('/years', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/years', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const { name, start_date, end_date, is_current } = req.body;
     if (!name || !start_date || !end_date) return res.status(400).json({ error: 'Name, start_date, end_date required' });
-    if (is_current) db.prepare('UPDATE academic_years SET is_current = 0').run();
-    const result = db.prepare('INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)').run(name, start_date, end_date, is_current ? 1 : 0);
+    if (is_current) await db.run('UPDATE academic_years SET is_current = 0');
+    const result = await db.run('INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)', [name, start_date, end_date, is_current ? 1 : 0]);
     res.status(201).json({ message: 'Academic year created', id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create academic year' });
@@ -30,10 +28,9 @@ router.post('/years', authMiddleware, roleMiddleware('admin'), (req, res) => {
 });
 
 // Delete academic year (admin)
-router.delete('/years/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/years/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('DELETE FROM academic_years WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM academic_years WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete academic year' });
@@ -41,15 +38,14 @@ router.delete('/years/:id', authMiddleware, roleMiddleware('admin'), (req, res) 
 });
 
 // Get semesters
-router.get('/semesters', authMiddleware, (req, res) => {
+router.get('/semesters', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const { year_id } = req.query;
     let semesters;
     if (year_id) {
-      semesters = db.prepare('SELECT s.*, ay.name as year_name FROM semesters s JOIN academic_years ay ON s.academic_year_id = ay.id WHERE s.academic_year_id = ? ORDER BY s.start_date').all(year_id);
+      semesters = await db.all('SELECT s.*, ay.name as year_name FROM semesters s JOIN academic_years ay ON s.academic_year_id = ay.id WHERE s.academic_year_id = ? ORDER BY s.start_date', [year_id]);
     } else {
-      semesters = db.prepare('SELECT s.*, ay.name as year_name FROM semesters s JOIN academic_years ay ON s.academic_year_id = ay.id ORDER BY s.start_date DESC').all();
+      semesters = await db.all('SELECT s.*, ay.name as year_name FROM semesters s JOIN academic_years ay ON s.academic_year_id = ay.id ORDER BY s.start_date DESC');
     }
     res.json({ semesters });
   } catch (err) {
@@ -58,13 +54,12 @@ router.get('/semesters', authMiddleware, (req, res) => {
 });
 
 // Create semester (admin)
-router.post('/semesters', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/semesters', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const { academic_year_id, name, start_date, end_date, is_current } = req.body;
     if (!academic_year_id || !name || !start_date || !end_date) return res.status(400).json({ error: 'All fields required' });
-    if (is_current) db.prepare('UPDATE semesters SET is_current = 0').run();
-    const result = db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)').run(academic_year_id, name, start_date, end_date, is_current ? 1 : 0);
+    if (is_current) await db.run('UPDATE semesters SET is_current = 0');
+    const result = await db.run('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)', [academic_year_id, name, start_date, end_date, is_current ? 1 : 0]);
     res.status(201).json({ message: 'Semester created', id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create semester' });
@@ -72,10 +67,9 @@ router.post('/semesters', authMiddleware, roleMiddleware('admin'), (req, res) =>
 });
 
 // Delete semester (admin)
-router.delete('/semesters/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/semesters/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('DELETE FROM semesters WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM semesters WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete semester' });
@@ -83,15 +77,14 @@ router.delete('/semesters/:id', authMiddleware, roleMiddleware('admin'), (req, r
 });
 
 // Get holidays
-router.get('/holidays', authMiddleware, (req, res) => {
+router.get('/holidays', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const { year_id } = req.query;
     let holidays;
     if (year_id) {
-      holidays = db.prepare('SELECT h.*, ay.name as year_name FROM holidays h JOIN academic_years ay ON h.academic_year_id = ay.id WHERE h.academic_year_id = ? ORDER BY h.date').all(year_id);
+      holidays = await db.all('SELECT h.*, ay.name as year_name FROM holidays h JOIN academic_years ay ON h.academic_year_id = ay.id WHERE h.academic_year_id = ? ORDER BY h.date', [year_id]);
     } else {
-      holidays = db.prepare('SELECT h.*, ay.name as year_name FROM holidays h JOIN academic_years ay ON h.academic_year_id = ay.id ORDER BY h.date DESC').all();
+      holidays = await db.all('SELECT h.*, ay.name as year_name FROM holidays h JOIN academic_years ay ON h.academic_year_id = ay.id ORDER BY h.date DESC');
     }
     res.json({ holidays });
   } catch (err) {
@@ -100,12 +93,11 @@ router.get('/holidays', authMiddleware, (req, res) => {
 });
 
 // Create holiday (admin)
-router.post('/holidays', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/holidays', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const { academic_year_id, name, date, type } = req.body;
     if (!academic_year_id || !name || !date) return res.status(400).json({ error: 'academic_year_id, name, and date required' });
-    const result = db.prepare('INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)').run(academic_year_id, name, date, type || 'school');
+    const result = await db.run('INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)', [academic_year_id, name, date, type || 'school']);
     res.status(201).json({ message: 'Holiday created', id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create holiday' });
@@ -113,10 +105,9 @@ router.post('/holidays', authMiddleware, roleMiddleware('admin'), (req, res) => 
 });
 
 // Delete holiday (admin)
-router.delete('/holidays/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/holidays/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('DELETE FROM holidays WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM holidays WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete holiday' });

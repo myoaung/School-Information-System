@@ -5,8 +5,10 @@ const path = require('path');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const { initDatabase, getDb } = require('./db');
+const { initDatabase } = require('./db');
+const { db } = require('./data');
 const { NODE_ENV } = require('./config');
+const { isSupabaseConfigured } = require('./supabase');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -101,12 +103,17 @@ const aiLimiter = rateLimit({
 });
 
 // ── Database Init ──
-try {
-  initDatabase();
-} catch (err) {
-  console.error('Database init error:', err);
-  if (NODE_ENV === 'production') {
-    process.exit(1);
+if (isSupabaseConfigured) {
+  console.log('📦 Using Supabase PostgreSQL');
+} else {
+  console.log('📦 Using local SQLite');
+  try {
+    initDatabase();
+  } catch (err) {
+    console.error('Database init error:', err);
+    if (NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 }
 
@@ -149,23 +156,23 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/certificates', certificateRoutes);
 
 // ── Health Check ──
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
   const healthcheck = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: NODE_ENV,
     version: require('./package.json').version || '1.0.0',
+    database: isSupabaseConfigured ? 'supabase' : 'sqlite',
   };
 
   // Check database connectivity
   try {
-    const db = getDb();
-    db.prepare('SELECT 1').get();
-    healthcheck.database = 'connected';
+    await db.get('SELECT 1 as ok');
+    healthcheck.database_status = 'connected';
   } catch (err) {
     healthcheck.status = 'degraded';
-    healthcheck.database = 'disconnected';
+    healthcheck.database_status = 'disconnected';
   }
 
   const statusCode = healthcheck.status === 'ok' ? 200 : 503;
@@ -208,11 +215,14 @@ if (process.env.VERCEL !== '1') {
     console.log(`\n${signal} received. Shutting down gracefully...`);
     server.close(() => {
       console.log('HTTP server closed.');
-      try {
-        const db = getDb();
-        db.close();
-        console.log('Database connection closed.');
-      } catch {}
+      // SQLite cleanup (Supabase handles its own connections)
+      if (!isSupabaseConfigured) {
+        try {
+          const { getDb } = require('./db');
+          getDb().close();
+          console.log('Database connection closed.');
+        } catch {}
+      }
       process.exit(0);
     });
     // Force exit after 10s

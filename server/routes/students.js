@@ -1,14 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all students (admin/teacher)
-router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const db = getDb();
     const { search, grade_id, status } = req.query;
 
     let where = ['u.role = ?'];
@@ -27,7 +26,7 @@ router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) =
       params.push(status);
     }
 
-    const students = db.prepare(`
+    const students = await db.all(`
       SELECT u.id, u.name, u.email, u.created_at,
         s.id as profile_id, s.student_id, s.grade_id, s.section, s.status,
         s.date_of_birth, s.gender, s.phone, s.parent_name, s.parent_phone,
@@ -38,7 +37,7 @@ router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) =
       LEFT JOIN education_levels el ON g.education_level_id = el.id
       WHERE ${where.join(' AND ')}
       ORDER BY u.name
-    `).all(...params);
+    `, params);
 
     res.json({ students });
   } catch (err) {
@@ -48,9 +47,8 @@ router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) =
 });
 
 // Get single student (admin/teacher/self)
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const id = parseInt(req.params.id);
 
     // Allow self-access or admin/teacher
@@ -58,7 +56,7 @@ router.get('/:id', authMiddleware, (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const student = db.prepare(`
+    const student = await db.get(`
       SELECT u.id, u.name, u.email, u.created_at,
         s.id as profile_id, s.student_id, s.grade_id, s.section, s.status,
         s.date_of_birth, s.gender, s.phone, s.address,
@@ -70,24 +68,24 @@ router.get('/:id', authMiddleware, (req, res) => {
       LEFT JOIN grades g ON s.grade_id = g.id
       LEFT JOIN education_levels el ON g.education_level_id = el.id
       WHERE u.id = ?
-    `).get(id);
+    `, [id]);
 
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     // Get enrollments
-    const enrollments = db.prepare(`
+    const enrollments = await db.all(`
       SELECT c.id, c.name, c.schedule, c.room
       FROM enrollments e
       JOIN classes c ON e.class_id = c.id
       WHERE e.student_id = ?
-    `).all(id);
+    `, [id]);
 
     // Get attendance summary
-    const attendance = db.prepare(`
+    const attendance = await db.all(`
       SELECT status, COUNT(*) as count
       FROM attendance WHERE user_id = ?
       GROUP BY status
-    `).all(id);
+    `, [id]);
 
     res.json({ student: { ...student, enrollments, attendance } });
   } catch (err) {
@@ -97,9 +95,8 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // Create student (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const { name, email, password, grade_id, section, date_of_birth, gender, phone, address, parent_name, parent_phone, parent_email } = req.body;
 
     if (!name || !email || !password) {
@@ -107,24 +104,28 @@ router.post('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
     }
 
     // Check if email exists
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 
     // Create user
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    const userResult = db.prepare('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)').run(email, hashedPassword, name, 'student');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const userResult = await db.run(
+      'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)',
+      [email, hashedPassword, name, 'student']
+    );
     const userId = userResult.lastInsertRowid;
 
     // Generate student ID
-    const count = db.prepare('SELECT COUNT(*) as c FROM students').get().c;
+    const countRow = await db.get('SELECT COUNT(*) as c FROM students');
+    const count = countRow?.c || 0;
     const studentId = `STU-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
     // Create student profile
-    db.prepare(`
+    await db.run(`
       INSERT INTO students (user_id, student_id, grade_id, section, date_of_birth, gender, phone, address, parent_name, parent_phone, parent_email)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(userId, studentId, grade_id || null, section || 'A', date_of_birth || null, gender || null, phone || null, address || null, parent_name || null, parent_phone || null, parent_email || null);
+    `, [userId, studentId, grade_id || null, section || 'A', date_of_birth || null, gender || null, phone || null, address || null, parent_name || null, parent_phone || null, parent_email || null]);
 
     res.status(201).json({ message: 'Student created', student: { id: userId, name, email, student_id: studentId } });
   } catch (err) {
@@ -134,25 +135,24 @@ router.post('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
 });
 
 // Update student (admin only)
-router.put('/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const userId = parseInt(req.params.id);
     const { name, grade_id, section, date_of_birth, gender, phone, address, emergency_contact, emergency_phone, parent_name, parent_phone, parent_email, status } = req.body;
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ? AND role = ?').get(userId, 'student');
+    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [userId, 'student']);
     if (!user) return res.status(404).json({ error: 'Student not found' });
 
-    if (name) db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, userId);
+    if (name) await db.run('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
 
-    const profile = db.prepare('SELECT * FROM students WHERE user_id = ?').get(userId);
+    const profile = await db.get('SELECT * FROM students WHERE user_id = ?', [userId]);
     if (profile) {
-      db.prepare(`
+      await db.run(`
         UPDATE students SET grade_id = ?, section = ?, date_of_birth = ?, gender = ?,
         phone = ?, address = ?, emergency_contact = ?, emergency_phone = ?,
         parent_name = ?, parent_phone = ?, parent_email = ?, status = ?
         WHERE user_id = ?
-      `).run(
+      `, [
         grade_id ?? profile.grade_id, section ?? profile.section,
         date_of_birth ?? profile.date_of_birth, gender ?? profile.gender,
         phone ?? profile.phone, address ?? profile.address,
@@ -160,7 +160,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
         parent_name ?? profile.parent_name, parent_phone ?? profile.parent_phone,
         parent_email ?? profile.parent_email, status ?? profile.status,
         userId
-      );
+      ]);
     }
 
     res.json({ message: 'Student updated' });
@@ -171,15 +171,14 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
 });
 
 // Delete student (admin only)
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const userId = parseInt(req.params.id);
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ? AND role = ?').get(userId, 'student');
+    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [userId, 'student']);
     if (!user) return res.status(404).json({ error: 'Student not found' });
 
-    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+    await db.run('DELETE FROM users WHERE id = ?', [userId]);
     res.json({ message: 'Student deleted' });
   } catch (err) {
     console.error('Error deleting student:', err);

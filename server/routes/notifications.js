@@ -1,18 +1,17 @@
 const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware } = require('../middleware/auth');
 
 // Get user's notifications
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const { limit } = req.query;
     let sql = 'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC';
     const params = [req.user.id];
     if (limit) { sql += ' LIMIT ?'; params.push(parseInt(limit)); }
-    const notifications = db.prepare(sql).all(...params);
+    const notifications = await db.all(sql, params);
     res.json(notifications);
   } catch (err) {
     sendError(res, err);
@@ -20,10 +19,9 @@ router.get('/', authMiddleware, (req, res) => {
 });
 
 // Mark notification as read
-router.put('/:id/read', authMiddleware, (req, res) => {
+router.put('/:id/read', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
+    await db.run('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
     res.json({ message: 'Marked as read' });
   } catch (err) {
     sendError(res, err);
@@ -31,10 +29,9 @@ router.put('/:id/read', authMiddleware, (req, res) => {
 });
 
 // Mark all as read
-router.put('/read-all', authMiddleware, (req, res) => {
+router.put('/read-all', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0').run(req.user.id);
+    await db.run('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [req.user.id]);
     res.json({ message: 'All marked as read' });
   } catch (err) {
     sendError(res, err);
@@ -42,10 +39,9 @@ router.put('/read-all', authMiddleware, (req, res) => {
 });
 
 // Get unread count
-router.get('/unread-count', authMiddleware, (req, res) => {
+router.get('/unread-count', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    const result = db.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0').get(req.user.id);
+    const result = await db.get('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0', [req.user.id]);
     res.json(result);
   } catch (err) {
     sendError(res, err);
@@ -53,14 +49,13 @@ router.get('/unread-count', authMiddleware, (req, res) => {
 });
 
 // Create notification (admin only)
-router.post('/', authMiddleware, (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const { user_id, type, title, message, link } = req.body;
     if (!user_id || !type) {
       return res.status(400).json({ error: 'user_id and type are required' });
     }
-    const db = getDb();
-    const result = db.prepare('INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)').run(user_id, type, title || null, message || null, link || null);
+    const result = await db.run('INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)', [user_id, type, title || null, message || null, link || null]);
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (err) {
     sendError(res, err);

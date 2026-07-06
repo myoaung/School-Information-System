@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { getReply } = require('../chatbot');
 const { sendError } = require('../utils/errorHandler');
@@ -46,7 +46,6 @@ try {
 // POST /api/chat — send message, get AI reply
 router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
   try {
-    const db = getDb();
     const { message } = req.body;
     const { id: userId, name: userName, role: userRole } = req.user;
 
@@ -64,10 +63,10 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
     const reply = await getReply(cleanMessage || '📎 File shared', userName, userRole, userId);
 
     // Save to database
-    const result = db.prepare(`
+    const result = await db.run(`
       INSERT INTO chat_messages (user_id, user_name, user_role, message, reply, file_name, file_path)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(userId, userName, userRole, cleanMessage, reply, fileName, filePath);
+    `, userId, userName, userRole, cleanMessage, reply, fileName, filePath);
 
     res.json({
       id: result.lastInsertRowid,
@@ -84,18 +83,17 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
 });
 
 // GET /api/chat/history — current user's chat history
-router.get('/history', authMiddleware, (req, res) => {
+router.get('/history', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
 
-    const rows = db.prepare(`
+    const rows = await db.all(`
       SELECT id, message, reply, file_name, file_path, created_at
       FROM chat_messages
       WHERE user_id = ?
       ORDER BY created_at DESC
       LIMIT ?
-    `).all(req.user.id, limit);
+    `, req.user.id, limit);
 
     res.json(rows.reverse());
   } catch (err) {
@@ -104,9 +102,8 @@ router.get('/history', authMiddleware, (req, res) => {
 });
 
 // GET /api/chat/logs — admin: all chat logs
-router.get('/logs', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.get('/logs', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const offset = (page - 1) * limit;
@@ -122,13 +119,14 @@ router.get('/logs', authMiddleware, roleMiddleware('admin'), (req, res) => {
       params = [`%${safeSearch}%`, `%${safeSearch}%`, `%${safeSearch}%`];
     }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM chat_messages ${where}`).get(...params).count;
+    const totalRow = await db.get(`SELECT COUNT(*) as count FROM chat_messages ${where}`, ...params);
+    const total = totalRow.count;
 
-    const rows = db.prepare(`
+    const rows = await db.all(`
       SELECT * FROM chat_messages ${where}
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
-    `).all(...params, limit, offset);
+    `, ...params, limit, offset);
 
     res.json({ logs: rows, total, page, limit });
   } catch (err) {
@@ -137,10 +135,9 @@ router.get('/logs', authMiddleware, roleMiddleware('admin'), (req, res) => {
 });
 
 // DELETE /api/chat/logs/:id — admin: delete a chat log
-router.delete('/logs/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/logs/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    const row = db.prepare('SELECT file_path FROM chat_messages WHERE id = ?').get(req.params.id);
+    const row = await db.get('SELECT file_path FROM chat_messages WHERE id = ?', req.params.id);
 
     if (!row) return res.status(404).json({ error: 'Log not found' });
 
@@ -153,7 +150,7 @@ router.delete('/logs/:id', authMiddleware, roleMiddleware('admin'), (req, res) =
       }
     }
 
-    db.prepare('DELETE FROM chat_messages WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM chat_messages WHERE id = ?', req.params.id);
     res.json({ message: 'Deleted' });
   } catch (err) {
     sendError(res, err, 'Failed to delete chat log');

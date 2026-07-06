@@ -14,6 +14,7 @@ const {
   checkAlerts,
   getAnalyticsStats,
 } = require('../predictive-analytics');
+const { db } = require('../data');
 
 const router = express.Router();
 
@@ -29,27 +30,29 @@ router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), (req, r
 });
 
 // GET /api/ai/analytics/at-risk — List at-risk students
-router.get('/at-risk', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/at-risk', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
     const { classId, gradeId, minScore = 30, limit = 50 } = req.query;
 
     // Teachers can only see their own classes
     let filterClassId = classId;
     if (req.user.role === 'teacher' && !classId) {
-      const { getDb } = require('../db');
-      const db = getDb();
-      const teacherClasses = db.prepare(
-        'SELECT id FROM classes WHERE teacher_id = ?'
-      ).all(req.user.id).map(c => c.id);
+      const teacherClasses = await db.all(
+        'SELECT id FROM classes WHERE teacher_id = ?',
+        [req.user.id]
+      );
+      const teacherClassIds = teacherClasses.map(c => c.id);
 
-      if (teacherClasses.length > 0) {
+      if (teacherClassIds.length > 0) {
         // Get students from all teacher's classes
         const studentIds = new Set();
-        teacherClasses.forEach(cid => {
-          const students = db.prepare(
-            'SELECT student_id FROM enrollments WHERE class_id = ?'
-          ).all(cid).forEach(s => studentIds.add(s.student_id));
-        });
+        for (const cid of teacherClassIds) {
+          const students = await db.all(
+            'SELECT student_id FROM enrollments WHERE class_id = ?',
+            [cid]
+          );
+          students.forEach(s => studentIds.add(s.student_id));
+        }
 
         const allAtRisk = getAtRiskStudents({
           minScore: parseInt(minScore),
@@ -101,11 +104,9 @@ router.get('/student/:id/interventions', authMiddleware, roleMiddleware('admin',
   try {
     const studentUserId = parseInt(req.params.id);
 
-    const { getDb } = require('../db');
-    const db = getDb();
-    const student = db.prepare(`
+    const student = await db.get(`
       SELECT u.name FROM users u WHERE u.id = ?
-    `).get(studentUserId);
+    `, [studentUserId]);
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });

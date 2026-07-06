@@ -1,4 +1,4 @@
-const { getDb } = require('./db');
+const { db } = require('./data');
 
 // ─── Safe Query Builder ─────────────────────────────────────────────────────
 // All queries use parameterized statements — no string interpolation in SQL
@@ -21,8 +21,7 @@ const tools = [
       status: 'Optional. Filter by status: present, absent, late, leave',
       group_by: 'Optional. Group results: "student", "class", "date", or "status"',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -59,7 +58,7 @@ const tools = [
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
       if (params.group_by === 'student') {
-        return db.prepare(`
+        return await db.all(`
           SELECT u.name as student, a.status, COUNT(*) as count
           FROM attendance a
           JOIN users u ON a.user_id = u.id
@@ -67,11 +66,11 @@ const tools = [
           ${whereClause}
           GROUP BY u.name, a.status
           ORDER BY u.name, a.status
-        `).all(...args);
+        `, args);
       }
 
       if (params.group_by === 'class') {
-        return db.prepare(`
+        return await db.all(`
           SELECT c.name as class, a.status, COUNT(*) as count
           FROM attendance a
           JOIN users u ON a.user_id = u.id
@@ -79,11 +78,11 @@ const tools = [
           ${whereClause}
           GROUP BY c.name, a.status
           ORDER BY c.name, a.status
-        `).all(...args);
+        `, args);
       }
 
       if (params.group_by === 'date') {
-        return db.prepare(`
+        return await db.all(`
           SELECT a.date, a.status, COUNT(*) as count
           FROM attendance a
           JOIN users u ON a.user_id = u.id
@@ -91,11 +90,11 @@ const tools = [
           ${whereClause}
           GROUP BY a.date, a.status
           ORDER BY a.date, a.status
-        `).all(...args);
+        `, args);
       }
 
       // Default: individual records
-      return db.prepare(`
+      return await db.all(`
         SELECT u.name as student, c.name as class, a.date, a.status, a.note
         FROM attendance a
         JOIN users u ON a.user_id = u.id
@@ -103,7 +102,7 @@ const tools = [
         ${whereClause}
         ORDER BY a.date DESC, u.name
         LIMIT 50
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -117,8 +116,7 @@ const tools = [
       section: 'Optional. Filter by section (e.g. A, B)',
       status: 'Optional. Filter by status: active, suspended, graduated, transferred',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -146,7 +144,7 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT u.name, u.email, s.student_id, g.name as grade, s.section,
                s.gender, s.phone, s.status, s.parent_name, s.parent_phone
         FROM students s
@@ -155,7 +153,7 @@ const tools = [
         ${whereClause}
         ORDER BY g.display_order, s.section, u.name
         LIMIT 50
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -168,8 +166,7 @@ const tools = [
       course_title: 'Optional. Filter by course title (partial match ok)',
       class_name: 'Optional. Filter by class name (partial match ok)',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -196,7 +193,7 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT u.name as student, co.title as course, cl.name as class,
                gb.assignment_score, gb.quiz_score, gb.exam_score,
                gb.final_grade, gb.gpa
@@ -207,7 +204,7 @@ const tools = [
         ${whereClause}
         ORDER BY u.name, co.title
         LIMIT 50
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -219,8 +216,7 @@ const tools = [
       name: 'Optional. Filter by class name (partial match ok)',
       teacher_name: 'Optional. Filter by teacher name (partial match ok)',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -240,14 +236,14 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT c.name, c.description, c.schedule, c.room, u.name as teacher,
           (SELECT COUNT(*) FROM enrollments e WHERE e.class_id = c.id) as student_count
         FROM classes c
         LEFT JOIN users u ON c.teacher_id = u.id
         ${whereClause}
         ORDER BY c.name
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -260,8 +256,7 @@ const tools = [
       specialization: 'Optional. Filter by subject specialization',
       status: 'Optional. Filter by status: active, on_leave, resigned',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -285,13 +280,13 @@ const tools = [
         ? 'u.name, u.email, t.teacher_id, t.phone, t.qualification, t.specialization, t.hire_date, t.status'
         : 'u.name, t.teacher_id, t.qualification, t.specialization, t.status';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT ${fields}
         FROM teachers t
         JOIN users u ON t.user_id = u.id
         ${whereClause}
         ORDER BY u.name
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -304,8 +299,7 @@ const tools = [
       teacher_name: 'Optional. Filter by teacher name (partial match ok)',
       day: 'Optional. Day of week (0=Sunday, 1=Monday, ..., 6=Saturday)',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -329,7 +323,7 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT c.name as class, s.name as subject, u.name as teacher,
                t.day_of_week, t.start_time, t.end_time, t.room
         FROM timetable t
@@ -338,7 +332,7 @@ const tools = [
         LEFT JOIN users u ON t.teacher_id = u.id
         ${whereClause}
         ORDER BY t.day_of_week, t.start_time
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -351,8 +345,7 @@ const tools = [
       author_name: 'Optional. Filter by author name',
       limit: 'Optional. Number of results (default 5, max 20)',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -368,14 +361,14 @@ const tools = [
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
       const limit = Math.min(parseInt(params.limit) || 5, 20);
 
-      return db.prepare(`
+      return await db.all(`
         SELECT a.title, a.content, u.name as author, a.created_at
         FROM announcements a
         LEFT JOIN users u ON a.author_id = u.id
         ${whereClause}
         ORDER BY a.created_at DESC
         LIMIT ?
-      `).all(...args, limit);
+      `, [...args, limit]);
     },
   },
 
@@ -388,8 +381,7 @@ const tools = [
       student_name: 'Optional. Filter by student name (for submissions)',
       status: 'Optional. Filter submission status: submitted, graded, late, returned',
     },
-    execute(user, params) {
-      const db = getDb();
+    async execute(user, params) {
       let where = [];
       let args = [];
 
@@ -416,7 +408,7 @@ const tools = [
 
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-      return db.prepare(`
+      return await db.all(`
         SELECT a.title as assignment, co.title as course, u.name as student,
                sub.score, sub.feedback, sub.status, sub.submitted_at
         FROM submissions sub
@@ -427,7 +419,7 @@ const tools = [
         ${whereClause}
         ORDER BY sub.submitted_at DESC
         LIMIT 50
-      `).all(...args);
+      `, args);
     },
   },
 
@@ -436,29 +428,27 @@ const tools = [
     name: 'query_stats',
     description: 'Get school statistics: total students, teachers, classes, attendance rate.',
     parameters: {},
-    execute(user) {
-      const db = getDb();
+    async execute(user) {
+      const studentsRow = await db.get("SELECT COUNT(*) as c FROM students WHERE status = 'active'");
+      const teachersRow = await db.get("SELECT COUNT(*) as c FROM teachers WHERE status = 'active'");
+      const classesRow = await db.get('SELECT COUNT(*) as c FROM classes');
+      const announcementsRow = await db.get('SELECT COUNT(*) as c FROM announcements');
 
-      const students = db.prepare("SELECT COUNT(*) as c FROM students WHERE status = 'active'").get().c;
-      const teachers = db.prepare("SELECT COUNT(*) as c FROM teachers WHERE status = 'active'").get().c;
-      const classes = db.prepare('SELECT COUNT(*) as c FROM classes').get().c;
-      const announcements = db.prepare('SELECT COUNT(*) as c FROM announcements').get().c;
-
-      const attendanceStats = db.prepare(`
+      const attendanceStats = await db.all(`
         SELECT status, COUNT(*) as count
         FROM attendance
         GROUP BY status
-      `).all();
+      `);
 
       const totalAttendance = attendanceStats.reduce((sum, r) => sum + r.count, 0);
       const presentCount = attendanceStats.find(r => r.status === 'present')?.count || 0;
       const attendanceRate = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
 
       return {
-        students,
-        teachers,
-        classes,
-        announcements,
+        students: studentsRow?.c || 0,
+        teachers: teachersRow?.c || 0,
+        classes: classesRow?.c || 0,
+        announcements: announcementsRow?.c || 0,
         attendanceRate: `${attendanceRate}%`,
         attendanceBreakdown: attendanceStats,
       };
@@ -481,13 +471,13 @@ function getToolDefinitions() {
   }));
 }
 
-function executeTool(toolName, user, params) {
+async function executeTool(toolName, user, params) {
   const tool = tools.find(t => t.name === toolName);
   if (!tool) {
     return { error: `Unknown tool: ${toolName}` };
   }
   try {
-    const result = tool.execute(user, params);
+    const result = await tool.execute(user, params);
     return { data: result, count: Array.isArray(result) ? result.length : 1 };
   } catch (err) {
     console.error(`[QueryTool] Error executing ${toolName}:`, err.message);

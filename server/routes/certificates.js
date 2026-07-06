@@ -1,7 +1,7 @@
 const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { certificateRules } = require('../middleware/validate');
 
@@ -87,9 +87,8 @@ function generateCertificateHTML(cert, student, issuedBy) {
 }
 
 // List certificates
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const { student_id, type } = req.query;
     let sql = `
       SELECT c.*, u.name as student_name, s.student_id as student_code,
@@ -108,17 +107,16 @@ router.get('/', authMiddleware, (req, res) => {
     }
     if (type) { sql += ' AND c.type = ?'; params.push(type); }
     sql += ' ORDER BY c.issued_at DESC';
-    res.json(db.prepare(sql).all(...params));
+    res.json(await db.all(sql, params));
   } catch (err) {
     sendError(res, err);
   }
 });
 
 // Get single certificate
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    const cert = db.prepare(`
+    const cert = await db.get(`
       SELECT c.*, u.name as student_name, s.student_id as student_code,
              issuer.name as issued_by_name
       FROM certificates c
@@ -126,7 +124,7 @@ router.get('/:id', authMiddleware, (req, res) => {
       LEFT JOIN students s ON s.user_id = u.id
       LEFT JOIN users issuer ON issuer.id = c.issued_by
       WHERE c.id = ?
-    `).get(req.params.id);
+    `, [req.params.id]);
     if (!cert) return res.status(404).json({ error: 'Certificate not found' });
     if (req.user.role === 'student' && cert.student_id !== req.user.id) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -138,18 +136,17 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // Generate certificate
-router.post('/generate', authMiddleware, roleMiddleware('admin', 'teacher'), certificateRules, (req, res) => {
+router.post('/generate', authMiddleware, roleMiddleware('admin', 'teacher'), certificateRules, async (req, res) => {
   try {
     const { student_id, type, data } = req.body;
     if (!student_id || !type) return res.status(400).json({ error: 'student_id and type required' });
 
-    const db = getDb();
-    const student = db.prepare('SELECT * FROM users WHERE id = ?').get(student_id);
+    const student = await db.get('SELECT * FROM users WHERE id = ?', [student_id]);
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     const serial = generateSerial(type);
-    const result = db.prepare('INSERT INTO certificates (student_id, type, data, issued_by, serial_number) VALUES (?, ?, ?, ?, ?)')
-      .run(student_id, type, data ? JSON.stringify(data) : null, req.user.id, serial);
+    const result = await db.run('INSERT INTO certificates (student_id, type, data, issued_by, serial_number) VALUES (?, ?, ?, ?, ?)',
+      [student_id, type, data ? JSON.stringify(data) : null, req.user.id, serial]);
 
     res.status(201).json({ id: result.lastInsertRowid, serial_number: serial, message: 'Certificate generated' });
   } catch (err) {
@@ -158,16 +155,15 @@ router.post('/generate', authMiddleware, roleMiddleware('admin', 'teacher'), cer
 });
 
 // Get certificate as printable HTML
-router.get('/:id/html', authMiddleware, (req, res) => {
+router.get('/:id/html', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-    const cert = db.prepare(`
+    const cert = await db.get(`
       SELECT c.*, u.name as student_name, issuer.name as issued_by_name
       FROM certificates c
       JOIN users u ON u.id = c.student_id
       LEFT JOIN users issuer ON issuer.id = c.issued_by
       WHERE c.id = ?
-    `).get(req.params.id);
+    `, [req.params.id]);
     if (!cert) return res.status(404).json({ error: 'Certificate not found' });
     if (req.user.role === 'student' && cert.student_id !== req.user.id) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -182,10 +178,9 @@ router.get('/:id/html', authMiddleware, (req, res) => {
 });
 
 // Delete certificate
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    db.prepare('DELETE FROM certificates WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM certificates WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
     sendError(res, err);

@@ -4,7 +4,7 @@
  */
 
 const Anthropic = require('@anthropic-ai/sdk');
-const { getDb } = require('./db');
+const { db } = require('./data');
 
 const CONFIG = { model: 'claude-haiku-4-5-20251001', maxTokens: 1024 };
 
@@ -14,48 +14,46 @@ const CONFIG = { model: 'claude-haiku-4-5-20251001', maxTokens: 1024 };
  * Calculate risk score for a single student.
  * Returns a score from 0-100 (higher = more at-risk) with breakdown.
  */
-function calculateRiskScore(studentUserId) {
-  const db = getDb();
-
+async function calculateRiskScore(studentUserId) {
   // Attendance rate (last 30 days)
-  const attendance = db.prepare(`
+  const attendance = await db.get(`
     SELECT
       COUNT(*) as total,
       SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
       SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent
     FROM attendance
     WHERE user_id = ? AND date >= date('now', '-30 days')
-  `).get(studentUserId);
+  `, [studentUserId]);
 
   const attendanceRate = attendance.total > 0
     ? (attendance.present / attendance.total) * 100 : 100;
 
   // GPA trend (current vs previous)
-  const currentGpa = db.prepare(`
+  const currentGpa = (await db.get(`
     SELECT ROUND(AVG(gpa), 2) as avg
     FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL
-  `).get(studentUserId).avg || 0;
+  `, [studentUserId])).avg || 0;
 
   // Assignment completion rate
-  const assignments = db.prepare(`
+  const assignments = await db.get(`
     SELECT
       COUNT(DISTINCT a.id) as total,
       COUNT(DISTINCT s.assignment_id) as submitted
     FROM assignments a
     LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ?
     WHERE a.due_date <= date('now')
-  `).get(studentUserId);
+  `, [studentUserId]);
 
   const completionRate = assignments.total > 0
     ? (assignments.submitted / assignments.total) * 100 : 100;
 
   // Quiz performance
-  const quizzes = db.prepare(`
+  const quizzes = await db.get(`
     SELECT AVG(CAST(score AS REAL) / max_score * 100) as avg_score
     FROM quiz_attempts qa
     JOIN quizzes q ON qa.quiz_id = q.id
     WHERE qa.student_id = ?
-  `).get(studentUserId);
+  `, [studentUserId]);
 
   const quizAvg = quizzes.avg_score || 100;
 
@@ -103,8 +101,7 @@ function calculateRiskScore(studentUserId) {
 /**
  * Get risk scores for all students (or filtered by class/grade).
  */
-function getAtRiskStudents(options = {}) {
-  const db = getDb();
+async function getAtRiskStudents(options = {}) {
   const { classId, gradeId, minScore = 0, limit = 50 } = options;
 
   let studentQuery = `
@@ -129,19 +126,20 @@ function getAtRiskStudents(options = {}) {
   studentQuery += ` ORDER BY u.name LIMIT ?`;
   params.push(limit);
 
-  const students = db.prepare(studentQuery).all(...params);
+  const students = await db.all(studentQuery, params);
 
-  const results = students.map(student => {
-    const risk = calculateRiskScore(student.id);
-    return {
+  const results = [];
+  for (const student of students) {
+    const risk = await calculateRiskScore(student.id);
+    results.push({
       userId: student.id,
       name: student.name,
       studentCode: student.student_code,
       grade: student.grade_name,
       section: student.section,
       ...risk,
-    };
-  });
+    });
+  }
 
   // Filter by minimum score and sort by risk (highest first)
   return results
@@ -155,11 +153,9 @@ function getAtRiskStudents(options = {}) {
  * Analyze GPA trend over time for a student.
  * Returns monthly averages to show improvement or decline.
  */
-function analyzeTrend(studentUserId) {
-  const db = getDb();
-
+async function analyzeTrend(studentUserId) {
   // Get grade history (simulated by grouping submissions by month)
-  const monthlyScores = db.prepare(`
+  const monthlyScores = await db.all(`
     SELECT
       strftime('%Y-%m', s.submitted_at) as month,
       ROUND(AVG(CAST(s.score AS REAL) / a.max_score * 100), 1) as avg_score,
@@ -169,10 +165,10 @@ function analyzeTrend(studentUserId) {
     WHERE s.student_id = ? AND s.score IS NOT NULL
     GROUP BY month
     ORDER BY month
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Attendance trend
-  const monthlyAttendance = db.prepare(`
+  const monthlyAttendance = await db.all(`
     SELECT
       strftime('%Y-%m', date) as month,
       ROUND(CAST(SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100, 1) as rate,
@@ -181,7 +177,7 @@ function analyzeTrend(studentUserId) {
     WHERE user_id = ?
     GROUP BY month
     ORDER BY month
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Calculate trend direction
   const scoreTrend = calculateTrendDirection(monthlyScores.map(m => m.avg_score));
@@ -318,8 +314,8 @@ function generateFallbackInterventions(data) {
  * Check all students and return those who crossed risk thresholds.
  * Used for alert notifications.
  */
-function checkAlerts() {
-  const atRisk = getAtRiskStudents({ minScore: 50 });
+async function checkAlerts() {
+  const atRisk = await getAtRiskStudents({ minScore: 50 });
 
   return atRisk.map(student => ({
     userId: student.userId,
@@ -337,15 +333,14 @@ function checkAlerts() {
 /**
  * Get overall analytics stats for the school dashboard.
  */
-function getAnalyticsStats() {
-  const db = getDb();
-
-  const totalStudents = db.prepare(
-    'SELECT COUNT(*) as count FROM students WHERE status = ?'
-  ).get('active').count;
+async function getAnalyticsStats() {
+  const totalStudents = (await db.get(
+    'SELECT COUNT(*) as count FROM students WHERE status = ?',
+    ['active']
+  )).count;
 
   // Get all at-risk students
-  const allAtRisk = getAtRiskStudents({ minScore: 30 });
+  const allAtRisk = await getAtRiskStudents({ minScore: 30 });
 
   const critical = allAtRisk.filter(s => s.riskLevel === 'critical').length;
   const high = allAtRisk.filter(s => s.riskLevel === 'high').length;

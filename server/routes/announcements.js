@@ -1,14 +1,13 @@
 const express = require('express');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { announcementRules } = require('../middleware/validate');
 
 const router = express.Router();
 
 // Get all announcements (public, with optional grade/class filter)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const db = getDb();
     const { grade_id, class_id } = req.query;
 
     let where = [];
@@ -25,7 +24,7 @@ router.get('/', (req, res) => {
 
     const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-    const announcements = db.prepare(`
+    const announcements = await db.all(`
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -34,7 +33,7 @@ router.get('/', (req, res) => {
       LEFT JOIN classes c ON a.class_id = c.id
       ${whereClause}
       ORDER BY a.created_at DESC
-    `).all(...params);
+    `, params);
 
     res.json({ announcements });
   } catch (err) {
@@ -44,10 +43,9 @@ router.get('/', (req, res) => {
 });
 
 // Get single announcement (public)
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const db = getDb();
-    const announcement = db.prepare(`
+    const announcement = await db.get(`
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -55,7 +53,7 @@ router.get('/:id', (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `).get(req.params.id);
+    `, req.params.id);
 
     if (!announcement) {
       return res.status(404).json({ error: 'Announcement not found' });
@@ -69,16 +67,16 @@ router.get('/:id', (req, res) => {
 });
 
 // Create announcement (teacher/admin only)
-router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcementRules, (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcementRules, async (req, res) => {
   try {
     const { title, content, grade_id, class_id } = req.body;
-    const db = getDb();
 
-    const result = db.prepare(
-      'INSERT INTO announcements (title, content, author_id, grade_id, class_id) VALUES (?, ?, ?, ?, ?)'
-    ).run(title, content, req.user.id, grade_id || null, class_id || null);
+    const result = await db.run(
+      'INSERT INTO announcements (title, content, author_id, grade_id, class_id) VALUES (?, ?, ?, ?, ?)',
+      [title, content, req.user.id, grade_id || null, class_id || null]
+    );
 
-    const announcement = db.prepare(`
+    const announcement = await db.get(`
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -86,7 +84,7 @@ router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcemen
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `).get(result.lastInsertRowid);
+    `, result.lastInsertRowid);
 
     res.status(201).json({ message: 'Announcement created', announcement });
   } catch (err) {
@@ -96,12 +94,11 @@ router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcemen
 });
 
 // Update announcement (author or admin only)
-router.put('/:id', authMiddleware, (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { title, content, grade_id, class_id } = req.body;
-    const db = getDb();
 
-    const existing = db.prepare('SELECT * FROM announcements WHERE id = ?').get(req.params.id);
+    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', req.params.id);
     if (!existing) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
@@ -114,11 +111,12 @@ router.put('/:id', authMiddleware, (req, res) => {
       return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    db.prepare(
-      'UPDATE announcements SET title = ?, content = ?, grade_id = ?, class_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-    ).run(title, content, grade_id || null, class_id || null, req.params.id);
+    await db.run(
+      'UPDATE announcements SET title = ?, content = ?, grade_id = ?, class_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [title, content, grade_id || null, class_id || null, req.params.id]
+    );
 
-    const announcement = db.prepare(`
+    const announcement = await db.get(`
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -126,7 +124,7 @@ router.put('/:id', authMiddleware, (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `).get(req.params.id);
+    `, req.params.id);
 
     res.json({ message: 'Announcement updated', announcement });
   } catch (err) {
@@ -136,11 +134,9 @@ router.put('/:id', authMiddleware, (req, res) => {
 });
 
 // Delete announcement (author or admin only)
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
-
-    const existing = db.prepare('SELECT * FROM announcements WHERE id = ?').get(req.params.id);
+    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', req.params.id);
     if (!existing) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
@@ -149,7 +145,7 @@ router.delete('/:id', authMiddleware, (req, res) => {
       return res.status(403).json({ error: 'Not authorized to delete this announcement' });
     }
 
-    db.prepare('DELETE FROM announcements WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM announcements WHERE id = ?', req.params.id);
 
     res.json({ message: 'Announcement deleted' });
   } catch (err) {

@@ -113,13 +113,12 @@ router.get('/suggestions/:classId', authMiddleware, roleMiddleware('admin', 'tea
 });
 
 // GET /api/ai/schedule/analyze/:classId — Analyze schedule quality
-router.get('/analyze/:classId', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/analyze/:classId', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const { getDb } = require('../db');
-    const db = getDb();
+    const { db } = require('../data');
     const classId = parseInt(req.params.classId);
 
-    const entries = db.prepare(`
+    const entries = await db.all(`
       SELECT t.*, s.name as subject_name, s.code as subject_code,
              u.name as teacher_name
       FROM timetable t
@@ -127,7 +126,7 @@ router.get('/analyze/:classId', authMiddleware, roleMiddleware('admin', 'teacher
       LEFT JOIN users u ON t.teacher_id = u.id
       WHERE t.class_id = ?
       ORDER BY t.day_of_week, t.start_time
-    `).all(classId);
+    `, [classId]);
 
     if (entries.length === 0) {
       return res.json({

@@ -1,19 +1,19 @@
 const express = require('express');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { contactRules } = require('../middleware/validate');
 
 const router = express.Router();
 
 // Submit contact form
-router.post('/', contactRules, (req, res) => {
+router.post('/', contactRules, async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
-    const db = getDb();
-    const result = db.prepare(
-      'INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)'
-    ).run(name, email, subject, message);
+    const result = await db.run(
+      'INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)',
+      [name, email, subject, message]
+    );
 
     res.status(201).json({
       message: 'Contact form submitted successfully',
@@ -26,10 +26,9 @@ router.post('/', contactRules, (req, res) => {
 });
 
 // Get all contacts — admin only
-router.get('/', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const db = getDb();
-    const contacts = db.prepare('SELECT * FROM contacts ORDER BY created_at DESC').all();
+    const contacts = await db.all('SELECT * FROM contacts ORDER BY created_at DESC');
 
     res.json({ contacts });
   } catch (err) {

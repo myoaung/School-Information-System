@@ -5,7 +5,7 @@
 
 const Anthropic = require('@anthropic-ai/sdk');
 const CONFIG = { model: 'claude-haiku-4-5-20251001', maxTokens: 2048 };
-const { getDb } = require('./db');
+const { db } = require('./data');
 
 // ─── Student Data Aggregator ────────────────────────────────────────────────────
 
@@ -13,32 +13,30 @@ const { getDb } = require('./db');
  * Collect all data for a student report card.
  * Returns a structured object ready for AI narrative generation.
  */
-function aggregateStudentData(studentUserId) {
-  const db = getDb();
-
+async function aggregateStudentData(studentUserId) {
   // Student profile
-  const student = db.prepare(`
+  const student = await db.get(`
     SELECT s.*, u.name, u.email, g.name as grade_name, g.code as grade_code
     FROM students s
     JOIN users u ON s.user_id = u.id
     LEFT JOIN grades g ON s.grade_id = g.id
     WHERE s.user_id = ?
-  `).get(studentUserId);
+  `, [studentUserId]);
 
   if (!student) return null;
 
   // Grades per course
-  const grades = db.prepare(`
+  const grades = await db.all(`
     SELECT g.*, c.title as course_title, sub.code as subject_code, sub.name as subject_name
     FROM gradebook g
     JOIN courses c ON g.course_id = c.id
     JOIN subjects sub ON c.subject_id = sub.id
     WHERE g.student_id = ?
     ORDER BY sub.code
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Assignment submissions
-  const assignments = db.prepare(`
+  const assignments = await db.all(`
     SELECT a.title as assignment_title, c.title as course_title,
            s.score, a.max_score, s.status, s.submitted_at, s.feedback
     FROM submissions s
@@ -46,10 +44,10 @@ function aggregateStudentData(studentUserId) {
     JOIN courses c ON a.course_id = c.id
     WHERE s.student_id = ?
     ORDER BY s.submitted_at DESC
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Quiz attempts
-  const quizzes = db.prepare(`
+  const quizzes = await db.all(`
     SELECT q.title as quiz_title, c.title as course_title,
            qa.score, q.max_score, qa.completed_at
     FROM quiz_attempts qa
@@ -57,10 +55,10 @@ function aggregateStudentData(studentUserId) {
     JOIN courses c ON q.course_id = c.id
     WHERE qa.student_id = ?
     ORDER BY qa.completed_at DESC
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Attendance summary
-  const attendance = db.prepare(`
+  const attendance = await db.get(`
     SELECT
       COUNT(*) as total,
       SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -69,24 +67,25 @@ function aggregateStudentData(studentUserId) {
       SUM(CASE WHEN status = 'leave' THEN 1 ELSE 0 END) as leave
     FROM attendance
     WHERE user_id = ?
-  `).get(studentUserId);
+  `, [studentUserId]);
 
   const attendanceRate = attendance.total > 0
     ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
   // Overall GPA
-  const overallGpa = db.prepare(
-    'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL'
-  ).get(studentUserId).avg || 0;
+  const overallGpa = (await db.get(
+    'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+    [studentUserId]
+  )).avg || 0;
 
   // Class enrollments
-  const classes = db.prepare(`
+  const classes = await db.all(`
     SELECT c.name, c.schedule, c.room, u.name as teacher_name
     FROM enrollments e
     JOIN classes c ON e.class_id = c.id
     LEFT JOIN users u ON c.teacher_id = u.id
     WHERE e.student_id = ?
-  `).all(studentUserId);
+  `, [studentUserId]);
 
   // Compute assignment stats
   const gradedAssignments = assignments.filter(a => a.score != null);
@@ -228,7 +227,7 @@ Write the report narrative now.`;
  * Falls back to a template-based report if AI is unavailable.
  */
 async function generateReportNarrative(studentUserId) {
-  const data = aggregateStudentData(studentUserId);
+  const data = await aggregateStudentData(studentUserId);
   if (!data) return null;
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -318,10 +317,8 @@ function generateFallbackNarrative(data) {
  * Save a generated report to the database.
  * Creates the ai_reports table if it doesn't exist.
  */
-function saveReport(studentUserId, generatedBy, narrative, source) {
-  const db = getDb();
-
-  db.exec(`
+async function saveReport(studentUserId, generatedBy, narrative, source) {
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS ai_reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -335,10 +332,10 @@ function saveReport(studentUserId, generatedBy, narrative, source) {
     )
   `);
 
-  const result = db.prepare(`
+  const result = await db.run(`
     INSERT INTO ai_reports (student_id, generated_by, narrative, source, status)
     VALUES (?, ?, ?, ?, 'draft')
-  `).run(studentUserId, generatedBy, narrative, source);
+  `, [studentUserId, generatedBy, narrative, source]);
 
   return result.lastInsertRowid;
 }
@@ -346,10 +343,8 @@ function saveReport(studentUserId, generatedBy, narrative, source) {
 /**
  * Get all reports for a student (or all if admin/teacher).
  */
-function getReports(studentUserId, viewerRole, viewerId) {
-  const db = getDb();
-
-  db.exec(`
+async function getReports(studentUserId, viewerRole, viewerId) {
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS ai_reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -365,36 +360,34 @@ function getReports(studentUserId, viewerRole, viewerId) {
 
   if (viewerRole === 'student') {
     // Students only see approved reports for themselves
-    return db.prepare(`
+    return db.all(`
       SELECT r.*, u.name as student_name
       FROM ai_reports r
       JOIN users u ON r.student_id = u.id
       WHERE r.student_id = ? AND r.status = 'approved'
       ORDER BY r.created_at DESC
-    `).all(viewerId);
+    `, [viewerId]);
   }
 
   // Admin/Teacher can see all reports
-  return db.prepare(`
+  return db.all(`
     SELECT r.*, u.name as student_name
     FROM ai_reports r
     JOIN users u ON r.student_id = u.id
     ${studentUserId ? 'WHERE r.student_id = ?' : ''}
     ORDER BY r.created_at DESC
-  `).all(...(studentUserId ? [studentUserId] : []));
+  `, studentUserId ? [studentUserId] : []);
 }
 
 /**
  * Update report status (review gate).
  */
-function updateReportStatus(reportId, status, reviewedBy) {
-  const db = getDb();
-
-  return db.prepare(`
+async function updateReportStatus(reportId, status, reviewedBy) {
+  return db.run(`
     UPDATE ai_reports
     SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(status, reviewedBy, reportId);
+  `, [status, reviewedBy, reportId]);
 }
 
 module.exports = {

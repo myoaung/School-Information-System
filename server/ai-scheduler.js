@@ -4,7 +4,7 @@
  */
 
 const Anthropic = require('@anthropic-ai/sdk');
-const { getDb } = require('./db');
+const { db } = require('./data');
 
 const CONFIG = { model: 'claude-haiku-4-5-20251001', maxTokens: 2048 };
 
@@ -13,36 +13,34 @@ const CONFIG = { model: 'claude-haiku-4-5-20251001', maxTokens: 2048 };
 /**
  * Collect all scheduling constraints from the database.
  */
-function collectConstraints() {
-  const db = getDb();
-
+async function collectConstraints() {
   // Teachers with their assigned classes
-  const teachers = db.prepare(`
+  const teachers = await db.all(`
     SELECT u.id, u.name, t.teacher_id as code, t.specialization
     FROM teachers t
     JOIN users u ON t.user_id = u.id
     WHERE t.status = 'active'
-  `).all();
+  `);
 
   // Classes with their current teacher assignments
-  const classes = db.prepare(`
+  const classes = await db.all(`
     SELECT c.id, c.name, c.teacher_id, u.name as teacher_name,
            c.schedule, c.room
     FROM classes c
     LEFT JOIN users u ON c.teacher_id = u.id
-  `).all();
+  `);
 
   // Subjects with their grade requirements
-  const subjects = db.prepare(`
+  const subjects = await db.all(`
     SELECT s.id, s.code, s.name, s.category,
            COUNT(gs.grade_id) as grade_count
     FROM subjects s
     LEFT JOIN grade_subjects gs ON s.id = gs.subject_id
     GROUP BY s.id
-  `).all();
+  `);
 
   // Grade-subject mappings (which subjects are required for which grades)
-  const gradeSubjects = db.prepare(`
+  const gradeSubjects = await db.all(`
     SELECT g.code as grade_code, g.name as grade_name,
            s.code as subject_code, s.name as subject_name,
            gs.weekly_periods, gs.is_required
@@ -50,10 +48,10 @@ function collectConstraints() {
     JOIN grades g ON gs.grade_id = g.id
     JOIN subjects s ON gs.subject_id = s.id
     ORDER BY g.display_order, s.code
-  `).all();
+  `);
 
   // Existing timetable entries (to avoid conflicts)
-  const existingEntries = db.prepare(`
+  const existingEntries = await db.all(`
     SELECT t.*, s.name as subject_name, u.name as teacher_name,
            c.name as class_name
     FROM timetable t
@@ -61,16 +59,16 @@ function collectConstraints() {
     LEFT JOIN users u ON t.teacher_id = u.id
     LEFT JOIN classes c ON t.class_id = c.id
     ORDER BY t.day_of_week, t.start_time
-  `).all();
+  `);
 
   // Rooms (extracted from classes and timetable)
-  const rooms = db.prepare(`
+  const rooms = (await db.all(`
     SELECT DISTINCT room FROM (
       SELECT room FROM classes WHERE room IS NOT NULL
       UNION
       SELECT room FROM timetable WHERE room IS NOT NULL
     ) ORDER BY room
-  `).all().map(r => r.room);
+  `)).map(r => r.room);
 
   // Time slots (standard school hours)
   const timeSlots = generateTimeSlots();
@@ -121,10 +119,8 @@ function generateTimeSlots() {
 /**
  * Detect all scheduling conflicts in the current timetable.
  */
-function detectConflicts() {
-  const db = getDb();
-
-  const entries = db.prepare(`
+async function detectConflicts() {
+  const entries = await db.all(`
     SELECT t.*, s.name as subject_name, u.name as teacher_name,
            c.name as class_name
     FROM timetable t
@@ -132,7 +128,7 @@ function detectConflicts() {
     LEFT JOIN users u ON t.teacher_id = u.id
     LEFT JOIN classes c ON t.class_id = c.id
     ORDER BY t.day_of_week, t.start_time
-  `).all();
+  `);
 
   const conflicts = [];
 
@@ -199,61 +195,60 @@ function getDayName(day) {
  * Generate an optimal schedule for a class using constraint satisfaction.
  * Returns proposed timetable entries (not yet saved to DB).
  */
-function generateSchedule(classId, options = {}) {
-  const db = getDb();
+async function generateSchedule(classId, options = {}) {
   const { respectExisting = true, preferredDays = [0, 1, 2, 3, 4] } = options;
 
   // Get class info
-  const classInfo = db.prepare(`
+  const classInfo = await db.get(`
     SELECT c.*, u.name as teacher_name
     FROM classes c
     LEFT JOIN users u ON c.teacher_id = u.id
     WHERE c.id = ?
-  `).get(classId);
+  `, [classId]);
 
   if (!classInfo) return { error: 'Class not found' };
 
   // Get required subjects for this class's grade
-  const gradeId = db.prepare(`
+  const gradeId = (await db.get(`
     SELECT grade_id FROM students
     WHERE user_id IN (SELECT student_id FROM enrollments WHERE class_id = ?)
     LIMIT 1
-  `).get(classId)?.grade_id;
+  `, [classId]))?.grade_id;
 
   let requiredSubjects;
   if (gradeId) {
-    requiredSubjects = db.prepare(`
+    requiredSubjects = await db.all(`
       SELECT s.id, s.code, s.name, gs.weekly_periods, gs.is_required
       FROM grade_subjects gs
       JOIN subjects s ON gs.subject_id = s.id
       WHERE gs.grade_id = ?
       ORDER BY gs.is_required DESC, s.code
-    `).all(gradeId);
+    `, [gradeId]);
   } else {
     // Fallback: use subjects from existing timetable
-    requiredSubjects = db.prepare(`
+    requiredSubjects = await db.all(`
       SELECT DISTINCT s.id, s.code, s.name, 2 as weekly_periods, 1 as is_required
       FROM timetable t
       JOIN subjects s ON t.subject_id = s.id
       WHERE t.class_id = ?
-    `).all(classId);
+    `, [classId]);
   }
 
   // Get existing entries for this class (to preserve)
   const existingEntries = respectExisting
-    ? db.prepare('SELECT * FROM timetable WHERE class_id = ?').all(classId)
+    ? await db.all('SELECT * FROM timetable WHERE class_id = ?', [classId])
     : [];
 
   // Get all existing entries (for conflict checking)
-  const allExisting = db.prepare(`
+  const allExisting = await db.all(`
     SELECT * FROM timetable WHERE class_id != ?
-  `).all(classId);
+  `, [classId]);
 
   // Get available teachers for each subject
   const teacherMap = {};
   for (const subj of requiredSubjects) {
     // Find teachers who teach this subject (based on specialization or existing assignments)
-    const teachers = db.prepare(`
+    const teachers = await db.all(`
       SELECT DISTINCT u.id, u.name
       FROM users u
       JOIN teachers t ON t.user_id = u.id
@@ -261,7 +256,7 @@ function generateSchedule(classId, options = {}) {
       AND (t.specialization LIKE ? OR u.id IN (
         SELECT teacher_id FROM timetable WHERE subject_id = ?
       ))
-    `).all(`%${subj.name}%`, subj.id);
+    `, [`%${subj.name}%`, subj.id]);
 
     teacherMap[subj.id] = teachers.length > 0 ? teachers : [{ id: classInfo.teacher_id, name: classInfo.teacher_name }];
   }
@@ -375,16 +370,14 @@ Rules:
  * Generate AI suggestions for improving an existing schedule.
  */
 async function generateScheduleSuggestions(classId) {
-  const db = getDb();
-
-  const entries = db.prepare(`
+  const entries = await db.all(`
     SELECT t.*, s.name as subject_name, u.name as teacher_name
     FROM timetable t
     JOIN subjects s ON t.subject_id = s.id
     LEFT JOIN users u ON t.teacher_id = u.id
     WHERE t.class_id = ?
     ORDER BY t.day_of_week, t.start_time
-  `).all(classId);
+  `, [classId]);
 
   if (entries.length === 0) {
     return '<p>No timetable entries found for this class.</p>';
@@ -495,40 +488,31 @@ function generateFallbackSuggestions(entries, scheduleByDay) {
 /**
  * Save proposed schedule entries to the database.
  */
-function applySchedule(proposedEntries) {
-  const db = getDb();
-
-  const insert = db.prepare(`
-    INSERT INTO timetable (class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
-
+async function applySchedule(proposedEntries) {
   const results = [];
-  const applyInsert = db.transaction(() => {
-    for (const entry of proposedEntries) {
-      const result = insert.run(
-        entry.class_id,
-        entry.subject_id,
-        entry.teacher_id,
-        entry.day_of_week,
-        entry.start_time,
-        entry.end_time,
-        entry.room
-      );
-      results.push(result.lastInsertRowid);
-    }
-  });
-
-  applyInsert();
+  for (const entry of proposedEntries) {
+    const result = await db.run(`
+      INSERT INTO timetable (class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [
+      entry.class_id,
+      entry.subject_id,
+      entry.teacher_id,
+      entry.day_of_week,
+      entry.start_time,
+      entry.end_time,
+      entry.room
+    ]);
+    results.push(result.lastInsertRowid);
+  }
   return results;
 }
 
 /**
  * Clear all timetable entries for a class.
  */
-function clearSchedule(classId) {
-  const db = getDb();
-  return db.prepare('DELETE FROM timetable WHERE class_id = ?').run(classId);
+async function clearSchedule(classId) {
+  return db.run('DELETE FROM timetable WHERE class_id = ?', [classId]);
 }
 
 module.exports = {

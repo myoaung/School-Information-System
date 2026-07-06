@@ -1,4 +1,4 @@
-const { getDb } = require('./db');
+const { db } = require('./data');
 const { getAIReply } = require('./ai');
 
 // ─── Main Chat Handler ──────────────────────────────────────────────────────
@@ -20,9 +20,8 @@ async function getReply(message, userName, userRole, userId) {
 
 // ─── Rule-Based Fallback ─────────────────────────────────────────────────────
 
-function getRuleBasedReply(message, userName, userRole) {
+async function getRuleBasedReply(message, userName, userRole) {
   try {
-  const db = getDb();
   const msg = message.toLowerCase().trim();
   const safeName = String(userName || 'User').replace(/[<>]/g, '').slice(0, 50);
 
@@ -38,11 +37,11 @@ function getRuleBasedReply(message, userName, userRole) {
 
   // --- Announcements ---
   if (/announcement|news|update|ကြေညာ|သတင်း/i.test(msg)) {
-    const rows = db.prepare(`
+    const rows = await db.all(`
       SELECT a.title, a.content, u.name as author, a.created_at
       FROM announcements a LEFT JOIN users u ON a.author_id = u.id
       ORDER BY a.created_at DESC LIMIT 5
-    `).all();
+    `);
 
     if (rows.length === 0) return 'No announcements yet. Check back later!';
 
@@ -56,12 +55,12 @@ function getRuleBasedReply(message, userName, userRole) {
 
   // --- Classes ---
   if (/class|schedule|timetable|အတန်း|အချိန်ဇယား/i.test(msg)) {
-    const rows = db.prepare(`
+    const rows = await db.all(`
       SELECT c.name, c.description, c.schedule, c.room, u.name as teacher,
         (SELECT COUNT(*) FROM enrollments e WHERE e.class_id = c.id) as student_count
       FROM classes c LEFT JOIN users u ON c.teacher_id = u.id
       ORDER BY c.name
-    `).all();
+    `);
 
     if (rows.length === 0) return 'No classes available yet.';
 
@@ -75,8 +74,8 @@ function getRuleBasedReply(message, userName, userRole) {
 
   // --- Curriculum ---
   if (/curriculum|subject|grade|သင်ရိုး|ဘာသာရပ်|အတန်း/i.test(msg)) {
-    const levels = db.prepare('SELECT * FROM education_levels ORDER BY id').all();
-    const grades = db.prepare('SELECT g.*, el.name as level_name FROM grades g JOIN education_levels el ON g.education_level_id = el.id ORDER BY g.display_order').all();
+    const levels = await db.all('SELECT * FROM education_levels ORDER BY id');
+    const grades = await db.all('SELECT g.*, el.name as level_name FROM grades g JOIN education_levels el ON g.education_level_id = el.id ORDER BY g.display_order');
 
     let reply = '🎓 **Myanmar Basic Education Curriculum:**\n\n';
     for (const level of levels) {

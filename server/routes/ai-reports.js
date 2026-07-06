@@ -6,6 +6,7 @@ const { sendError } = require('../utils/errorHandler');
 
 const express = require('express');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { db } = require('../data');
 const {
   aggregateStudentData,
   generateReportNarrative,
@@ -60,7 +61,7 @@ router.post('/report/:studentId', authMiddleware, roleMiddleware('admin', 'teach
 });
 
 // GET /api/ai/report/:studentId — Get reports for a student
-router.get('/report/:studentId', authMiddleware, (req, res) => {
+router.get('/report/:studentId', authMiddleware, async (req, res) => {
   try {
     const studentUserId = parseInt(req.params.studentId);
 
@@ -78,7 +79,7 @@ router.get('/report/:studentId', authMiddleware, (req, res) => {
 });
 
 // GET /api/ai/reports — Get all reports (admin/teacher)
-router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
     const reports = getReports(null, req.user.role, req.user.id);
     res.json({ reports });
@@ -89,7 +90,7 @@ router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), (req,
 });
 
 // PUT /api/ai/report/:reportId/approve — Approve a report
-router.put('/report/:reportId/approve', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.put('/report/:reportId/approve', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
     const reportId = parseInt(req.params.reportId);
     const result = updateReportStatus(reportId, 'approved', req.user.id);
@@ -106,7 +107,7 @@ router.put('/report/:reportId/approve', authMiddleware, roleMiddleware('admin', 
 });
 
 // PUT /api/ai/report/:reportId/reject — Reject a report (back to draft)
-router.put('/report/:reportId/reject', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.put('/report/:reportId/reject', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
     const reportId = parseInt(req.params.reportId);
     const result = updateReportStatus(reportId, 'draft', req.user.id);
@@ -123,7 +124,7 @@ router.put('/report/:reportId/reject', authMiddleware, roleMiddleware('admin', '
 });
 
 // PUT /api/ai/report/:reportId/send — Mark report as sent
-router.put('/report/:reportId/send', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.put('/report/:reportId/send', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const reportId = parseInt(req.params.reportId);
     const result = updateReportStatus(reportId, 'sent', req.user.id);
@@ -140,12 +141,9 @@ router.put('/report/:reportId/send', authMiddleware, roleMiddleware('admin'), (r
 });
 
 // GET /api/ai/report/:reportId/html — Get report as printable HTML
-router.get('/report/:reportId/html', authMiddleware, (req, res) => {
+router.get('/report/:reportId/html', authMiddleware, async (req, res) => {
   try {
-    const { getDb } = require('../db');
-    const db = getDb();
-
-    db.exec(`
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS ai_reports (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -159,12 +157,12 @@ router.get('/report/:reportId/html', authMiddleware, (req, res) => {
       )
     `);
 
-    const report = db.prepare(`
+    const report = await db.get(`
       SELECT r.*, u.name as student_name
       FROM ai_reports r
       JOIN users u ON r.student_id = u.id
       WHERE r.id = ?
-    `).get(parseInt(req.params.reportId));
+    `, [parseInt(req.params.reportId)]);
 
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });

@@ -1,48 +1,51 @@
 const express = require('express');
-const { getDb } = require('../db');
+const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/reports/dashboard — role-aware stats for dashboard widgets
-router.get('/dashboard', authMiddleware, (req, res) => {
+router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const { role, id } = req.user;
 
     // Recent announcements (all roles)
-    const recentAnnouncements = db.prepare(`
+    const recentAnnouncements = await db.all(`
       SELECT a.id, a.title, a.created_at, u.name as author
       FROM announcements a
       JOIN users u ON a.author_id = u.id
       ORDER BY a.created_at DESC LIMIT 3
-    `).all();
+    `);
 
     if (role === 'student') {
       // Student-specific stats
-      const attendance = db.prepare(`
+      const attendance = await db.get(`
         SELECT COUNT(*) as total,
           SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
         FROM attendance WHERE user_id = ?
-      `).get(id);
+      `, [id]);
       const attendanceRate = attendance.total > 0
         ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
-      const overallGpa = db.prepare(
-        'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL'
-      ).get(id).avg || 0;
+      const overallGpaRow = await db.get(
+        'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+        [id]
+      );
+      const overallGpa = overallGpaRow.avg || 0;
 
-      const pendingAssignments = db.prepare(`
+      const pendingAssignmentsRow = await db.get(`
         SELECT COUNT(*) as count FROM assignments a
         WHERE a.due_date >= date('now')
         AND a.id NOT IN (SELECT assignment_id FROM submissions WHERE student_id = ?)
-      `).get(id).count;
+      `, [id]);
+      const pendingAssignments = pendingAssignmentsRow.count;
 
-      const upcomingQuizzes = db.prepare(`
+      const upcomingQuizzesRow = await db.get(`
         SELECT COUNT(*) as count FROM quizzes q
         WHERE q.due_date >= date('now')
         AND q.id NOT IN (SELECT quiz_id FROM quiz_attempts WHERE student_id = ?)
-      `).get(id).count;
+      `, [id]);
+      const upcomingQuizzes = upcomingQuizzesRow.count;
 
       return res.json({
         dashboard: {
@@ -56,22 +59,27 @@ router.get('/dashboard', authMiddleware, (req, res) => {
     }
 
     // Admin/Teacher stats
-    const totalStudents = db.prepare('SELECT COUNT(*) as count FROM students WHERE status = ?').get('active').count;
-    const totalTeachers = db.prepare('SELECT COUNT(*) as count FROM teachers WHERE status = ?').get('active').count;
-    const totalClasses = db.prepare('SELECT COUNT(*) as count FROM classes').get().count;
-    const totalCourses = db.prepare('SELECT COUNT(*) as count FROM courses').get().count;
+    const totalStudentsRow = await db.get('SELECT COUNT(*) as count FROM students WHERE status = ?', ['active']);
+    const totalStudents = totalStudentsRow.count;
+    const totalTeachersRow = await db.get('SELECT COUNT(*) as count FROM teachers WHERE status = ?', ['active']);
+    const totalTeachers = totalTeachersRow.count;
+    const totalClassesRow = await db.get('SELECT COUNT(*) as count FROM classes');
+    const totalClasses = totalClassesRow.count;
+    const totalCoursesRow = await db.get('SELECT COUNT(*) as count FROM courses');
+    const totalCourses = totalCoursesRow.count;
 
-    const attendanceStats = db.prepare(`
+    const attendanceStats = await db.get(`
       SELECT COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
-    `).get();
+    `);
     const attendanceRate = attendanceStats.total > 0
       ? Math.round((attendanceStats.present / attendanceStats.total) * 100) : 0;
 
-    const pendingSubmissions = db.prepare(
+    const pendingSubmissionsRow = await db.get(
       "SELECT COUNT(*) as count FROM submissions WHERE status = 'submitted'"
-    ).get().count;
+    );
+    const pendingSubmissions = pendingSubmissionsRow.count;
 
     res.json({
       dashboard: {
@@ -91,9 +99,8 @@ router.get('/dashboard', authMiddleware, (req, res) => {
 });
 
 // GET /api/reports/teacher/:id — teacher performance report
-router.get('/teacher/:id', authMiddleware, (req, res) => {
+router.get('/teacher/:id', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const teacherId = parseInt(req.params.id);
 
     // Teachers can only view their own report
@@ -102,35 +109,35 @@ router.get('/teacher/:id', authMiddleware, (req, res) => {
     }
 
     // Teacher info
-    const teacher = db.prepare(`
+    const teacher = await db.get(`
       SELECT t.*, u.name, u.email
       FROM teachers t
       JOIN users u ON t.user_id = u.id
       WHERE t.user_id = ?
-    `).get(teacherId);
+    `, [teacherId]);
 
     if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
 
     // Classes taught
-    const classes = db.prepare(`
+    const classes = await db.all(`
       SELECT c.*, COUNT(e.student_id) as student_count
       FROM classes c
       LEFT JOIN enrollments e ON e.class_id = c.id
       WHERE c.teacher_id = ?
       GROUP BY c.id
-    `).all(teacherId);
+    `, [teacherId]);
 
     // Courses taught
-    const courses = db.prepare(`
+    const courses = await db.all(`
       SELECT co.*, sub.code as subject_code, sub.name as subject_name, cl.name as class_name
       FROM courses co
       JOIN subjects sub ON co.subject_id = sub.id
       JOIN classes cl ON co.class_id = cl.id
       WHERE cl.teacher_id = ?
-    `).all(teacherId);
+    `, [teacherId]);
 
     // Average student GPA per course
-    const courseStats = db.prepare(`
+    const courseStats = await db.all(`
       SELECT co.title as course_title, sub.code as subject_code,
         COUNT(g.id) as graded_students,
         ROUND(AVG(g.gpa), 2) as avg_gpa,
@@ -143,15 +150,16 @@ router.get('/teacher/:id', authMiddleware, (req, res) => {
       LEFT JOIN gradebook g ON g.course_id = co.id
       WHERE cl.teacher_id = ?
       GROUP BY co.id
-    `).all(teacherId);
+    `, [teacherId]);
 
     // Total unique students
-    const totalStudents = db.prepare(`
+    const totalStudentsRow = await db.get(`
       SELECT COUNT(DISTINCT e.student_id) as count
       FROM enrollments e
       JOIN classes c ON e.class_id = c.id
       WHERE c.teacher_id = ?
-    `).get(teacherId).count;
+    `, [teacherId]);
+    const totalStudents = totalStudentsRow.count;
 
     res.json({
       report: {
@@ -175,55 +183,58 @@ router.get('/teacher/:id', authMiddleware, (req, res) => {
 });
 
 // GET /api/reports/overview — school-wide stats (admin/teacher)
-router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const db = getDb();
-
-    const totalStudents = db.prepare('SELECT COUNT(*) as count FROM students WHERE status = ?').get('active').count;
-    const totalTeachers = db.prepare('SELECT COUNT(*) as count FROM teachers WHERE status = ?').get('active').count;
-    const totalClasses = db.prepare('SELECT COUNT(*) as count FROM classes').get().count;
-    const totalCourses = db.prepare('SELECT COUNT(*) as count FROM courses').get().count;
+    const totalStudentsRow = await db.get('SELECT COUNT(*) as count FROM students WHERE status = ?', ['active']);
+    const totalStudents = totalStudentsRow.count;
+    const totalTeachersRow = await db.get('SELECT COUNT(*) as count FROM teachers WHERE status = ?', ['active']);
+    const totalTeachers = totalTeachersRow.count;
+    const totalClassesRow = await db.get('SELECT COUNT(*) as count FROM classes');
+    const totalClasses = totalClassesRow.count;
+    const totalCoursesRow = await db.get('SELECT COUNT(*) as count FROM courses');
+    const totalCourses = totalCoursesRow.count;
 
     // Average GPA
-    const avgGpa = db.prepare('SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE gpa IS NOT NULL').get().avg || 0;
+    const avgGpaRow = await db.get('SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE gpa IS NOT NULL');
+    const avgGpa = avgGpaRow.avg || 0;
 
     // Attendance rate
-    const attendanceStats = db.prepare(`
+    const attendanceStats = await db.get(`
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
-    `).get();
+    `);
     const attendanceRate = attendanceStats.total > 0
       ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
       : 0;
 
     // Submission stats
-    const submissionStats = db.prepare(`
+    const submissionStats = await db.get(`
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'graded' THEN 1 ELSE 0 END) as graded,
         SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) as pending
       FROM submissions
-    `).get();
+    `);
 
     // Quiz attempt stats
-    const quizStats = db.prepare(`
+    const quizStats = await db.get(`
       SELECT COUNT(*) as total, ROUND(AVG(score), 1) as avg_score
       FROM quiz_attempts
-    `).get();
+    `);
 
     // Grade distribution
-    const gradeDistribution = db.prepare(`
+    const gradeDistribution = await db.all(`
       SELECT final_grade as grade, COUNT(*) as count
       FROM gradebook
       WHERE final_grade IS NOT NULL AND final_grade != '-'
       GROUP BY final_grade
       ORDER BY count DESC
-    `).all();
+    `);
 
     // Top 5 students by GPA
-    const topStudents = db.prepare(`
+    const topStudents = await db.all(`
       SELECT u.name, u.id, ROUND(AVG(g.gpa), 2) as avg_gpa
       FROM gradebook g
       JOIN users u ON g.student_id = u.id
@@ -231,7 +242,7 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), (req
       GROUP BY g.student_id
       ORDER BY avg_gpa DESC
       LIMIT 5
-    `).all();
+    `);
 
     res.json({
       overview: {
@@ -254,9 +265,8 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), (req
 });
 
 // GET /api/reports/student/:id — student report card
-router.get('/student/:id', authMiddleware, (req, res) => {
+router.get('/student/:id', authMiddleware, async (req, res) => {
   try {
-    const db = getDb();
     const studentId = parseInt(req.params.id);
 
     // Students can only view their own report
@@ -265,27 +275,27 @@ router.get('/student/:id', authMiddleware, (req, res) => {
     }
 
     // Student info
-    const student = db.prepare(`
+    const student = await db.get(`
       SELECT s.*, u.name, u.email
       FROM students s
       JOIN users u ON s.user_id = u.id
       WHERE s.user_id = ?
-    `).get(studentId);
+    `, [studentId]);
 
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     // Grades per course
-    const grades = db.prepare(`
+    const grades = await db.all(`
       SELECT g.*, c.title as course_title, sub.code as subject_code, sub.name as subject_name
       FROM gradebook g
       JOIN courses c ON g.course_id = c.id
       JOIN subjects sub ON c.subject_id = sub.id
       WHERE g.student_id = ?
       ORDER BY sub.code
-    `).all(studentId);
+    `, [studentId]);
 
     // Assignment submissions
-    const assignments = db.prepare(`
+    const assignments = await db.all(`
       SELECT a.title as assignment_title, c.title as course_title,
              s.score, a.max_score, s.status, s.submitted_at
       FROM submissions s
@@ -293,10 +303,10 @@ router.get('/student/:id', authMiddleware, (req, res) => {
       JOIN courses c ON a.course_id = c.id
       WHERE s.student_id = ?
       ORDER BY s.submitted_at DESC
-    `).all(studentId);
+    `, [studentId]);
 
     // Quiz attempts
-    const quizzes = db.prepare(`
+    const quizzes = await db.all(`
       SELECT q.title as quiz_title, c.title as course_title,
              qa.score, q.max_score, qa.completed_at
       FROM quiz_attempts qa
@@ -304,10 +314,10 @@ router.get('/student/:id', authMiddleware, (req, res) => {
       JOIN courses c ON q.course_id = c.id
       WHERE qa.student_id = ?
       ORDER BY qa.completed_at DESC
-    `).all(studentId);
+    `, [studentId]);
 
     // Attendance summary
-    const attendance = db.prepare(`
+    const attendance = await db.get(`
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -316,16 +326,18 @@ router.get('/student/:id', authMiddleware, (req, res) => {
         SUM(CASE WHEN status = 'leave' THEN 1 ELSE 0 END) as leave
       FROM attendance
       WHERE user_id = ?
-    `).get(studentId);
+    `, [studentId]);
 
     const attendanceRate = attendance.total > 0
       ? Math.round((attendance.present / attendance.total) * 100)
       : 0;
 
     // Overall GPA
-    const overallGpa = db.prepare(
-      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL'
-    ).get(studentId).avg || 0;
+    const overallGpaRow = await db.get(
+      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+      [studentId]
+    );
+    const overallGpa = overallGpaRow.avg || 0;
 
     res.json({
       report: {
@@ -350,46 +362,47 @@ router.get('/student/:id', authMiddleware, (req, res) => {
 });
 
 // GET /api/reports/class/:id — class performance summary
-router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const db = getDb();
     const classId = parseInt(req.params.id);
 
     // Class info
-    const classInfo = db.prepare(`
+    const classInfo = await db.get(`
       SELECT c.*, u.name as teacher_name
       FROM classes c
       JOIN users u ON c.teacher_id = u.id
       WHERE c.id = ?
-    `).get(classId);
+    `, [classId]);
 
     if (!classInfo) return res.status(404).json({ error: 'Class not found' });
 
     // Enrollment count
-    const enrollmentCount = db.prepare(
-      'SELECT COUNT(*) as count FROM enrollments WHERE class_id = ?'
-    ).get(classId).count;
+    const enrollmentCountRow = await db.get(
+      'SELECT COUNT(*) as count FROM enrollments WHERE class_id = ?',
+      [classId]
+    );
+    const enrollmentCount = enrollmentCountRow.count;
 
     // Students enrolled
-    const students = db.prepare(`
+    const students = await db.all(`
       SELECT u.id, u.name, s.student_id as student_code
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
       JOIN students s ON s.user_id = u.id
       WHERE e.class_id = ?
       ORDER BY u.name
-    `).all(classId);
+    `, [classId]);
 
     // Courses in this class
-    const courses = db.prepare(`
+    const courses = await db.all(`
       SELECT c.*, sub.code as subject_code, sub.name as subject_name
       FROM courses c
       JOIN subjects sub ON c.subject_id = sub.id
       WHERE c.class_id = ?
-    `).all(classId);
+    `, [classId]);
 
     // Grade stats per course
-    const courseStats = db.prepare(`
+    const courseStats = await db.all(`
       SELECT
         c.title as course_title,
         sub.code as subject_code,
@@ -403,22 +416,22 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), (re
       LEFT JOIN gradebook g ON g.course_id = c.id
       WHERE c.class_id = ?
       GROUP BY c.id
-    `).all(classId);
+    `, [classId]);
 
     // Attendance rate for this class
-    const attendanceStats = db.prepare(`
+    const attendanceStats = await db.get(`
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
       WHERE class_id = ?
-    `).get(classId);
+    `, [classId]);
     const attendanceRate = attendanceStats.total > 0
       ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
       : 0;
 
     // Student ranking by average GPA in this class
-    const rankings = db.prepare(`
+    const rankings = await db.all(`
       SELECT u.name, u.id, ROUND(AVG(g.gpa), 2) as avg_gpa
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
@@ -427,7 +440,7 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), (re
       GROUP BY u.id
       HAVING avg_gpa IS NOT NULL
       ORDER BY avg_gpa DESC
-    `).all(classId);
+    `, [classId]);
 
     res.json({
       report: {
