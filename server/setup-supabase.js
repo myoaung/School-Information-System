@@ -105,7 +105,7 @@ ${serviceKey ? `SUPABASE_SERVICE_KEY=${serviceKey}` : '# SUPABASE_SERVICE_KEY= (
   console.log('='.repeat(60));
   console.log('\nNext steps:');
   console.log('  1. Start the server: npm run dev');
-  console.log('  2. Open http://localhost:5173');
+  console.log('  2. Open http://localhost:5173 (local) or https://schoolhub-mu.vercel.app (live)');
   console.log('  3. Login with demo accounts (see SUPABASE-SETUP.md)');
   console.log('\nFor more info, see: SUPABASE-SETUP.md\n');
 
