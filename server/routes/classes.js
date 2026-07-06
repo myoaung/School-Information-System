@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
       WHERE c.id = ?
-    `, req.params.id);
+    `, [req.params.id]);
 
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });
@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
       JOIN users u ON e.student_id = u.id
       WHERE e.class_id = ?
       ORDER BY u.name
-    `, req.params.id);
+    `, [req.params.id]);
 
     res.json({ class: { ...classData, students } });
   } catch (err) {
@@ -64,10 +64,10 @@ router.post('/', authMiddleware, roleMiddleware('admin'), classRules, async (req
 
     const result = await db.run(
       'INSERT INTO classes (name, description, teacher_id, schedule, room) VALUES (?, ?, ?, ?, ?)',
-      name, description || null, teacher_id || null, schedule || null, room || null
+      [name, description || null, teacher_id || null, schedule || null, room || null]
     );
 
-    const classData = await db.get('SELECT * FROM classes WHERE id = ?', result.lastInsertRowid);
+    const classData = await db.get('SELECT * FROM classes WHERE id = ?', [result.lastInsertRowid]);
 
     res.status(201).json({ message: 'Class created', class: classData });
   } catch (err) {
@@ -81,7 +81,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
   try {
     const { name, description, teacher_id, schedule, room } = req.body;
 
-    const existing = await db.get('SELECT * FROM classes WHERE id = ?', req.params.id);
+    const existing = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
     if (!existing) {
       return res.status(404).json({ error: 'Class not found' });
     }
@@ -92,10 +92,10 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 
     await db.run(
       'UPDATE classes SET name = ?, description = ?, teacher_id = ?, schedule = ?, room = ? WHERE id = ?',
-      name, description || null, teacher_id || null, schedule || null, room || null, req.params.id
+      [name, description || null, teacher_id || null, schedule || null, room || null, req.params.id]
     );
 
-    const classData = await db.get('SELECT * FROM classes WHERE id = ?', req.params.id);
+    const classData = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
 
     res.json({ message: 'Class updated', class: classData });
   } catch (err) {
@@ -113,22 +113,22 @@ router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), a
       return res.status(400).json({ error: 'Student ID is required' });
     }
 
-    const classData = await db.get('SELECT * FROM classes WHERE id = ?', req.params.id);
+    const classData = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', student_id, 'student');
+    const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [student_id, 'student']);
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const existing = await db.get('SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?', req.params.id, student_id);
+    const existing = await db.get('SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?', [req.params.id, student_id]);
     if (existing) {
       return res.status(409).json({ error: 'Student already enrolled' });
     }
 
-    await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', req.params.id, student_id);
+    await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', [req.params.id, student_id]);
 
     res.json({ message: 'Student enrolled successfully' });
   } catch (err) {
@@ -140,7 +140,7 @@ router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), a
 // Get class schedule
 router.get('/:id/schedule', async (req, res) => {
   try {
-    const classData = await db.get('SELECT id, name, schedule, room FROM classes WHERE id = ?', req.params.id);
+    const classData = await db.get('SELECT id, name, schedule, room FROM classes WHERE id = ?', [req.params.id]);
 
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });

@@ -51,14 +51,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
       FROM users u
       LEFT JOIN teachers t ON t.user_id = u.id
       WHERE u.id = ?
-    `, id);
+    `, [id]);
 
     if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
 
     // Get classes taught
     const classes = await db.all(`
       SELECT id, name, schedule, room FROM classes WHERE teacher_id = ?
-    `, id);
+    `, [id]);
 
     res.json({ teacher: { ...teacher, classes } });
   } catch (err) {
@@ -76,12 +76,12 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    const existing = await db.get('SELECT id FROM users WHERE email = ?', email);
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
-    const userResult = await db.run('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)', email, hashedPassword, name, 'teacher');
+    const userResult = await db.run('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)', [email, hashedPassword, name, 'teacher']);
     const userId = userResult.lastInsertRowid;
 
     const countResult = await db.get('SELECT COUNT(*) as c FROM teachers');
@@ -91,7 +91,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
     await db.run(`
       INSERT INTO teachers (user_id, teacher_id, phone, qualification, specialization, hire_date)
       VALUES (?, ?, ?, ?, ?, ?)
-    `, userId, teacherId, phone || null, qualification || null, specialization || null, hire_date || null);
+    `, [userId, teacherId, phone || null, qualification || null, specialization || null, hire_date || null]);
 
     res.status(201).json({ message: 'Teacher created', teacher: { id: userId, name, email, teacher_id: teacherId } });
   } catch (err) {
@@ -106,20 +106,20 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
     const userId = parseInt(req.params.id);
     const { name, phone, qualification, specialization, status } = req.body;
 
-    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', userId, 'teacher');
+    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [userId, 'teacher']);
     if (!user) return res.status(404).json({ error: 'Teacher not found' });
 
-    if (name) await db.run('UPDATE users SET name = ? WHERE id = ?', name, userId);
+    if (name) await db.run('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
 
-    const profile = await db.get('SELECT * FROM teachers WHERE user_id = ?', userId);
+    const profile = await db.get('SELECT * FROM teachers WHERE user_id = ?', [userId]);
     if (profile) {
       await db.run(`
         UPDATE teachers SET phone = ?, qualification = ?, specialization = ?, status = ?
         WHERE user_id = ?
       `,
-        phone ?? profile.phone, qualification ?? profile.qualification,
+        [phone ?? profile.phone, qualification ?? profile.qualification,
         specialization ?? profile.specialization, status ?? profile.status,
-        userId
+        userId]
       );
     }
 
@@ -135,10 +135,10 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
   try {
     const userId = parseInt(req.params.id);
 
-    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', userId, 'teacher');
+    const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [userId, 'teacher']);
     if (!user) return res.status(404).json({ error: 'Teacher not found' });
 
-    await db.run('DELETE FROM users WHERE id = ?', userId);
+    await db.run('DELETE FROM users WHERE id = ?', [userId]);
     res.json({ message: 'Teacher deleted' });
   } catch (err) {
     console.error('Error deleting teacher:', err);

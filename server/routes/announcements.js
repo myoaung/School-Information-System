@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, req.params.id);
+    `, [req.params.id]);
 
     if (!announcement) {
       return res.status(404).json({ error: 'Announcement not found' });
@@ -84,7 +84,7 @@ router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcemen
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, result.lastInsertRowid);
+    `, [result.lastInsertRowid]);
 
     res.status(201).json({ message: 'Announcement created', announcement });
   } catch (err) {
@@ -98,7 +98,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { title, content, grade_id, class_id } = req.body;
 
-    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', req.params.id);
+    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', [req.params.id]);
     if (!existing) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
@@ -124,7 +124,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, req.params.id);
+    `, [req.params.id]);
 
     res.json({ message: 'Announcement updated', announcement });
   } catch (err) {
@@ -136,7 +136,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 // Delete announcement (author or admin only)
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', req.params.id);
+    const existing = await db.get('SELECT * FROM announcements WHERE id = ?', [req.params.id]);
     if (!existing) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
@@ -145,7 +145,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to delete this announcement' });
     }
 
-    await db.run('DELETE FROM announcements WHERE id = ?', req.params.id);
+    await db.run('DELETE FROM announcements WHERE id = ?', [req.params.id]);
 
     res.json({ message: 'Announcement deleted' });
   } catch (err) {

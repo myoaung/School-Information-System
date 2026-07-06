@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
         JOIN subjects s ON gs.subject_id = s.id
         WHERE gs.grade_id = ?
         ORDER BY s.category, s.name
-      `, grade.id);
+      `, [grade.id]);
 
       return {
         ...grade,
