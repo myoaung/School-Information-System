@@ -29,6 +29,17 @@ router.post('/years', authMiddleware, roleMiddleware('admin'), (req, res) => {
   }
 });
 
+// Delete academic year (admin)
+router.delete('/years/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+  try {
+    const db = getDb();
+    db.prepare('DELETE FROM academic_years WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete academic year' });
+  }
+});
+
 // Get semesters
 router.get('/semesters', authMiddleware, (req, res) => {
   try {
@@ -60,6 +71,17 @@ router.post('/semesters', authMiddleware, roleMiddleware('admin'), (req, res) =>
   }
 });
 
+// Delete semester (admin)
+router.delete('/semesters/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+  try {
+    const db = getDb();
+    db.prepare('DELETE FROM semesters WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete semester' });
+  }
+});
+
 // Get holidays
 router.get('/holidays', authMiddleware, (req, res) => {
   try {
@@ -87,6 +109,17 @@ router.post('/holidays', authMiddleware, roleMiddleware('admin'), (req, res) => 
     res.status(201).json({ message: 'Holiday created', id: result.lastInsertRowid });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create holiday' });
+  }
+});
+
+// Delete holiday (admin)
+router.delete('/holidays/:id', authMiddleware, roleMiddleware('admin'), (req, res) => {
+  try {
+    const db = getDb();
+    db.prepare('DELETE FROM holidays WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete holiday' });
   }
 });
 

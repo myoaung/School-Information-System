@@ -2,19 +2,39 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
+
+const emptyForm = { course_id: '', title: '', description: '', due_date: '', max_score: '100', allow_late: false };
 
 export default function AssignmentsPage() {
   const { t } = useTranslation();
   const { isAdmin, isTeacher, user } = useAuth();
+  const canManage = isAdmin || isTeacher;
+
   const [assignments, setAssignments] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  // Submission state (student)
   const [submitting, setSubmitting] = useState(null);
   const [submitContent, setSubmitContent] = useState('');
+
+  // Grading state (admin/teacher)
   const [grading, setGrading] = useState(null);
   const [gradeScore, setGradeScore] = useState('');
   const [gradeFeedback, setGradeFeedback] = useState('');
-  const [message, setMessage] = useState('');
+
+  // CRUD modal state
+  const [showModal, setShowModal] = useState(false);
+  const [editAssignment, setEditAssignment] = useState(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+
+  // Delete confirmation state
+  const [deleteId, setDeleteId] = useState(null);
 
   const fetchAssignments = () => {
     setLoading(true);
@@ -24,8 +44,70 @@ export default function AssignmentsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchAssignments(); }, []);
+  useEffect(() => {
+    fetchAssignments();
+    if (canManage) {
+      api.get('/courses').then(r => setCourses(r.data.courses)).catch(() => {});
+    }
+  }, []);
 
+  // ---- Create / Edit ----
+  const openCreate = () => {
+    setEditAssignment(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  };
+
+  const openEdit = (a) => {
+    setEditAssignment(a);
+    setForm({
+      course_id: String(a.course_id || ''),
+      title: a.title || '',
+      description: a.description || '',
+      due_date: a.due_date || '',
+      max_score: String(a.max_score ?? '100'),
+      allow_late: !!a.allow_late,
+    });
+    setShowModal(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        ...form,
+        max_score: Number(form.max_score) || 100,
+        allow_late: form.allow_late ? 1 : 0,
+      };
+      if (editAssignment) {
+        await api.put(`/assignments/${editAssignment.id}`, payload);
+      } else {
+        await api.post('/assignments', payload);
+      }
+      setShowModal(false);
+      setMessage(editAssignment ? t('assignments.updated') || 'Assignment updated' : t('assignments.created') || 'Assignment created');
+      fetchAssignments();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save assignment');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ---- Delete ----
+  const handleDelete = async () => {
+    try {
+      await api.delete(`/assignments/${deleteId}`);
+      setDeleteId(null);
+      setMessage('Assignment deleted');
+      fetchAssignments();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete assignment');
+    }
+  };
+
+  // ---- Student submission ----
   const handleSubmit = (id) => {
     setSubmitting(id);
     api.post(`/assignments/${id}/submit`, { content: submitContent })
@@ -34,6 +116,7 @@ export default function AssignmentsPage() {
       .finally(() => setSubmitting(null));
   };
 
+  // ---- Grading ----
   const handleGrade = (submissionId) => {
     api.post(`/assignments/submissions/${submissionId}/grade`, { score: Number(gradeScore), feedback: gradeFeedback })
       .then(() => { setMessage(t('assignments.graded')); setGrading(null); setGradeScore(''); setGradeFeedback(''); fetchAssignments(); })
@@ -48,11 +131,19 @@ export default function AssignmentsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-          <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <div className="flex items-center justify-between gap-3 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+            <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">{t('assignments.title')}</h1>
         </div>
-        <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">{t('assignments.title')}</h1>
+        {canManage && (
+          <button onClick={openCreate} className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer flex items-center gap-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+            {t('assignments.newAssignment') || 'New Assignment'}
+          </button>
+        )}
       </div>
 
       {message && <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-300 px-4 py-3 rounded-xl mb-6 text-sm">{message}</div>}
@@ -61,7 +152,19 @@ export default function AssignmentsPage() {
       {assignments.length > 0 ? (
         <div className="space-y-4">
           {assignments.map(a => (
-            <div key={a.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6">
+            <div key={a.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 relative group">
+              {/* Edit / Delete buttons (admin/teacher) */}
+              {canManage && (
+                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEdit(a)} className="p-1.5 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 cursor-pointer">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button onClick={() => setDeleteId(a.id)} className="p-1.5 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 cursor-pointer">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">{a.title}</h3>
@@ -71,6 +174,7 @@ export default function AssignmentsPage() {
                     {a.due_date && <span>{t('assignments.due')}: {a.due_date}</span>}
                     <span>{t('assignments.maxScore')}: {a.max_score}</span>
                     <span>{t('assignments.createdBy')}: {a.created_by_name}</span>
+                    {a.allow_late ? <span className="text-green-600 dark:text-green-400">Late submissions allowed</span> : null}
                   </div>
                 </div>
                 {user.role === 'student' && (
@@ -138,6 +242,57 @@ export default function AssignmentsPage() {
           <p className="text-purple-500 dark:text-purple-400">{t('assignments.noAssignments')}</p>
         </div>
       )}
+
+      {/* Create / Edit Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editAssignment ? (t('assignments.editAssignment') || 'Edit Assignment') : (t('assignments.newAssignment') || 'New Assignment')}>
+        <form onSubmit={handleSave} className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Course</label>
+            <select required value={form.course_id} onChange={e => setForm({...form, course_id: e.target.value})}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 cursor-pointer">
+              <option value="">Select a course</option>
+              {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Title</label>
+            <input type="text" required value={form.title} onChange={e => setForm({...form, title: e.target.value})}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Description</label>
+            <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Due Date</label>
+              <input type="date" value={form.due_date} onChange={e => setForm({...form, due_date: e.target.value})}
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Max Score</label>
+              <input type="number" min="0" value={form.max_score} onChange={e => setForm({...form, max_score: e.target.value})}
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="allow_late" checked={form.allow_late} onChange={e => setForm({...form, allow_late: e.target.checked})}
+              className="w-4 h-4 text-purple-600 bg-white dark:bg-gray-800 border-purple-300 dark:border-gray-600 rounded focus:ring-purple-500 cursor-pointer" />
+            <label htmlFor="allow_late" className="text-sm text-purple-700 dark:text-purple-300 cursor-pointer">Allow late submissions</label>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer">Cancel</button>
+            <button type="submit" disabled={saving} className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer">
+              {saving ? 'Saving...' : editAssignment ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog isOpen={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete}
+        title="Delete Assignment" message="Are you sure you want to delete this assignment? All student submissions will also be removed." />
     </div>
   );
 }

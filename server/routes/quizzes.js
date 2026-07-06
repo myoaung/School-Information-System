@@ -79,6 +79,37 @@ router.post('/:id/questions', authMiddleware, roleMiddleware('admin', 'teacher')
   }
 });
 
+// Update quiz (admin/teacher)
+router.put('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+  try {
+    const db = getDb();
+    const quiz = db.prepare('SELECT * FROM quizzes WHERE id = ?').get(req.params.id);
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    const { course_id, title, description, time_limit_minutes, max_score, due_date } = req.body;
+    if (!course_id || !title) return res.status(400).json({ error: 'course_id and title required' });
+    db.prepare('UPDATE quizzes SET course_id = ?, title = ?, description = ?, time_limit_minutes = ?, max_score = ?, due_date = ? WHERE id = ?')
+      .run(course_id, title, description || null, time_limit_minutes || null, max_score || 100, due_date || null, req.params.id);
+    res.json({ message: 'Quiz updated' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update quiz' });
+  }
+});
+
+// Delete quiz (admin/teacher)
+router.delete('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+  try {
+    const db = getDb();
+    const quiz = db.prepare('SELECT * FROM quizzes WHERE id = ?').get(req.params.id);
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    db.prepare('DELETE FROM quiz_questions WHERE quiz_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM quiz_attempts WHERE quiz_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM quizzes WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Quiz deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete quiz' });
+  }
+});
+
 // Submit quiz attempt (student)
 router.post('/:id/attempt', authMiddleware, (req, res) => {
   try {

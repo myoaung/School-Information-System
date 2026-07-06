@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function AcademicPage() {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ export default function AcademicPage() {
   const [formType, setFormType] = useState('');
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -40,6 +42,18 @@ export default function AcademicPage() {
     setShowForm(true);
   };
 
+  const refreshData = () => {
+    Promise.all([
+      api.get('/academic/years'),
+      api.get('/academic/semesters'),
+      api.get('/academic/holidays')
+    ]).then(([yr, sem, hol]) => {
+      setYears(yr.data.years);
+      setSemesters(sem.data.semesters);
+      setHolidays(hol.data.holidays);
+    }).catch(() => {});
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
@@ -47,22 +61,24 @@ export default function AcademicPage() {
       : formType === 'semester' ? '/academic/semesters'
       : '/academic/holidays';
     api.post(endpoint, formData)
-      .then(() => {
-        setShowForm(false);
-        // Refresh data
-        return Promise.all([
-          api.get('/academic/years'),
-          api.get('/academic/semesters'),
-          api.get('/academic/holidays')
-        ]);
-      })
-      .then(([yr, sem, hol]) => {
-        setYears(yr.data.years);
-        setSemesters(sem.data.semesters);
-        setHolidays(hol.data.holidays);
-      })
+      .then(() => { setShowForm(false); refreshData(); })
       .catch(() => setError(t('academic.createError')))
       .finally(() => setSaving(false));
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    const { type, id } = deleteTarget;
+    const endpoint = type === 'year' ? `/academic/years/${id}`
+      : type === 'semester' ? `/academic/semesters/${id}`
+      : `/academic/holidays/${id}`;
+    try {
+      await api.delete(endpoint);
+      setDeleteTarget(null);
+      refreshData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete');
+    }
   };
 
   const holidayTypeColors = {
@@ -244,9 +260,15 @@ export default function AcademicPage() {
                 <h3 className="font-bold text-purple-900 dark:text-purple-100 text-lg">{y.name}</h3>
                 <p className="text-sm text-purple-600 dark:text-purple-400">{y.start_date} — {y.end_date}</p>
               </div>
-              {y.is_current ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">{t('academic.current')}</span>
-              ) : null}
+              <div className="flex items-center gap-2">
+                {y.is_current && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">{t('academic.current')}</span>}
+                {isAdmin && (
+                  <button onClick={() => setDeleteTarget({ type: 'year', id: y.id })}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer transition-colors">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                )}
+              </div>
             </div>
           )) : (
             <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl shadow-md">
@@ -265,9 +287,15 @@ export default function AcademicPage() {
                 <h3 className="font-bold text-purple-900 dark:text-purple-100">{s.name}</h3>
                 <p className="text-sm text-purple-600 dark:text-purple-400">{s.year_name} · {s.start_date} — {s.end_date}</p>
               </div>
-              {s.is_current ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">{t('academic.current')}</span>
-              ) : null}
+              <div className="flex items-center gap-2">
+                {s.is_current && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">{t('academic.current')}</span>}
+                {isAdmin && (
+                  <button onClick={() => setDeleteTarget({ type: 'semester', id: s.id })}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer transition-colors">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                )}
+              </div>
             </div>
           )) : (
             <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl shadow-md">
@@ -286,9 +314,17 @@ export default function AcademicPage() {
                 <h3 className="font-bold text-purple-900 dark:text-purple-100">{h.name}</h3>
                 <p className="text-sm text-purple-600 dark:text-purple-400">{h.year_name} · {h.date}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${holidayTypeColors[h.type] || 'bg-gray-100 text-gray-700'}`}>
-                {t(`academic.holidayTypes.${h.type}`)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${holidayTypeColors[h.type] || 'bg-gray-100 text-gray-700'}`}>
+                  {t(`academic.holidayTypes.${h.type}`)}
+                </span>
+                {isAdmin && (
+                  <button onClick={() => setDeleteTarget({ type: 'holiday', id: h.id })}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer transition-colors">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                )}
+              </div>
             </div>
           )) : (
             <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl shadow-md">
@@ -297,6 +333,9 @@ export default function AcademicPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
+        title={`Delete ${deleteTarget?.type || ''}`} message={`Are you sure you want to delete this ${deleteTarget?.type}? This action cannot be undone.`} />
     </div>
   );
 }
