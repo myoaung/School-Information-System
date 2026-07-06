@@ -385,9 +385,10 @@ function initDatabase() {
     seedCurriculum(db);
   }
 
-  // Seed demo data if empty (NEVER in production)
+  // Seed demo data if empty
+  // On Vercel (ephemeral /tmp DB), always seed since data is lost on cold start
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (userCount.count === 0 && process.env.NODE_ENV !== 'production') {
+  if (userCount.count === 0 && (process.env.NODE_ENV !== 'production' || process.env.VERCEL)) {
     seedDatabase(db);
   }
 
@@ -410,7 +411,7 @@ function initDatabase() {
 
   // Migration: ensure parent users exist (for existing databases — skip in production)
   const parentExists = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'parent'").get();
-  if (parentExists.count === 0 && userCount.count > 0 && process.env.NODE_ENV !== 'production') {
+  if (parentExists.count === 0 && userCount.count > 0 && (process.env.NODE_ENV !== 'production' || process.env.VERCEL)) {
     const bcrypt = require('bcryptjs');
     const salt = bcrypt.genSaltSync(10);
     const password = bcrypt.hashSync('password123', salt);
