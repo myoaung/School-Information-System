@@ -9,7 +9,7 @@
       "maxDuration": 10
     }
   },
-  "ignoreCommand": "git diff --quiet HEAD~1 -- . ':!.claude'",
+  "ignoreCommand": "false",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }
