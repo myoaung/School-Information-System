@@ -70,7 +70,7 @@ function parseInsert(sql, params) {
   if (!match) return null;
 
   const table = match[1];
-  const columns = match[2].split(',').map(c => c.trim());
+  const columns = match[2].split(',').map((c) => c.trim());
   const values = params;
 
   return { table, columns, values };
@@ -89,16 +89,19 @@ function parseUpdate(sql, params) {
   const whereClause = match[3];
 
   // Parse SET columns
-  const setParts = setClause.split(',').map(p => {
+  const setParts = setClause.split(',').map((p) => {
     const [col] = p.split('=');
     return col.trim();
   });
 
   // Parse WHERE params
-  const whereParams = whereClause.split('AND').map(p => {
-    const match = p.match(/(\w+)\s*(=|LIKE|IN|>|<)/i);
-    return match ? match[1] : null;
-  }).filter(Boolean);
+  const whereParams = whereClause
+    .split('AND')
+    .map((p) => {
+      const match = p.match(/(\w+)\s*(=|LIKE|IN|>|<)/i);
+      return match ? match[1] : null;
+    })
+    .filter(Boolean);
 
   return { table, setParts, whereClause, whereParams };
 }
@@ -125,26 +128,26 @@ const db = {
   async all(sql, params = []) {
     if (!isSupabaseConfigured) {
       // SQLite — synchronous
-      return getSqliteDb().prepare(sql).all(...params);
+      return getSqliteDb()
+        .prepare(sql)
+        .all(...params);
     }
 
-    // Supabase — async
-    const { type } = parseQuery(sql, params);
-    const table = extractTableName(sql);
-
-    if (type === 'select' && table) {
-      const { data, error } = await supabase
-        .from(table)
-        .select('*');
-
-      if (error) throw error;
-      return data || [];
+    // Supabase — interpolate params into SQL for RPC
+    let finalSql = sql;
+    for (const param of params) {
+      // Escape single quotes and replace first ? with parameter
+      const escaped = String(param).replace(/'/g, "''");
+      finalSql = finalSql.replace('?', `'${escaped}'`);
     }
 
-    // Fallback: use raw SQL via RPC
-    const { data, error } = await supabase.rpc('execute_sql', { query: sql, params });
+    const { data, error } = await supabase.rpc('execute_select', { query: finalSql });
     if (error) throw error;
-    return data || [];
+
+    // RPC returns JSONB — parse if needed
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && data.error) throw new Error(data.error);
+    return data ? [data] : [];
   },
 
   /**
@@ -156,7 +159,9 @@ const db = {
   async get(sql, params = []) {
     if (!isSupabaseConfigured) {
       // SQLite — synchronous
-      return getSqliteDb().prepare(sql).get(...params);
+      return getSqliteDb()
+        .prepare(sql)
+        .get(...params);
     }
 
     // Supabase
@@ -173,10 +178,12 @@ const db = {
   async run(sql, params = []) {
     if (!isSupabaseConfigured) {
       // SQLite — synchronous
-      const result = getSqliteDb().prepare(sql).run(...params);
+      const result = getSqliteDb()
+        .prepare(sql)
+        .run(...params);
       return {
         lastInsertRowid: result.lastInsertRowid,
-        changes: result.changes
+        changes: result.changes,
       };
     }
 
@@ -192,15 +199,12 @@ const db = {
         });
 
         const client = supabaseAdmin || supabase;
-        const { data, error } = await client
-          .from(parsed.table)
-          .insert(row)
-          .select();
+        const { data, error } = await client.from(parsed.table).insert(row).select();
 
         if (error) throw error;
         return {
           lastInsertRowid: data?.[0]?.id,
-          changes: 1
+          changes: 1,
         };
       }
     }
@@ -229,10 +233,7 @@ const db = {
       const id = params[0]; // Assume first param is ID
 
       const client = supabaseAdmin || supabase;
-      const { data, error } = await client
-        .from(table)
-        .delete()
-        .match({ id });
+      const { data, error } = await client.from(table).delete().match({ id });
 
       if (error) throw error;
       return { changes: 1 };
@@ -269,7 +270,7 @@ const db = {
     }
 
     // Supabase — split by semicolons and execute each
-    const statements = sql.split(';').filter(s => s.trim());
+    const statements = sql.split(';').filter((s) => s.trim());
     for (const stmt of statements) {
       if (stmt.trim()) {
         const { error } = await supabase.rpc('execute_sql', { query: stmt });
@@ -288,16 +289,13 @@ const db = {
    */
   async tableExists(tableName) {
     if (!isSupabaseConfigured) {
-      const result = getSqliteDb().prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
-      ).get(tableName);
+      const result = getSqliteDb()
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+        .get(tableName);
       return !!result;
     }
 
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('*')
-      .limit(1);
+    const { data, error } = await supabase.from(tableName).select('*').limit(1);
 
     return !error;
   },
@@ -319,7 +317,7 @@ const db = {
 
     if (error) throw error;
     return count || 0;
-  }
+  },
 };
 
 module.exports = { db };
