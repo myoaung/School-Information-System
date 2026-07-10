@@ -42,7 +42,21 @@ const PORT = process.env.PORT || 5000;
 
 // ── Security Middleware ──
 app.use(helmet({
-  contentSecurityPolicy: false, // Let the client handle CSP
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://raw.githubusercontent.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: [],
+    },
+  },
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -76,6 +90,15 @@ if (NODE_ENV !== 'test') {
 }
 
 // ── Rate Limiting ──
+// Global API limiter — prevents brute-force across all routes
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again later.' },
+});
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -129,6 +152,7 @@ if (require('fs').existsSync(publicDir)) {
 }
 
 // ── Routes ──
+app.use('/api', globalLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/classes', classRoutes);
