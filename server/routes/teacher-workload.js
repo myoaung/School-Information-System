@@ -6,7 +6,7 @@ const { sendError } = require('../utils/errorHandler');
 const router = express.Router();
 
 // GET /api/teachers/workload -- all teachers overview (admin only)
-router.get('/', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const workload = await db.all(`
       SELECT
@@ -39,7 +39,7 @@ router.get('/', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
 });
 
 // GET /api/teachers/workload/:id -- single teacher detail
-router.get('/:id', authMiddleware, roleMiddleware(['admin', 'teacher']), async (req, res) => {
+router.get('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
     const { id } = req.params;
 

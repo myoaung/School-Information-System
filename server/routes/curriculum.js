@@ -58,7 +58,7 @@ router.get('/', async (req, res) => {
 
 // Copy previous year's curriculum to new year (admin only)
 // Must be before /:id routes to avoid matching "copy" as an id
-router.post('/copy', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+router.post('/copy', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { from_year_id, to_year_id } = req.body;
     if (!from_year_id || !to_year_id) {
@@ -91,7 +91,7 @@ router.post('/copy', authMiddleware, roleMiddleware(['admin']), async (req, res)
 });
 
 // Create grade-subject mapping (admin only)
-router.post('/', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { grade_id, subject_id, academic_year_id, weekly_periods, is_required } = req.body;
     const result = await db.run(
@@ -105,7 +105,7 @@ router.post('/', authMiddleware, roleMiddleware(['admin']), async (req, res) => 
 });
 
 // Update mapping (admin only)
-router.put('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { weekly_periods, is_required } = req.body;
@@ -121,7 +121,7 @@ router.put('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) =
 });
 
 // Remove mapping (admin only)
-router.delete('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     await db.run('DELETE FROM grade_subjects WHERE id = ?', [id]);
