@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../context/LanguageContext';
 
-export default function AnnouncementCard({ announcement }) {
+const AnnouncementCard = React.memo(function AnnouncementCard({ announcement }) {
   const { t, formatDateShort } = useTranslation();
 
   return (
@@ -31,4 +31,6 @@ export default function AnnouncementCard({ announcement }) {
       </div>
     </Link>
   );
-}
+});
+
+export default AnnouncementCard;

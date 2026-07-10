@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
   );
 }
 
-function StatCard({ label, value, color }) {
+const StatCard = React.memo(function StatCard({ label, value, color }) {
   const colors = {
     blue: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300',
     red: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300',
@@ -191,7 +191,7 @@ function StatCard({ label, value, color }) {
       <p className="text-xs md:text-sm mt-1 opacity-80">{label}</p>
     </div>
   );
-}
+});
 
 function LoadingSkeleton() {
   return (

@@ -318,7 +318,7 @@ export default function FinancePage() {
   );
 }
 
-function StatCard({ label, value, color }) {
+const StatCard = React.memo(function StatCard({ label, value, color }) {
   const colors = {
     purple: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300',
     green: 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300',
@@ -331,9 +331,9 @@ function StatCard({ label, value, color }) {
       <p className="text-xs mt-1 opacity-80">{label}</p>
     </div>
   );
-}
+});
 
-function StatusBadge({ status }) {
+const StatusBadge = React.memo(function StatusBadge({ status }) {
   const styles = {
     pending: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300',
     paid: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300',
@@ -341,4 +341,4 @@ function StatusBadge({ status }) {
     cancelled: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   };
   return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${styles[status] || styles.pending}`}>{status}</span>;
-}
+});

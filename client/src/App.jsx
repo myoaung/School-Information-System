@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
@@ -5,36 +6,38 @@ import { FontProvider } from './context/FontContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import AnnouncementsPage from './pages/AnnouncementsPage';
-import AnnouncementDetailPage from './pages/AnnouncementDetailPage';
-import ClassesPage from './pages/ClassesPage';
-import CurriculumPage from './pages/CurriculumPage';
-import ContactPage from './pages/ContactPage';
-import ChatLogsPage from './pages/ChatLogsPage';
-import StudentsPage from './pages/StudentsPage';
-import StudentDetailPage from './pages/StudentDetailPage';
-import TeachersPage from './pages/TeachersPage';
-import AttendancePage from './pages/AttendancePage';
-import TimetablePage from './pages/TimetablePage';
-import CoursesPage from './pages/CoursesPage';
-import CourseDetailPage from './pages/CourseDetailPage';
-import AssignmentsPage from './pages/AssignmentsPage';
-import QuizzesPage from './pages/QuizzesPage';
-import GradebookPage from './pages/GradebookPage';
-import ReportsPage from './pages/ReportsPage';
-import ResourcesPage from './pages/ResourcesPage';
-import AcademicPage from './pages/AcademicPage';
-import ParentPortalPage from './pages/ParentPortalPage';
-import MessagesPage from './pages/MessagesPage';
-import FinancePage from './pages/FinancePage';
-import CertificatesPage from './pages/CertificatesPage';
-import AnalyticsPage from './pages/AnalyticsPage';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Lazy-loaded page components — each becomes its own chunk
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'));
+const AnnouncementDetailPage = lazy(() => import('./pages/AnnouncementDetailPage'));
+const ClassesPage = lazy(() => import('./pages/ClassesPage'));
+const CurriculumPage = lazy(() => import('./pages/CurriculumPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const ChatLogsPage = lazy(() => import('./pages/ChatLogsPage'));
+const StudentsPage = lazy(() => import('./pages/StudentsPage'));
+const StudentDetailPage = lazy(() => import('./pages/StudentDetailPage'));
+const TeachersPage = lazy(() => import('./pages/TeachersPage'));
+const AttendancePage = lazy(() => import('./pages/AttendancePage'));
+const TimetablePage = lazy(() => import('./pages/TimetablePage'));
+const CoursesPage = lazy(() => import('./pages/CoursesPage'));
+const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage'));
+const AssignmentsPage = lazy(() => import('./pages/AssignmentsPage'));
+const QuizzesPage = lazy(() => import('./pages/QuizzesPage'));
+const GradebookPage = lazy(() => import('./pages/GradebookPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
+const AcademicPage = lazy(() => import('./pages/AcademicPage'));
+const ParentPortalPage = lazy(() => import('./pages/ParentPortalPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const FinancePage = lazy(() => import('./pages/FinancePage'));
+const CertificatesPage = lazy(() => import('./pages/CertificatesPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 
 function App() {
   return (
@@ -46,6 +49,11 @@ function App() {
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-grow">
+              <Suspense fallback={
+                <div className="flex justify-center items-center min-h-[60vh]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+                </div>
+              }>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
@@ -216,6 +224,7 @@ function App() {
                   }
                 />
               </Routes>
+              </Suspense>
             </main>
             <Footer />
             <ChatWidget />

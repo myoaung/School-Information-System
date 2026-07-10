@@ -470,7 +470,7 @@ export default function ReportsPage() {
   );
 }
 
-function StatCard({ label, value, color }) {
+const StatCard = React.memo(function StatCard({ label, value, color }) {
   const textColors = {
     blue: 'text-blue-800 dark:text-blue-300',
     green: 'text-green-800 dark:text-green-300',
@@ -483,4 +483,4 @@ function StatCard({ label, value, color }) {
       <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">{label}</p>
     </div>
   );
-}
+});
