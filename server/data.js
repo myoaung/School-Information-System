@@ -136,18 +136,40 @@ const db = {
     // Supabase — interpolate params into SQL for RPC
     let finalSql = sql;
     for (const param of params) {
-      // Escape single quotes and replace first ? with parameter
-      const escaped = String(param).replace(/'/g, "''");
-      finalSql = finalSql.replace('?', `'${escaped}'`);
+      let replacement;
+      if (param === null || param === undefined) {
+        replacement = 'NULL';
+      } else if (typeof param === 'number') {
+        replacement = String(param);
+      } else {
+        // Escape single quotes for string parameters
+        const escaped = String(param).replace(/'/g, "''");
+        replacement = `'${escaped}'`;
+      }
+      finalSql = finalSql.replace('?', replacement);
     }
 
     const { data, error } = await supabase.rpc('execute_select', { query: finalSql });
-    if (error) throw error;
+    if (error) {
+      console.error(
+        '[DB] execute_select error:',
+        error.message,
+        'SQL:',
+        finalSql.substring(0, 200)
+      );
+      throw error;
+    }
 
     // RPC returns JSONB — parse if needed
     if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && data.error) throw new Error(data.error);
-    return data ? [data] : [];
+    if (data && typeof data === 'object') {
+      if (data.error) {
+        console.error('[DB] Query error:', data.error, 'SQL:', finalSql.substring(0, 200));
+        throw new Error(data.error);
+      }
+      return [data];
+    }
+    return [];
   },
 
   /**
