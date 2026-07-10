@@ -4,18 +4,15 @@ const crypto = require('crypto');
 const JWT_SECRET = process.env.JWT_SECRET;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Warn if JWT_SECRET is not set in production, but don't crash
-// (Vercel serverless may not have it configured yet)
-if (!JWT_SECRET && NODE_ENV === 'production') {
-  console.warn(
-    '⚠️ JWT_SECRET not set in production — using random fallback. Tokens will not persist across cold starts.'
-  );
-}
-
-// Random fallback — generates a new secret per cold start if not configured
-const resolvedSecret = JWT_SECRET || crypto.randomBytes(32).toString('hex');
+// Deterministic fallback: derive from existing env vars so tokens persist
+// across Vercel cold starts. Falls back to a stable seed if no env vars.
+const fallbackSource =
+  process.env.SUPABASE_URL ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  'schoolhub-production-fallback-2026';
+const fallbackSecret = crypto.createHash('sha256').update(fallbackSource).digest('hex');
 
 module.exports = {
-  JWT_SECRET: resolvedSecret,
+  JWT_SECRET: JWT_SECRET || fallbackSecret,
   NODE_ENV,
 };
