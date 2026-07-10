@@ -44,28 +44,30 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ── Security Middleware ──
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://raw.githubusercontent.com"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-      upgradeInsecureRequests: [],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://raw.githubusercontent.com'],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: [],
+      },
     },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
 // ── CORS ──
 const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(s => s.trim())
+  ? process.env.CLIENT_URL.split(',').map((s) => s.trim())
   : ['http://localhost:5173', 'http://localhost:5174'];
 
 // Production origins for Vercel deployment
@@ -74,14 +76,28 @@ const productionOrigins = [
   'https://www.schoolhub-mu.vercel.app',
 ];
 
-app.use(cors({
-  origin: process.env.VERCEL
-    ? (process.env.NODE_ENV === 'production' ? productionOrigins : true)
-    : allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  cors({
+    origin: process.env.VERCEL
+      ? process.env.NODE_ENV === 'production'
+        ? productionOrigins
+        : [...productionOrigins, 'http://localhost:5173', 'http://localhost:5174']
+      : allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// Redirect HTTP to HTTPS in production
+if (NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] !== 'https' && !process.env.VERCEL) {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 // ── Request Parsing ──
 app.use(express.json({ limit: '10mb' }));

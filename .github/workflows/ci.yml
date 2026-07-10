@@ -31,11 +31,22 @@ jobs:
       - name: Install client dependencies
         run: cd client && npm ci
 
+      - name: Lint client
+        run: cd client && npm run lint
+        continue-on-error: true
+
       - name: Run tests
         run: npm test
         env:
           NODE_ENV: test
           JWT_SECRET: ci-test-secret
+
+      - name: Run client tests
+        run: cd client && npm test
+
+      - name: Run client tests with coverage
+        run: cd client && npx vitest run --coverage
+        continue-on-error: true
 
       - name: Build client
         run: npm run build
@@ -63,6 +74,13 @@ jobs:
       - name: Verify Docker image
         run: |
           docker run -d --name test -p 5000:5000 -e JWT_SECRET=test-secret schoolhub:${{ github.sha }}
-          sleep 5
-          curl -f http://localhost:5000/api/health
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:5000/api/health > /dev/null 2>&1; then
+              echo "Server is healthy"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+          curl -f http://localhost:5000/api/health || (echo "Server failed to start" && docker stop test && exit 1)
           docker stop test
