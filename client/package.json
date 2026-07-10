@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@sentry/react": "^10.64.0",
     "axios": "^1.18.1",
     "dompurify": "^3.4.11",
     "react": "^19.2.7",

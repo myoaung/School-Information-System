@@ -2,6 +2,8 @@
 if (process.env.NODE_ENV !== 'test') {
   require('dotenv').config();
 }
+const { initSentry, Sentry } = require('./sentry');
+initSentry();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -235,6 +237,11 @@ if (require('fs').existsSync(publicDir)) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(publicDir, 'index.html'));
   });
+}
+
+// ── Sentry Error Handler ──
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
 }
 
 // ── Global Error Handler ──

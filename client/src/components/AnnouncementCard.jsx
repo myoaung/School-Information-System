@@ -4,6 +4,12 @@ import { useTranslation } from '../context/LanguageContext';
 const AnnouncementCard = React.memo(function AnnouncementCard({ announcement }) {
   const { t, formatDateShort } = useTranslation();
 
+  const isNewAnnouncement = (dateStr) => {
+    const created = new Date(dateStr);
+    const now = new Date();
+    return now - created < 7 * 24 * 60 * 60 * 1000;
+  };
+
   return (
     <Link
       to={`/announcements/${announcement.id}`}
@@ -14,7 +20,14 @@ const AnnouncementCard = React.memo(function AnnouncementCard({ announcement }) 
           <span className="text-xs text-purple-500 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-full font-medium">
             {formatDateShort(announcement.created_at)}
           </span>
-          <span className="text-xs text-purple-600/60 dark:text-purple-300/60">{announcement.author_name}</span>
+          {isNewAnnouncement(announcement.created_at) && (
+            <span className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 text-xs px-2 py-0.5 rounded-full font-medium">
+              {t('announcements.new')}
+            </span>
+          )}
+          <span className="text-xs text-purple-600/60 dark:text-purple-300/60">
+            {announcement.author_name}
+          </span>
         </div>
         <h3 className="text-lg font-bold mb-2 text-purple-900 dark:text-purple-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
           {announcement.title}
@@ -24,8 +37,17 @@ const AnnouncementCard = React.memo(function AnnouncementCard({ announcement }) 
         </p>
         <div className="mt-4 flex items-center gap-1 text-purple-600 dark:text-purple-400 font-semibold text-sm">
           {t('announcements.readMore')}
-          <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          <svg
+            className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
           </svg>
         </div>
       </div>
