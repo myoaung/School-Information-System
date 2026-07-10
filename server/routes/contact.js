@@ -18,7 +18,7 @@ router.post('/', contactRules, async (req, res) => {
 
     res.status(201).json({
       message: 'Contact form submitted successfully',
-      id: result.lastInsertRowid
+      id: result.lastInsertRowid,
     });
   } catch (err) {
     sendError(res, err, 'Failed to submit contact form');
@@ -33,6 +33,16 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
     res.json({ contacts });
   } catch (err) {
     sendError(res, err, 'Failed to fetch contacts');
+  }
+});
+
+// Delete a contact submission — admin only
+router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    await db.run('DELETE FROM contacts WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    sendError(res, err, 'Failed to delete contact');
   }
 });
 

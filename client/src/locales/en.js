@@ -18,7 +18,8 @@ const en = {
     parentPortal: 'Parent Portal',
   },
   footer: {
-    tagline: 'Your one-stop platform for school announcements, class information, and staying connected with your school community.',
+    tagline:
+      'Your one-stop platform for school announcements, class information, and staying connected with your school community.',
     quickLinks: 'Quick Links',
     contact: 'Contact',
     contactUs: 'Contact Us',
@@ -31,7 +32,8 @@ const en = {
   home: {
     hero: {
       title: 'Welcome to SchoolHub',
-      subtitle: 'Stay connected with your school community. Access announcements, class information, and more.',
+      subtitle:
+        'Stay connected with your school community. Access announcements, class information, and more.',
       viewAnnouncements: 'View Announcements',
       getStarted: 'Get Started',
     },
@@ -133,7 +135,8 @@ const en = {
   contact: {
     title: 'Contact Us',
     getInTouch: 'Get in Touch',
-    description: "Have questions or feedback? We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.",
+    description:
+      "Have questions or feedback? We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.",
     address: 'Address',
     email: 'Email',
     phone: 'Phone',
@@ -156,7 +159,8 @@ const en = {
     title: 'SchoolHub AI',
     open: 'Open chat',
     close: 'Close chat',
-    welcome: 'Hi! I\'m your SchoolHub assistant. Ask me anything about announcements, classes, or curriculum.',
+    welcome:
+      "Hi! I'm your SchoolHub assistant. Ask me anything about announcements, classes, or curriculum.",
     placeholder: 'Type a message...',
     thinking: 'Thinking...',
     attach: 'Attach file',
@@ -333,6 +337,7 @@ const en = {
     noResources: 'No resources available.',
     allTypes: 'All',
     open: 'Open',
+    addResource: 'Add Resource',
   },
   reports: {
     title: 'Reports',
