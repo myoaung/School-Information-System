@@ -41,6 +41,9 @@ const messageRoutes = require('./routes/messages');
 const notificationRoutes = require('./routes/notifications');
 const financeRoutes = require('./routes/finance');
 const certificateRoutes = require('./routes/certificates');
+const auditRoutes = require('./routes/audit');
+const teacherWorkloadRoutes = require('./routes/teacher-workload');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -181,6 +184,7 @@ app.use('/api/contact', contactLimiter, contactRoutes);
 app.use('/api/curriculum', curriculumRoutes);
 app.use('/api/chat', chatLimiter, chatRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/teachers/workload', teacherWorkloadRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/timetable', timetableRoutes);
@@ -199,6 +203,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/certificates', certificateRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {

@@ -4,6 +4,7 @@ const router = express.Router();
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { invoiceRules, paymentRules } = require('../middleware/validate');
+const { auditLog } = require('../middleware/audit');
 
 // ── Fee Structures ──
 
@@ -19,8 +20,14 @@ router.get('/fees', authMiddleware, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    if (grade_id) { sql += ' AND fs.grade_id = ?'; params.push(grade_id); }
-    if (academic_year_id) { sql += ' AND fs.academic_year_id = ?'; params.push(academic_year_id); }
+    if (grade_id) {
+      sql += ' AND fs.grade_id = ?';
+      params.push(grade_id);
+    }
+    if (academic_year_id) {
+      sql += ' AND fs.academic_year_id = ?';
+      params.push(academic_year_id);
+    }
     sql += ' ORDER BY fs.fee_type';
     res.json(await db.all(sql, params));
   } catch (err) {
@@ -32,9 +39,20 @@ router.get('/fees', authMiddleware, async (req, res) => {
 router.post('/fees', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { grade_id, fee_type, amount, academic_year_id } = req.body;
-    if (!fee_type || !amount) return res.status(400).json({ error: 'fee_type and amount required' });
-    const result = await db.run('INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)', [grade_id || null, fee_type, amount, academic_year_id || null]);
+    if (!fee_type || !amount)
+      return res.status(400).json({ error: 'fee_type and amount required' });
+    const result = await db.run(
+      'INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)',
+      [grade_id || null, fee_type, amount, academic_year_id || null]
+    );
     res.status(201).json({ id: result.lastInsertRowid, message: 'Fee structure created' });
+
+    auditLog(req, {
+      action: 'create',
+      entityType: 'fee_structure',
+      entityId: result.lastInsertRowid,
+      newValues: { fee_type, amount, grade_id },
+    });
   } catch (err) {
     sendError(res, err);
   }
@@ -44,8 +62,18 @@ router.post('/fees', authMiddleware, roleMiddleware('admin'), async (req, res) =
 router.put('/fees/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { grade_id, fee_type, amount, academic_year_id } = req.body;
-    await db.run('UPDATE fee_structures SET grade_id = ?, fee_type = ?, amount = ?, academic_year_id = ? WHERE id = ?', [grade_id || null, fee_type, amount, academic_year_id || null, req.params.id]);
+    await db.run(
+      'UPDATE fee_structures SET grade_id = ?, fee_type = ?, amount = ?, academic_year_id = ? WHERE id = ?',
+      [grade_id || null, fee_type, amount, academic_year_id || null, req.params.id]
+    );
     res.json({ message: 'Updated' });
+
+    auditLog(req, {
+      action: 'update',
+      entityType: 'fee_structure',
+      entityId: parseInt(req.params.id),
+      newValues: { fee_type, amount, grade_id },
+    });
   } catch (err) {
     sendError(res, err);
   }
@@ -56,6 +84,12 @@ router.delete('/fees/:id', authMiddleware, roleMiddleware('admin'), async (req, 
   try {
     await db.run('DELETE FROM fee_structures WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
+
+    auditLog(req, {
+      action: 'delete',
+      entityType: 'fee_structure',
+      entityId: parseInt(req.params.id),
+    });
   } catch (err) {
     sendError(res, err);
   }
@@ -77,11 +111,16 @@ router.get('/invoices', authMiddleware, async (req, res) => {
     const params = [];
     // Students/parents see only their own
     if (req.user.role === 'student') {
-      sql += ' AND inv.student_id = ?'; params.push(req.user.id);
+      sql += ' AND inv.student_id = ?';
+      params.push(req.user.id);
     } else if (student_id) {
-      sql += ' AND inv.student_id = ?'; params.push(student_id);
+      sql += ' AND inv.student_id = ?';
+      params.push(student_id);
     }
-    if (status) { sql += ' AND inv.status = ?'; params.push(status); }
+    if (status) {
+      sql += ' AND inv.status = ?';
+      params.push(status);
+    }
     sql += ' ORDER BY inv.created_at DESC';
     res.json(await db.all(sql, params));
   } catch (err) {
@@ -92,7 +131,8 @@ router.get('/invoices', authMiddleware, async (req, res) => {
 // Get single invoice with payments
 router.get('/invoices/:id', authMiddleware, async (req, res) => {
   try {
-    const invoice = await db.get(`
+    const invoice = await db.get(
+      `
       SELECT inv.*, u.name as student_name, s.student_id as student_code,
              fs.fee_type, g.name as grade_name
       FROM invoices inv
@@ -101,7 +141,9 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
       LEFT JOIN fee_structures fs ON fs.id = inv.fee_structure_id
       LEFT JOIN grades g ON g.id = fs.grade_id
       WHERE inv.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
     // Students can only see their own
@@ -109,7 +151,10 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const payments = await db.all('SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at DESC', [req.params.id]);
+    const payments = await db.all(
+      'SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at DESC',
+      [req.params.id]
+    );
     res.json({ ...invoice, payments });
   } catch (err) {
     sendError(res, err);
@@ -117,16 +162,33 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
 });
 
 // Create invoice
-router.post('/invoices', authMiddleware, roleMiddleware('admin'), invoiceRules, async (req, res) => {
-  try {
-    const { student_id, fee_structure_id, amount, due_date } = req.body;
-    if (!student_id || !amount) return res.status(400).json({ error: 'student_id and amount required' });
-    const result = await db.run('INSERT INTO invoices (student_id, fee_structure_id, amount, due_date) VALUES (?, ?, ?, ?)', [student_id, fee_structure_id || null, amount, due_date || null]);
-    res.status(201).json({ id: result.lastInsertRowid, message: 'Invoice created' });
-  } catch (err) {
-    sendError(res, err);
+router.post(
+  '/invoices',
+  authMiddleware,
+  roleMiddleware('admin'),
+  invoiceRules,
+  async (req, res) => {
+    try {
+      const { student_id, fee_structure_id, amount, due_date } = req.body;
+      if (!student_id || !amount)
+        return res.status(400).json({ error: 'student_id and amount required' });
+      const result = await db.run(
+        'INSERT INTO invoices (student_id, fee_structure_id, amount, due_date) VALUES (?, ?, ?, ?)',
+        [student_id, fee_structure_id || null, amount, due_date || null]
+      );
+      res.status(201).json({ id: result.lastInsertRowid, message: 'Invoice created' });
+
+      auditLog(req, {
+        action: 'create',
+        entityType: 'invoice',
+        entityId: result.lastInsertRowid,
+        newValues: { student_id, amount, due_date },
+      });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // Update invoice status
 router.put('/invoices/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
@@ -134,6 +196,13 @@ router.put('/invoices/:id', authMiddleware, roleMiddleware('admin'), async (req,
     const { status } = req.body;
     await db.run('UPDATE invoices SET status = ? WHERE id = ?', [status, req.params.id]);
     res.json({ message: 'Updated' });
+
+    auditLog(req, {
+      action: 'update',
+      entityType: 'invoice',
+      entityId: parseInt(req.params.id),
+      newValues: { status },
+    });
   } catch (err) {
     sendError(res, err);
   }
@@ -142,27 +211,49 @@ router.put('/invoices/:id', authMiddleware, roleMiddleware('admin'), async (req,
 // ── Payments ──
 
 // Record payment
-router.post('/payments', authMiddleware, roleMiddleware('admin'), paymentRules, async (req, res) => {
-  try {
-    const { invoice_id, amount, payment_method, reference } = req.body;
-    if (!invoice_id || !amount) return res.status(400).json({ error: 'invoice_id and amount required' });
+router.post(
+  '/payments',
+  authMiddleware,
+  roleMiddleware('admin'),
+  paymentRules,
+  async (req, res) => {
+    try {
+      const { invoice_id, amount, payment_method, reference } = req.body;
+      if (!invoice_id || !amount)
+        return res.status(400).json({ error: 'invoice_id and amount required' });
 
-    const invoice = await db.get('SELECT * FROM invoices WHERE id = ?', [invoice_id]);
-    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+      const invoice = await db.get('SELECT * FROM invoices WHERE id = ?', [invoice_id]);
+      if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-    const result = await db.run('INSERT INTO payments (invoice_id, amount, payment_method, reference) VALUES (?, ?, ?, ?)', [invoice_id, amount, payment_method || null, reference || null]);
+      const result = await db.run(
+        'INSERT INTO payments (invoice_id, amount, payment_method, reference) VALUES (?, ?, ?, ?)',
+        [invoice_id, amount, payment_method || null, reference || null]
+      );
 
-    // Check if fully paid
-    const totalPaid = (await db.get('SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE invoice_id = ?', [invoice_id])).total;
-    if (totalPaid >= invoice.amount) {
-      await db.run('UPDATE invoices SET status = ? WHERE id = ?', ['paid', invoice_id]);
+      // Check if fully paid
+      const totalPaid = (
+        await db.get(
+          'SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE invoice_id = ?',
+          [invoice_id]
+        )
+      ).total;
+      if (totalPaid >= invoice.amount) {
+        await db.run('UPDATE invoices SET status = ? WHERE id = ?', ['paid', invoice_id]);
+      }
+
+      res.status(201).json({ id: result.lastInsertRowid, message: 'Payment recorded' });
+
+      auditLog(req, {
+        action: 'create',
+        entityType: 'payment',
+        entityId: result.lastInsertRowid,
+        newValues: { invoice_id, amount, payment_method, reference },
+      });
+    } catch (err) {
+      sendError(res, err);
     }
-
-    res.status(201).json({ id: result.lastInsertRowid, message: 'Payment recorded' });
-  } catch (err) {
-    sendError(res, err);
   }
-});
+);
 
 // Get student fee summary
 router.get('/student/:id/summary', authMiddleware, async (req, res) => {
@@ -172,17 +263,24 @@ router.get('/student/:id/summary', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const invoices = await db.all(`
+    const invoices = await db.all(
+      `
       SELECT inv.*, fs.fee_type
       FROM invoices inv
       LEFT JOIN fee_structures fs ON fs.id = inv.fee_structure_id
       WHERE inv.student_id = ?
       ORDER BY inv.created_at DESC
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     const totalDue = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-    const totalPaid = invoices.filter(i => i.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0);
-    const outstanding = invoices.filter(i => i.status === 'pending' || i.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0);
+    const totalPaid = invoices
+      .filter((i) => i.status === 'paid')
+      .reduce((sum, inv) => sum + inv.amount, 0);
+    const outstanding = invoices
+      .filter((i) => i.status === 'pending' || i.status === 'overdue')
+      .reduce((sum, inv) => sum + inv.amount, 0);
 
     res.json({ invoices, totalDue, totalPaid, outstanding });
   } catch (err) {
@@ -193,10 +291,21 @@ router.get('/student/:id/summary', authMiddleware, async (req, res) => {
 // Finance overview (admin)
 router.get('/overview', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const totalInvoiced = (await db.get('SELECT COALESCE(SUM(amount), 0) as total FROM invoices')).total;
-    const totalPaid = (await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'paid'")).total;
-    const totalPending = (await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'pending'")).total;
-    const totalOverdue = (await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'overdue'")).total;
+    const totalInvoiced = (await db.get('SELECT COALESCE(SUM(amount), 0) as total FROM invoices'))
+      .total;
+    const totalPaid = (
+      await db.get("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'paid'")
+    ).total;
+    const totalPending = (
+      await db.get(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'pending'"
+      )
+    ).total;
+    const totalOverdue = (
+      await db.get(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'overdue'"
+      )
+    ).total;
     const recentPayments = await db.all(`
       SELECT p.*, inv.student_id, u.name as student_name
       FROM payments p

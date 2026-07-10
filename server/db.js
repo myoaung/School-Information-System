@@ -96,10 +96,10 @@ function initDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
       subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
-      academic_year TEXT,
+      academic_year_id INTEGER REFERENCES academic_years(id),
       weekly_periods INTEGER,
       is_required INTEGER DEFAULT 1,
-      UNIQUE(grade_id, subject_id)
+      UNIQUE(grade_id, subject_id, academic_year_id)
     );
 
     CREATE TABLE IF NOT EXISTS chat_messages (
@@ -129,6 +129,9 @@ function initDatabase() {
       parent_name TEXT,
       parent_phone TEXT,
       parent_email TEXT,
+      photo_url TEXT,
+      blood_type TEXT,
+      allergies TEXT,
       status TEXT CHECK(status IN ('active','suspended','graduated','transferred')) DEFAULT 'active',
       enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -377,6 +380,23 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(teacher_id, date)
     );
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id),
+      action TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id INTEGER,
+      old_values TEXT,
+      new_values TEXT,
+      ip_address TEXT,
+      user_agent TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_type, entity_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
   `);
 
   // Seed curriculum data first (subjects needed by seedDatabase)
@@ -394,37 +414,94 @@ function initDatabase() {
 
   // Migration: add phone column to users if missing
   try {
-    db.prepare("SELECT phone FROM users LIMIT 1").get();
+    db.prepare('SELECT phone FROM users LIMIT 1').get();
   } catch {
-    db.exec("ALTER TABLE users ADD COLUMN phone TEXT");
+    db.exec('ALTER TABLE users ADD COLUMN phone TEXT');
     console.log('Migration: added phone column to users');
   }
 
   // Migration: add grade_id and class_id to announcements if missing
   try {
-    db.prepare("SELECT grade_id FROM announcements LIMIT 1").get();
+    db.prepare('SELECT grade_id FROM announcements LIMIT 1').get();
   } catch {
-    db.exec("ALTER TABLE announcements ADD COLUMN grade_id INTEGER REFERENCES grades(id)");
-    db.exec("ALTER TABLE announcements ADD COLUMN class_id INTEGER REFERENCES classes(id)");
+    db.exec('ALTER TABLE announcements ADD COLUMN grade_id INTEGER REFERENCES grades(id)');
+    db.exec('ALTER TABLE announcements ADD COLUMN class_id INTEGER REFERENCES classes(id)');
     console.log('Migration: added grade_id/class_id to announcements');
   }
 
+  // Migration: add academic_year_id to grade_subjects and update UNIQUE constraint
+  try {
+    db.prepare('SELECT academic_year_id FROM grade_subjects LIMIT 1').get();
+  } catch {
+    db.exec(
+      'ALTER TABLE grade_subjects ADD COLUMN academic_year_id INTEGER REFERENCES academic_years(id)'
+    );
+    console.log('Migration: added academic_year_id to grade_subjects');
+  }
+  try {
+    // Check if the old UNIQUE(grade_id, subject_id) constraint exists without academic_year_id
+    const tableInfo = db
+      .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='grade_subjects'")
+      .get();
+    if (tableInfo && tableInfo.sql && !tableInfo.sql.includes('academic_year_id')) {
+      // Recreate the table with the new UNIQUE constraint
+      db.exec(`
+        CREATE TABLE grade_subjects_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
+          subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+          academic_year_id INTEGER REFERENCES academic_years(id),
+          weekly_periods INTEGER,
+          is_required INTEGER DEFAULT 1,
+          UNIQUE(grade_id, subject_id, academic_year_id)
+        );
+        INSERT INTO grade_subjects_new (id, grade_id, subject_id, academic_year_id, weekly_periods, is_required)
+        SELECT id, grade_id, subject_id, academic_year_id, weekly_periods, is_required FROM grade_subjects;
+        DROP TABLE grade_subjects;
+        ALTER TABLE grade_subjects_new RENAME TO grade_subjects;
+      `);
+      console.log(
+        'Migration: updated grade_subjects UNIQUE constraint to include academic_year_id'
+      );
+    }
+  } catch (err) {
+    console.error('Migration: grade_subjects constraint update skipped:', err.message);
+  }
+
   // Migration: ensure parent users exist (for existing databases — skip in production)
-  const parentExists = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'parent'").get();
-  if (parentExists.count === 0 && userCount.count > 0 && (process.env.NODE_ENV !== 'production' || process.env.VERCEL)) {
+  const parentExists = db
+    .prepare("SELECT COUNT(*) as count FROM users WHERE role = 'parent'")
+    .get();
+  if (
+    parentExists.count === 0 &&
+    userCount.count > 0 &&
+    (process.env.NODE_ENV !== 'production' || process.env.VERCEL)
+  ) {
     const bcrypt = require('bcryptjs');
     const salt = bcrypt.genSaltSync(10);
     const password = bcrypt.hashSync('password123', salt);
-    const insertUser = db.prepare('INSERT OR IGNORE INTO users (email, password, name, role) VALUES (?, ?, ?, ?)');
+    const insertUser = db.prepare(
+      'INSERT OR IGNORE INTO users (email, password, name, role) VALUES (?, ?, ?, ?)'
+    );
     const r1 = insertUser.run('parent@school.com', password, 'U Aye (Parent)', 'parent');
     const r2 = insertUser.run('parent2@school.com', password, 'U Hla (Parent)', 'parent');
 
     // Link parents to students
-    const insertPS = db.prepare('INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)');
-    const parentId1 = r1.lastInsertRowid || db.prepare("SELECT id FROM users WHERE email = 'parent@school.com'").get()?.id;
-    const parentId2 = r2.lastInsertRowid || db.prepare("SELECT id FROM users WHERE email = 'parent2@school.com'").get()?.id;
-    const student1Id = db.prepare("SELECT id FROM users WHERE email = 'student@school.com'").get()?.id;
-    const student2Id = db.prepare("SELECT id FROM users WHERE email = 'student2@school.com'").get()?.id;
+    const insertPS = db.prepare(
+      'INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)'
+    );
+    const parentId1 =
+      r1.lastInsertRowid ||
+      db.prepare("SELECT id FROM users WHERE email = 'parent@school.com'").get()?.id;
+    const parentId2 =
+      r2.lastInsertRowid ||
+      db.prepare("SELECT id FROM users WHERE email = 'parent2@school.com'").get()?.id;
+    const student1Id = db
+      .prepare("SELECT id FROM users WHERE email = 'student@school.com'")
+      .get()?.id;
+    const student2Id = db
+      .prepare("SELECT id FROM users WHERE email = 'student2@school.com'")
+      .get()?.id;
     if (parentId1 && student1Id) insertPS.run(parentId1, student1Id, 'father');
     if (parentId2 && student2Id) insertPS.run(parentId2, student2Id, 'father');
 
@@ -435,7 +512,9 @@ function initDatabase() {
       const g10 = db.prepare("SELECT id FROM grades WHERE code = 'G10'").get()?.id;
       const g9 = db.prepare("SELECT id FROM grades WHERE code = 'G9'").get()?.id;
       if (ayId) {
-        const insertFee = db.prepare('INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)');
+        const insertFee = db.prepare(
+          'INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)'
+        );
         insertFee.run(g10, 'Tuition', 500000, ayId);
         insertFee.run(g10, 'Lab Fee', 50000, ayId);
         insertFee.run(g10, 'Library Fee', 25000, ayId);
@@ -464,9 +543,11 @@ function seedDatabase(db) {
     { email: 'student@school.com', name: 'Aye Aye', role: 'student' },
     { email: 'student2@school.com', name: 'John Doe', role: 'student' },
     { email: 'student3@school.com', name: 'Mya Mya', role: 'student' },
-    { email: 'student4@school.com', name: 'Hla Hla', role: 'student' }
+    { email: 'student4@school.com', name: 'Hla Hla', role: 'student' },
   ];
-  const insertUser = db.prepare('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)');
+  const insertUser = db.prepare(
+    'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)'
+  );
   const userIds = {};
   for (const u of users) {
     const r = insertUser.run(u.email, password, u.name, u.role);
@@ -478,9 +559,33 @@ function seedDatabase(db) {
     INSERT INTO teachers (user_id, teacher_id, phone, qualification, specialization, hire_date, status)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
-  insertTeacher.run(userIds['teacher@school.com'], 'TCH-2026-001', '09111111111', 'M.Ed Mathematics', 'Mathematics', '2020-06-01', 'active');
-  insertTeacher.run(userIds['teacher2@school.com'], 'TCH-2026-002', '09222222222', 'B.Sc Physics', 'Physics', '2021-08-15', 'active');
-  insertTeacher.run(userIds['teacher3@school.com'], 'TCH-2026-003', '09333333333', 'M.A Myanmar Literature', 'Myanmar', '2019-03-10', 'active');
+  insertTeacher.run(
+    userIds['teacher@school.com'],
+    'TCH-2026-001',
+    '09111111111',
+    'M.Ed Mathematics',
+    'Mathematics',
+    '2020-06-01',
+    'active'
+  );
+  insertTeacher.run(
+    userIds['teacher2@school.com'],
+    'TCH-2026-002',
+    '09222222222',
+    'B.Sc Physics',
+    'Physics',
+    '2021-08-15',
+    'active'
+  );
+  insertTeacher.run(
+    userIds['teacher3@school.com'],
+    'TCH-2026-003',
+    '09333333333',
+    'M.A Myanmar Literature',
+    'Myanmar',
+    '2019-03-10',
+    'active'
+  );
 
   // ── Student profiles (4) ──
   const insertStudent = db.prepare(`
@@ -489,27 +594,108 @@ function seedDatabase(db) {
   `);
   const g10 = db.prepare('SELECT id FROM grades WHERE code = ?').get('G10')?.id;
   const g9 = db.prepare('SELECT id FROM grades WHERE code = ?').get('G9')?.id;
-  insertStudent.run(userIds['student@school.com'], 'STU-2026-001', g10, 'A', '2010-03-15', 'female', '09123456789', '123 School Street', 'U Aye', '09987654321', 'active');
-  insertStudent.run(userIds['student2@school.com'], 'STU-2026-002', g10, 'A', '2010-07-22', 'male', '09123456790', '456 Oak Avenue', 'U Hla', '09987654322', 'active');
-  insertStudent.run(userIds['student3@school.com'], 'STU-2026-003', g10, 'B', '2010-11-08', 'female', '09123456791', '789 Pine Road', 'Daw Kyi', '09987654323', 'active');
-  insertStudent.run(userIds['student4@school.com'], 'STU-2026-004', g9, 'A', '2011-01-30', 'male', '09123456792', '321 Elm Lane', 'U Tin', '09987654324', 'active');
+  insertStudent.run(
+    userIds['student@school.com'],
+    'STU-2026-001',
+    g10,
+    'A',
+    '2010-03-15',
+    'female',
+    '09123456789',
+    '123 School Street',
+    'U Aye',
+    '09987654321',
+    'active'
+  );
+  insertStudent.run(
+    userIds['student2@school.com'],
+    'STU-2026-002',
+    g10,
+    'A',
+    '2010-07-22',
+    'male',
+    '09123456790',
+    '456 Oak Avenue',
+    'U Hla',
+    '09987654322',
+    'active'
+  );
+  insertStudent.run(
+    userIds['student3@school.com'],
+    'STU-2026-003',
+    g10,
+    'B',
+    '2010-11-08',
+    'female',
+    '09123456791',
+    '789 Pine Road',
+    'Daw Kyi',
+    '09987654323',
+    'active'
+  );
+  insertStudent.run(
+    userIds['student4@school.com'],
+    'STU-2026-004',
+    g9,
+    'A',
+    '2011-01-30',
+    'male',
+    '09123456792',
+    '321 Elm Lane',
+    'U Tin',
+    '09987654324',
+    'active'
+  );
 
   // ── Classes (4) ──
-  const insertClass = db.prepare('INSERT INTO classes (name, description, teacher_id, schedule, room) VALUES (?, ?, ?, ?, ?)');
+  const insertClass = db.prepare(
+    'INSERT INTO classes (name, description, teacher_id, schedule, room) VALUES (?, ?, ?, ?, ?)'
+  );
   const classIds = [];
   const clsData = [
-    ['Mathematics 101', 'Introduction to algebra and geometry', userIds['teacher@school.com'], 'Mon/Wed/Fri 9:00-10:00', 'Room 101'],
-    ['English Literature', 'Classic and modern literature analysis', userIds['teacher@school.com'], 'Tue/Thu 10:00-11:30', 'Room 205'],
-    ['Science Lab', 'Hands-on experiments and scientific methods', userIds['teacher2@school.com'], 'Wed/Fri 14:00-15:30', 'Lab 301'],
-    ['Myanmar History', 'History of Myanmar from ancient to modern times', userIds['teacher3@school.com'], 'Mon/Thu 11:00-12:00', 'Room 108']
+    [
+      'Mathematics 101',
+      'Introduction to algebra and geometry',
+      userIds['teacher@school.com'],
+      'Mon/Wed/Fri 9:00-10:00',
+      'Room 101',
+    ],
+    [
+      'English Literature',
+      'Classic and modern literature analysis',
+      userIds['teacher@school.com'],
+      'Tue/Thu 10:00-11:30',
+      'Room 205',
+    ],
+    [
+      'Science Lab',
+      'Hands-on experiments and scientific methods',
+      userIds['teacher2@school.com'],
+      'Wed/Fri 14:00-15:30',
+      'Lab 301',
+    ],
+    [
+      'Myanmar History',
+      'History of Myanmar from ancient to modern times',
+      userIds['teacher3@school.com'],
+      'Mon/Thu 11:00-12:00',
+      'Room 108',
+    ],
   ];
   for (const c of clsData) {
     classIds.push(insertClass.run(...c).lastInsertRowid);
   }
 
   // ── Enrollments ──
-  const insertEnroll = db.prepare('INSERT OR IGNORE INTO enrollments (class_id, student_id) VALUES (?, ?)');
-  const studentEmails = ['student@school.com', 'student2@school.com', 'student3@school.com', 'student4@school.com'];
+  const insertEnroll = db.prepare(
+    'INSERT OR IGNORE INTO enrollments (class_id, student_id) VALUES (?, ?)'
+  );
+  const studentEmails = [
+    'student@school.com',
+    'student2@school.com',
+    'student3@school.com',
+    'student4@school.com',
+  ];
   // All students in Math
   for (const s of studentEmails) insertEnroll.run(classIds[0], userIds[s]);
   // 3 students in English
@@ -520,27 +706,56 @@ function seedDatabase(db) {
   for (const s of [studentEmails[2], studentEmails[3]]) insertEnroll.run(classIds[3], userIds[s]);
 
   // ── Announcements (5) ──
-  const insertAnn = db.prepare('INSERT INTO announcements (title, content, author_id) VALUES (?, ?, ?)');
+  const insertAnn = db.prepare(
+    'INSERT INTO announcements (title, content, author_id) VALUES (?, ?, ?)'
+  );
   const anns = [
-    ['Welcome to the New School Year!', 'We are excited to welcome all students and staff to the 2026-2027 school year. Please check your schedules and come prepared on the first day.', userIds['admin@school.com']],
-    ['Mathematics Quiz Next Week', 'There will be a quiz on algebra fundamentals next Wednesday. Please review chapters 1-3 and practice the sample problems.', userIds['teacher@school.com']],
-    ['Science Fair Registration Open', 'Registration for the annual science fair is now open. Submit your project proposals by the end of the month.', userIds['admin@school.com']],
-    ['Library Hours Extended', 'The school library will now be open until 6 PM on weekdays to support student study needs.', userIds['admin@school.com']],
-    ['Parent-Teacher Conference', 'Parent-teacher conferences will be held next Friday from 2-5 PM. Please schedule your appointments through the school office.', userIds['teacher@school.com']]
+    [
+      'Welcome to the New School Year!',
+      'We are excited to welcome all students and staff to the 2026-2027 school year. Please check your schedules and come prepared on the first day.',
+      userIds['admin@school.com'],
+    ],
+    [
+      'Mathematics Quiz Next Week',
+      'There will be a quiz on algebra fundamentals next Wednesday. Please review chapters 1-3 and practice the sample problems.',
+      userIds['teacher@school.com'],
+    ],
+    [
+      'Science Fair Registration Open',
+      'Registration for the annual science fair is now open. Submit your project proposals by the end of the month.',
+      userIds['admin@school.com'],
+    ],
+    [
+      'Library Hours Extended',
+      'The school library will now be open until 6 PM on weekdays to support student study needs.',
+      userIds['admin@school.com'],
+    ],
+    [
+      'Parent-Teacher Conference',
+      'Parent-teacher conferences will be held next Friday from 2-5 PM. Please schedule your appointments through the school office.',
+      userIds['teacher@school.com'],
+    ],
   ];
   for (const a of anns) insertAnn.run(...a);
 
   // ── Academic Year & Semesters ──
-  db.prepare('INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)')
-    .run('2026-2027', '2026-06-01', '2027-03-31', 1);
+  db.prepare(
+    'INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)'
+  ).run('2026-2027', '2026-06-01', '2027-03-31', 1);
   const ayId = db.prepare('SELECT id FROM academic_years WHERE is_current = 1').get()?.id;
   if (ayId) {
-    db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)').run(ayId, 'Semester 1', '2026-06-01', '2026-10-31', 1);
-    db.prepare('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)').run(ayId, 'Semester 2', '2026-11-01', '2027-03-31', 0);
+    db.prepare(
+      'INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)'
+    ).run(ayId, 'Semester 1', '2026-06-01', '2026-10-31', 1);
+    db.prepare(
+      'INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)'
+    ).run(ayId, 'Semester 2', '2026-11-01', '2027-03-31', 0);
     // Holidays
-    const insertHoliday = db.prepare('INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)');
+    const insertHoliday = db.prepare(
+      'INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)'
+    );
     insertHoliday.run(ayId, 'Waso Full Moon Day', '2026-07-10', 'public');
-    insertHoliday.run(ayId, 'Teachers\' Day', '2026-09-05', 'school');
+    insertHoliday.run(ayId, "Teachers' Day", '2026-09-05', 'school');
     insertHoliday.run(ayId, 'Mid-Semester Break', '2026-09-20', 'school');
     insertHoliday.run(ayId, 'Thadingyut Festival', '2026-10-07', 'public');
     insertHoliday.run(ayId, 'Tazaungdaing Festival', '2026-11-05', 'public');
@@ -555,58 +770,159 @@ function seedDatabase(db) {
   const mmSubjId = getSubjectId('MM');
 
   // ── Courses (4) ──
-  const insertCourse = db.prepare('INSERT INTO courses (class_id, subject_id, title, description) VALUES (?, ?, ?, ?)');
+  const insertCourse = db.prepare(
+    'INSERT INTO courses (class_id, subject_id, title, description) VALUES (?, ?, ?, ?)'
+  );
   const courseIds = [];
   const courseData = [
-    [classIds[0], mathSubjId, 'Algebra Fundamentals', 'Introduction to algebraic expressions and equations'],
-    [classIds[1], engSubjId, 'Shakespeare & Poetry', 'Exploring Shakespearean sonnets and modern poetry'],
+    [
+      classIds[0],
+      mathSubjId,
+      'Algebra Fundamentals',
+      'Introduction to algebraic expressions and equations',
+    ],
+    [
+      classIds[1],
+      engSubjId,
+      'Shakespeare & Poetry',
+      'Exploring Shakespearean sonnets and modern poetry',
+    ],
     [classIds[2], sciSubjId, 'Chemistry Basics', 'Atoms, molecules, and chemical reactions'],
-    [classIds[3], mmSubjId, 'Ancient Myanmar Kingdoms', 'From Bagan to Ava — key dynasties and culture']
+    [
+      classIds[3],
+      mmSubjId,
+      'Ancient Myanmar Kingdoms',
+      'From Bagan to Ava — key dynasties and culture',
+    ],
   ];
   for (const c of courseData) {
     courseIds.push(insertCourse.run(...c).lastInsertRowid);
   }
 
   // ── Lessons (3 per course = 12) ──
-  const insertLesson = db.prepare('INSERT INTO lessons (course_id, title, content, lesson_order, duration_minutes) VALUES (?, ?, ?, ?, ?)');
+  const insertLesson = db.prepare(
+    'INSERT INTO lessons (course_id, title, content, lesson_order, duration_minutes) VALUES (?, ?, ?, ?, ?)'
+  );
   const lessonSets = [
-    [[courseIds[0], 'Variables & Expressions', 'Understanding variables and algebraic expressions', 1, 50],
-     [courseIds[0], 'Solving Equations', 'Linear equations and methods to solve them', 2, 50],
-     [courseIds[0], 'Word Problems', 'Applying algebra to real-world problems', 3, 50]],
-    [[courseIds[1], 'Sonnet Structure', 'The 14-line structure and rhyme schemes', 1, 45],
-     [courseIds[1], 'Shakespeare\'s Themes', 'Love, ambition, and mortality in the plays', 2, 45],
-     [courseIds[1], 'Modern Poetry', 'Free verse and contemporary voices', 3, 45]],
-    [[courseIds[2], 'Atomic Structure', 'Protons, neutrons, electrons, and orbitals', 1, 60],
-     [courseIds[2], 'Chemical Bonds', 'Ionic vs covalent bonding', 2, 60],
-     [courseIds[2], 'Balancing Equations', 'Conservation of mass in reactions', 3, 60]],
-    [[courseIds[3], 'The Bagan Era', 'King Anawrahta and the founding of Bagan', 1, 40],
-     [courseIds[3], 'Ava & Inwa', 'The rise and fall of the Ava Kingdom', 2, 40],
-     [courseIds[3], 'Colonial Period', 'British annexation and the independence movement', 3, 40]]
+    [
+      [
+        courseIds[0],
+        'Variables & Expressions',
+        'Understanding variables and algebraic expressions',
+        1,
+        50,
+      ],
+      [courseIds[0], 'Solving Equations', 'Linear equations and methods to solve them', 2, 50],
+      [courseIds[0], 'Word Problems', 'Applying algebra to real-world problems', 3, 50],
+    ],
+    [
+      [courseIds[1], 'Sonnet Structure', 'The 14-line structure and rhyme schemes', 1, 45],
+      [courseIds[1], "Shakespeare's Themes", 'Love, ambition, and mortality in the plays', 2, 45],
+      [courseIds[1], 'Modern Poetry', 'Free verse and contemporary voices', 3, 45],
+    ],
+    [
+      [courseIds[2], 'Atomic Structure', 'Protons, neutrons, electrons, and orbitals', 1, 60],
+      [courseIds[2], 'Chemical Bonds', 'Ionic vs covalent bonding', 2, 60],
+      [courseIds[2], 'Balancing Equations', 'Conservation of mass in reactions', 3, 60],
+    ],
+    [
+      [courseIds[3], 'The Bagan Era', 'King Anawrahta and the founding of Bagan', 1, 40],
+      [courseIds[3], 'Ava & Inwa', 'The rise and fall of the Ava Kingdom', 2, 40],
+      [courseIds[3], 'Colonial Period', 'British annexation and the independence movement', 3, 40],
+    ],
   ];
   for (const set of lessonSets) {
     for (const l of set) insertLesson.run(...l);
   }
 
   // ── Resources (1-2 per course) ──
-  const insertResource = db.prepare('INSERT INTO resources (course_id, title, type, url, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+  const insertResource = db.prepare(
+    'INSERT INTO resources (course_id, title, type, url, uploaded_by) VALUES (?, ?, ?, ?, ?)'
+  );
   const resources = [
-    [courseIds[0], 'Algebra Formula Sheet', 'pdf', 'https://example.com/algebra-formulas.pdf', userIds['teacher@school.com']],
-    [courseIds[0], 'Khan Academy - Algebra', 'link', 'https://www.khanacademy.org/math/algebra', userIds['teacher@school.com']],
-    [courseIds[1], 'Shakespeare Sonnet Collection', 'document', 'https://example.com/sonnets.pdf', userIds['teacher@school.com']],
-    [courseIds[2], 'Periodic Table Reference', 'pdf', 'https://example.com/periodic-table.pdf', userIds['teacher2@school.com']],
-    [courseIds[2], 'Lab Safety Video', 'video', 'https://example.com/lab-safety.mp4', userIds['teacher2@school.com']],
-    [courseIds[3], 'Myanmar Kings Timeline', 'image', 'https://example.com/timeline.png', userIds['teacher3@school.com']]
+    [
+      courseIds[0],
+      'Algebra Formula Sheet',
+      'pdf',
+      'https://example.com/algebra-formulas.pdf',
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[0],
+      'Khan Academy - Algebra',
+      'link',
+      'https://www.khanacademy.org/math/algebra',
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[1],
+      'Shakespeare Sonnet Collection',
+      'document',
+      'https://example.com/sonnets.pdf',
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[2],
+      'Periodic Table Reference',
+      'pdf',
+      'https://example.com/periodic-table.pdf',
+      userIds['teacher2@school.com'],
+    ],
+    [
+      courseIds[2],
+      'Lab Safety Video',
+      'video',
+      'https://example.com/lab-safety.mp4',
+      userIds['teacher2@school.com'],
+    ],
+    [
+      courseIds[3],
+      'Myanmar Kings Timeline',
+      'image',
+      'https://example.com/timeline.png',
+      userIds['teacher3@school.com'],
+    ],
   ];
   for (const r of resources) insertResource.run(...r);
 
   // ── Assignments (1 per course = 4) ──
-  const insertAssignment = db.prepare('INSERT INTO assignments (course_id, title, description, due_date, max_score, created_by) VALUES (?, ?, ?, ?, ?, ?)');
+  const insertAssignment = db.prepare(
+    'INSERT INTO assignments (course_id, title, description, due_date, max_score, created_by) VALUES (?, ?, ?, ?, ?, ?)'
+  );
   const assignmentIds = [];
   const assignments = [
-    [courseIds[0], 'Algebra Homework 1', 'Complete exercises 1-10 on page 25', '2026-07-15', 100, userIds['teacher@school.com']],
-    [courseIds[1], 'Sonnet Analysis Essay', 'Write a 500-word analysis of Shakespeare\'s Sonnet 18', '2026-07-18', 100, userIds['teacher@school.com']],
-    [courseIds[2], 'Lab Report: Chemical Reactions', 'Document the acid-base experiment from Lesson 3', '2026-07-20', 100, userIds['teacher2@school.com']],
-    [courseIds[3], 'Myanmar Kingdoms Timeline', 'Create a visual timeline of the major kingdoms from 849-1885 AD', '2026-07-22', 100, userIds['teacher3@school.com']]
+    [
+      courseIds[0],
+      'Algebra Homework 1',
+      'Complete exercises 1-10 on page 25',
+      '2026-07-15',
+      100,
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[1],
+      'Sonnet Analysis Essay',
+      "Write a 500-word analysis of Shakespeare's Sonnet 18",
+      '2026-07-18',
+      100,
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[2],
+      'Lab Report: Chemical Reactions',
+      'Document the acid-base experiment from Lesson 3',
+      '2026-07-20',
+      100,
+      userIds['teacher2@school.com'],
+    ],
+    [
+      courseIds[3],
+      'Myanmar Kingdoms Timeline',
+      'Create a visual timeline of the major kingdoms from 849-1885 AD',
+      '2026-07-22',
+      100,
+      userIds['teacher3@school.com'],
+    ],
   ];
   for (const a of assignments) {
     assignmentIds.push(insertAssignment.run(...a).lastInsertRowid);
@@ -619,89 +935,399 @@ function seedDatabase(db) {
   `);
   const today = new Date().toISOString().split('T')[0];
   // Assignment 0 (Algebra) — 3 submissions, 2 graded
-  insertSubmission.run(assignmentIds[0], userIds['student@school.com'], 'Completed all 10 exercises. Work shown for each.', 92, 'Excellent work! Minor error on #7.', 'graded', today, userIds['teacher@school.com']);
-  insertSubmission.run(assignmentIds[0], userIds['student2@school.com'], 'Exercises 1-10 done. Used substitution method.', 85, 'Good effort. Check #4 and #9.', 'graded', today, userIds['teacher@school.com']);
-  insertSubmission.run(assignmentIds[0], userIds['student3@school.com'], 'Here are my answers for exercises 1-10.', null, null, 'submitted', null, null);
+  insertSubmission.run(
+    assignmentIds[0],
+    userIds['student@school.com'],
+    'Completed all 10 exercises. Work shown for each.',
+    92,
+    'Excellent work! Minor error on #7.',
+    'graded',
+    today,
+    userIds['teacher@school.com']
+  );
+  insertSubmission.run(
+    assignmentIds[0],
+    userIds['student2@school.com'],
+    'Exercises 1-10 done. Used substitution method.',
+    85,
+    'Good effort. Check #4 and #9.',
+    'graded',
+    today,
+    userIds['teacher@school.com']
+  );
+  insertSubmission.run(
+    assignmentIds[0],
+    userIds['student3@school.com'],
+    'Here are my answers for exercises 1-10.',
+    null,
+    null,
+    'submitted',
+    null,
+    null
+  );
   // Assignment 1 (English) — 2 submissions, 1 graded
-  insertSubmission.run(assignmentIds[1], userIds['student@school.com'], 'Sonnet 18 compares the beloved to a summer day. The poem explores beauty, mortality, and the power of poetry to preserve love...', 95, 'Brilliant analysis with strong textual evidence.', 'graded', today, userIds['teacher@school.com']);
-  insertSubmission.run(assignmentIds[1], userIds['student3@school.com'], 'Shakespeare writes about love and summer. The poem says the person is better than summer because summer ends...', null, null, 'submitted', null, null);
+  insertSubmission.run(
+    assignmentIds[1],
+    userIds['student@school.com'],
+    'Sonnet 18 compares the beloved to a summer day. The poem explores beauty, mortality, and the power of poetry to preserve love...',
+    95,
+    'Brilliant analysis with strong textual evidence.',
+    'graded',
+    today,
+    userIds['teacher@school.com']
+  );
+  insertSubmission.run(
+    assignmentIds[1],
+    userIds['student3@school.com'],
+    'Shakespeare writes about love and summer. The poem says the person is better than summer because summer ends...',
+    null,
+    null,
+    'submitted',
+    null,
+    null
+  );
   // Assignment 2 (Science) — 2 submissions, 1 graded
-  insertSubmission.run(assignmentIds[2], userIds['student@school.com'], 'The acid-base reaction produced CO2 gas. Litmus paper turned red indicating acidity. Temperature rose by 3°C.', 88, 'Good observations. Include more data points next time.', 'graded', today, userIds['teacher2@school.com']);
-  insertSubmission.run(assignmentIds[2], userIds['student2@school.com'], 'Lab report attached. Observed bubbling when mixing baking soda and vinegar.', null, null, 'submitted', null, null);
+  insertSubmission.run(
+    assignmentIds[2],
+    userIds['student@school.com'],
+    'The acid-base reaction produced CO2 gas. Litmus paper turned red indicating acidity. Temperature rose by 3°C.',
+    88,
+    'Good observations. Include more data points next time.',
+    'graded',
+    today,
+    userIds['teacher2@school.com']
+  );
+  insertSubmission.run(
+    assignmentIds[2],
+    userIds['student2@school.com'],
+    'Lab report attached. Observed bubbling when mixing baking soda and vinegar.',
+    null,
+    null,
+    'submitted',
+    null,
+    null
+  );
   // Assignment 3 (Myanmar) — 1 submission
-  insertSubmission.run(assignmentIds[3], userIds['student4@school.com'], 'Timeline: Bagan (849-1287), Ava (1364-1555), Toungoo (1510-1752), Konbaung (1752-1885).', null, null, 'submitted', null, null);
+  insertSubmission.run(
+    assignmentIds[3],
+    userIds['student4@school.com'],
+    'Timeline: Bagan (849-1287), Ava (1364-1555), Toungoo (1510-1752), Konbaung (1752-1885).',
+    null,
+    null,
+    'submitted',
+    null,
+    null
+  );
 
   // ── Quizzes (3) ──
-  const insertQuiz = db.prepare('INSERT INTO quizzes (course_id, title, description, time_limit_minutes, max_score, due_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const insertQuiz = db.prepare(
+    'INSERT INTO quizzes (course_id, title, description, time_limit_minutes, max_score, due_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
   const quizIds = [];
   const quizzes = [
-    [courseIds[0], 'Algebra Basics Quiz', 'Test your understanding of basic algebra', 30, 50, '2026-07-20', userIds['teacher@school.com']],
-    [courseIds[1], 'Poetry Terms Quiz', 'Identify literary devices and poetic forms', 20, 40, '2026-07-22', userIds['teacher@school.com']],
-    [courseIds[2], 'Atomic Structure Quiz', 'Protons, neutrons, electrons, and periodic trends', 25, 50, '2026-07-25', userIds['teacher2@school.com']]
+    [
+      courseIds[0],
+      'Algebra Basics Quiz',
+      'Test your understanding of basic algebra',
+      30,
+      50,
+      '2026-07-20',
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[1],
+      'Poetry Terms Quiz',
+      'Identify literary devices and poetic forms',
+      20,
+      40,
+      '2026-07-22',
+      userIds['teacher@school.com'],
+    ],
+    [
+      courseIds[2],
+      'Atomic Structure Quiz',
+      'Protons, neutrons, electrons, and periodic trends',
+      25,
+      50,
+      '2026-07-25',
+      userIds['teacher2@school.com'],
+    ],
   ];
   for (const q of quizzes) {
     quizIds.push(insertQuiz.run(...q).lastInsertRowid);
   }
 
   // ── Quiz Questions (3 per quiz = 9) ──
-  const insertQQ = db.prepare('INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const insertQQ = db.prepare(
+    'INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
   // Quiz 0 — Algebra
-  insertQQ.run(quizIds[0], 'What is x if 2x = 10?', 'mcq', JSON.stringify(['3','5','10','20']), '5', 10, 1);
-  insertQQ.run(quizIds[0], 'Solve: x + 5 = 12', 'mcq', JSON.stringify(['5','7','12','17']), '7', 10, 2);
-  insertQQ.run(quizIds[0], 'Is 3x + 2 an expression or equation?', 'true_false', JSON.stringify(['Expression','Equation']), 'Expression', 10, 3);
+  insertQQ.run(
+    quizIds[0],
+    'What is x if 2x = 10?',
+    'mcq',
+    JSON.stringify(['3', '5', '10', '20']),
+    '5',
+    10,
+    1
+  );
+  insertQQ.run(
+    quizIds[0],
+    'Solve: x + 5 = 12',
+    'mcq',
+    JSON.stringify(['5', '7', '12', '17']),
+    '7',
+    10,
+    2
+  );
+  insertQQ.run(
+    quizIds[0],
+    'Is 3x + 2 an expression or equation?',
+    'true_false',
+    JSON.stringify(['Expression', 'Equation']),
+    'Expression',
+    10,
+    3
+  );
   // Quiz 1 — Poetry
   insertQQ.run(quizIds[1], 'A 14-line poem is called a ___', 'fill_blank', null, 'sonnet', 10, 1);
-  insertQQ.run(quizIds[1], 'Which device compares using "like" or "as"?', 'mcq', JSON.stringify(['Metaphor','Simile','Alliteration','Hyperbole']), 'Simile', 10, 2);
-  insertQQ.run(quizIds[1], 'Rhyme is the repetition of similar sounds at the end of lines.', 'true_false', JSON.stringify(['True','False']), 'True', 10, 3);
+  insertQQ.run(
+    quizIds[1],
+    'Which device compares using "like" or "as"?',
+    'mcq',
+    JSON.stringify(['Metaphor', 'Simile', 'Alliteration', 'Hyperbole']),
+    'Simile',
+    10,
+    2
+  );
+  insertQQ.run(
+    quizIds[1],
+    'Rhyme is the repetition of similar sounds at the end of lines.',
+    'true_false',
+    JSON.stringify(['True', 'False']),
+    'True',
+    10,
+    3
+  );
   // Quiz 2 — Chemistry
-  insertQQ.run(quizIds[2], 'How many protons does Carbon have?', 'mcq', JSON.stringify(['4','6','8','12']), '6', 10, 1);
-  insertQQ.run(quizIds[2], 'An ionic bond involves the ___ of electrons.', 'fill_blank', null, 'transfer', 10, 2);
-  insertQQ.run(quizIds[2], 'Which subatomic particle has a negative charge?', 'mcq', JSON.stringify(['Proton','Neutron','Electron','Nucleus']), 'Electron', 10, 3);
+  insertQQ.run(
+    quizIds[2],
+    'How many protons does Carbon have?',
+    'mcq',
+    JSON.stringify(['4', '6', '8', '12']),
+    '6',
+    10,
+    1
+  );
+  insertQQ.run(
+    quizIds[2],
+    'An ionic bond involves the ___ of electrons.',
+    'fill_blank',
+    null,
+    'transfer',
+    10,
+    2
+  );
+  insertQQ.run(
+    quizIds[2],
+    'Which subatomic particle has a negative charge?',
+    'mcq',
+    JSON.stringify(['Proton', 'Neutron', 'Electron', 'Nucleus']),
+    'Electron',
+    10,
+    3
+  );
 
   // ── Quiz Attempts (2 per quiz) ──
-  const insertQA = db.prepare('INSERT INTO quiz_attempts (quiz_id, student_id, answers, score, started_at, completed_at) VALUES (?, ?, ?, ?, ?, ?)');
+  const insertQA = db.prepare(
+    'INSERT INTO quiz_attempts (quiz_id, student_id, answers, score, started_at, completed_at) VALUES (?, ?, ?, ?, ?, ?)'
+  );
   const startTime = '2026-06-27T09:00:00';
   const endTime = '2026-06-27T09:25:00';
   // Quiz 0 attempts
-  insertQA.run(quizIds[0], userIds['student@school.com'], JSON.stringify({1:'5',2:'7',3:'Expression'}), 30, startTime, endTime);
-  insertQA.run(quizIds[0], userIds['student2@school.com'], JSON.stringify({1:'5',2:'7',3:'Equation'}), 20, startTime, endTime);
+  insertQA.run(
+    quizIds[0],
+    userIds['student@school.com'],
+    JSON.stringify({ 1: '5', 2: '7', 3: 'Expression' }),
+    30,
+    startTime,
+    endTime
+  );
+  insertQA.run(
+    quizIds[0],
+    userIds['student2@school.com'],
+    JSON.stringify({ 1: '5', 2: '7', 3: 'Equation' }),
+    20,
+    startTime,
+    endTime
+  );
   // Quiz 1 attempts
-  insertQA.run(quizIds[1], userIds['student@school.com'], JSON.stringify({1:'sonnet',2:'Simile',3:'True'}), 30, startTime, endTime);
-  insertQA.run(quizIds[1], userIds['student3@school.com'], JSON.stringify({1:'haiku',2:'Simile',3:'True'}), 20, startTime, endTime);
+  insertQA.run(
+    quizIds[1],
+    userIds['student@school.com'],
+    JSON.stringify({ 1: 'sonnet', 2: 'Simile', 3: 'True' }),
+    30,
+    startTime,
+    endTime
+  );
+  insertQA.run(
+    quizIds[1],
+    userIds['student3@school.com'],
+    JSON.stringify({ 1: 'haiku', 2: 'Simile', 3: 'True' }),
+    20,
+    startTime,
+    endTime
+  );
   // Quiz 2 attempts
-  insertQA.run(quizIds[2], userIds['student@school.com'], JSON.stringify({1:'6',2:'transfer',3:'Electron'}), 30, startTime, endTime);
-  insertQA.run(quizIds[2], userIds['student2@school.com'], JSON.stringify({1:'6',2:'sharing',3:'Electron'}), 20, startTime, endTime);
+  insertQA.run(
+    quizIds[2],
+    userIds['student@school.com'],
+    JSON.stringify({ 1: '6', 2: 'transfer', 3: 'Electron' }),
+    30,
+    startTime,
+    endTime
+  );
+  insertQA.run(
+    quizIds[2],
+    userIds['student2@school.com'],
+    JSON.stringify({ 1: '6', 2: 'sharing', 3: 'Electron' }),
+    20,
+    startTime,
+    endTime
+  );
 
   // ── Attendance (multiple dates) ──
-  const insertAtt = db.prepare('INSERT OR IGNORE INTO attendance (user_id, class_id, date, status, marked_by) VALUES (?, ?, ?, ?, ?)');
-  const dates = ['2026-06-23','2026-06-24','2026-06-25','2026-06-26','2026-06-27'];
-  const statuses = ['present','present','late','present','present'];
-  const statuses2 = ['present','absent','present','present','present'];
+  const insertAtt = db.prepare(
+    'INSERT OR IGNORE INTO attendance (user_id, class_id, date, status, marked_by) VALUES (?, ?, ?, ?, ?)'
+  );
+  const dates = ['2026-06-23', '2026-06-24', '2026-06-25', '2026-06-26', '2026-06-27'];
+  const statuses = ['present', 'present', 'late', 'present', 'present'];
+  const statuses2 = ['present', 'absent', 'present', 'present', 'present'];
   for (let i = 0; i < dates.length; i++) {
-    insertAtt.run(userIds['student@school.com'], classIds[0], dates[i], statuses[i], userIds['teacher@school.com']);
-    insertAtt.run(userIds['student2@school.com'], classIds[0], dates[i], statuses2[i], userIds['teacher@school.com']);
-    insertAtt.run(userIds['student3@school.com'], classIds[0], dates[i], i === 1 ? 'absent' : 'present', userIds['teacher@school.com']);
-    insertAtt.run(userIds['student4@school.com'], classIds[0], dates[i], 'present', userIds['teacher@school.com']);
+    insertAtt.run(
+      userIds['student@school.com'],
+      classIds[0],
+      dates[i],
+      statuses[i],
+      userIds['teacher@school.com']
+    );
+    insertAtt.run(
+      userIds['student2@school.com'],
+      classIds[0],
+      dates[i],
+      statuses2[i],
+      userIds['teacher@school.com']
+    );
+    insertAtt.run(
+      userIds['student3@school.com'],
+      classIds[0],
+      dates[i],
+      i === 1 ? 'absent' : 'present',
+      userIds['teacher@school.com']
+    );
+    insertAtt.run(
+      userIds['student4@school.com'],
+      classIds[0],
+      dates[i],
+      'present',
+      userIds['teacher@school.com']
+    );
   }
 
   // ── Timetable ──
-  const insertTT = db.prepare('INSERT INTO timetable (class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const insertTT = db.prepare(
+    'INSERT INTO timetable (class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
   // Math — Mon/Wed/Fri
-  insertTT.run(classIds[0], mathSubjId, userIds['teacher@school.com'], 0, '09:00', '10:00', 'Room 101');
-  insertTT.run(classIds[0], mathSubjId, userIds['teacher@school.com'], 2, '09:00', '10:00', 'Room 101');
-  insertTT.run(classIds[0], mathSubjId, userIds['teacher@school.com'], 4, '09:00', '10:00', 'Room 101');
+  insertTT.run(
+    classIds[0],
+    mathSubjId,
+    userIds['teacher@school.com'],
+    0,
+    '09:00',
+    '10:00',
+    'Room 101'
+  );
+  insertTT.run(
+    classIds[0],
+    mathSubjId,
+    userIds['teacher@school.com'],
+    2,
+    '09:00',
+    '10:00',
+    'Room 101'
+  );
+  insertTT.run(
+    classIds[0],
+    mathSubjId,
+    userIds['teacher@school.com'],
+    4,
+    '09:00',
+    '10:00',
+    'Room 101'
+  );
   // English — Tue/Thu
-  insertTT.run(classIds[1], engSubjId, userIds['teacher@school.com'], 1, '10:00', '11:30', 'Room 205');
-  insertTT.run(classIds[1], engSubjId, userIds['teacher@school.com'], 3, '10:00', '11:30', 'Room 205');
+  insertTT.run(
+    classIds[1],
+    engSubjId,
+    userIds['teacher@school.com'],
+    1,
+    '10:00',
+    '11:30',
+    'Room 205'
+  );
+  insertTT.run(
+    classIds[1],
+    engSubjId,
+    userIds['teacher@school.com'],
+    3,
+    '10:00',
+    '11:30',
+    'Room 205'
+  );
   // Science — Wed/Fri
-  insertTT.run(classIds[2], sciSubjId, userIds['teacher2@school.com'], 2, '14:00', '15:30', 'Lab 301');
-  insertTT.run(classIds[2], sciSubjId, userIds['teacher2@school.com'], 4, '14:00', '15:30', 'Lab 301');
+  insertTT.run(
+    classIds[2],
+    sciSubjId,
+    userIds['teacher2@school.com'],
+    2,
+    '14:00',
+    '15:30',
+    'Lab 301'
+  );
+  insertTT.run(
+    classIds[2],
+    sciSubjId,
+    userIds['teacher2@school.com'],
+    4,
+    '14:00',
+    '15:30',
+    'Lab 301'
+  );
   // Myanmar History — Mon/Thu
-  insertTT.run(classIds[3], mmSubjId, userIds['teacher3@school.com'], 0, '11:00', '12:00', 'Room 108');
-  insertTT.run(classIds[3], mmSubjId, userIds['teacher3@school.com'], 3, '11:00', '12:00', 'Room 108');
+  insertTT.run(
+    classIds[3],
+    mmSubjId,
+    userIds['teacher3@school.com'],
+    0,
+    '11:00',
+    '12:00',
+    'Room 108'
+  );
+  insertTT.run(
+    classIds[3],
+    mmSubjId,
+    userIds['teacher3@school.com'],
+    3,
+    '11:00',
+    '12:00',
+    'Room 108'
+  );
 
   // ── Gradebook ──
-  const insertGB = db.prepare('INSERT INTO gradebook (student_id, course_id, assignment_score, quiz_score, exam_score, final_grade, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const insertGB = db.prepare(
+    'INSERT INTO gradebook (student_id, course_id, assignment_score, quiz_score, exam_score, final_grade, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
   insertGB.run(userIds['student@school.com'], courseIds[0], 92, 90, 88, 'A', 4.0);
   insertGB.run(userIds['student@school.com'], courseIds[1], 95, 90, 92, 'A', 4.0);
   insertGB.run(userIds['student@school.com'], courseIds[2], 88, 90, 85, 'B+', 3.5);
@@ -711,21 +1337,58 @@ function seedDatabase(db) {
   insertGB.run(userIds['student3@school.com'], courseIds[1], null, 67, null, '-', null);
 
   // ── Chat Messages ──
-  const insertChat = db.prepare('INSERT INTO chat_messages (user_id, user_name, user_role, message, reply) VALUES (?, ?, ?, ?, ?)');
-  insertChat.run(userIds['student@school.com'], 'Aye Aye', 'student', 'What time is the math quiz?', 'The math quiz is scheduled for Wednesday at 9:00 AM in Room 101.');
-  insertChat.run(userIds['student2@school.com'], 'John Doe', 'student', 'How do I reset my password?', 'Please contact the admin office or email admin@school.com to reset your password.');
-  insertChat.run(userIds['teacher@school.com'], 'Ms. Johnson', 'teacher', 'How many students are enrolled in Math 101?', 'There are 4 students currently enrolled in Mathematics 101.');
+  const insertChat = db.prepare(
+    'INSERT INTO chat_messages (user_id, user_name, user_role, message, reply) VALUES (?, ?, ?, ?, ?)'
+  );
+  insertChat.run(
+    userIds['student@school.com'],
+    'Aye Aye',
+    'student',
+    'What time is the math quiz?',
+    'The math quiz is scheduled for Wednesday at 9:00 AM in Room 101.'
+  );
+  insertChat.run(
+    userIds['student2@school.com'],
+    'John Doe',
+    'student',
+    'How do I reset my password?',
+    'Please contact the admin office or email admin@school.com to reset your password.'
+  );
+  insertChat.run(
+    userIds['teacher@school.com'],
+    'Ms. Johnson',
+    'teacher',
+    'How many students are enrolled in Math 101?',
+    'There are 4 students currently enrolled in Mathematics 101.'
+  );
 
   // ── Contacts ──
-  const insertContact = db.prepare('INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)');
-  insertContact.run('U Win', 'uwin@gmail.com', 'Admission Inquiry', 'I would like to inquire about admission for my daughter who is entering Grade 5 next year.');
-  insertContact.run('Daw Aye', 'dawaye@gmail.com', 'Fee Structure', 'Could you please send me the fee structure for the upcoming academic year?');
-  insertContact.run('Maung Maung', 'maung@gmail.com', 'Transfer Certificate', 'I need a transfer certificate for my son. What documents are required?');
+  const insertContact = db.prepare(
+    'INSERT INTO contacts (name, email, subject, message) VALUES (?, ?, ?, ?)'
+  );
+  insertContact.run(
+    'U Win',
+    'uwin@gmail.com',
+    'Admission Inquiry',
+    'I would like to inquire about admission for my daughter who is entering Grade 5 next year.'
+  );
+  insertContact.run(
+    'Daw Aye',
+    'dawaye@gmail.com',
+    'Fee Structure',
+    'Could you please send me the fee structure for the upcoming academic year?'
+  );
+  insertContact.run(
+    'Maung Maung',
+    'maung@gmail.com',
+    'Transfer Certificate',
+    'I need a transfer certificate for my son. What documents are required?'
+  );
 
   // ── Parent Users ──
   const parentEmails = [
     { email: 'parent@school.com', name: 'U Aye (Parent)', role: 'parent' },
-    { email: 'parent2@school.com', name: 'U Hla (Parent)', role: 'parent' }
+    { email: 'parent2@school.com', name: 'U Hla (Parent)', role: 'parent' },
   ];
   for (const p of parentEmails) {
     const r = insertUser.run(p.email, password, p.name, p.role);
@@ -733,12 +1396,16 @@ function seedDatabase(db) {
   }
 
   // ── Parent-Student Links ──
-  const insertPS = db.prepare('INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)');
+  const insertPS = db.prepare(
+    'INSERT OR IGNORE INTO parent_students (parent_id, student_id, relationship) VALUES (?, ?, ?)'
+  );
   insertPS.run(userIds['parent@school.com'], userIds['student@school.com'], 'father');
   insertPS.run(userIds['parent2@school.com'], userIds['student2@school.com'], 'father');
 
   // ── Fee Structures ──
-  const insertFee = db.prepare('INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)');
+  const insertFee = db.prepare(
+    'INSERT INTO fee_structures (grade_id, fee_type, amount, academic_year_id) VALUES (?, ?, ?, ?)'
+  );
   if (ayId) {
     insertFee.run(g10, 'Tuition', 500000, ayId);
     insertFee.run(g10, 'Lab Fee', 50000, ayId);
@@ -747,17 +1414,35 @@ function seedDatabase(db) {
   }
 
   // ── Invoices ──
-  const insertInvoice = db.prepare('INSERT INTO invoices (student_id, fee_structure_id, amount, status, due_date) VALUES (?, ?, ?, ?, ?)');
-  const inv1 = insertInvoice.run(userIds['student@school.com'], 1, 500000, 'pending', '2026-08-15').lastInsertRowid;
-  const inv2 = insertInvoice.run(userIds['student@school.com'], 2, 50000, 'paid', '2026-08-15').lastInsertRowid;
+  const insertInvoice = db.prepare(
+    'INSERT INTO invoices (student_id, fee_structure_id, amount, status, due_date) VALUES (?, ?, ?, ?, ?)'
+  );
+  const inv1 = insertInvoice.run(
+    userIds['student@school.com'],
+    1,
+    500000,
+    'pending',
+    '2026-08-15'
+  ).lastInsertRowid;
+  const inv2 = insertInvoice.run(
+    userIds['student@school.com'],
+    2,
+    50000,
+    'paid',
+    '2026-08-15'
+  ).lastInsertRowid;
   insertInvoice.run(userIds['student2@school.com'], 1, 500000, 'pending', '2026-08-15');
 
   // ── Payments ──
-  const insertPayment = db.prepare('INSERT INTO payments (invoice_id, amount, payment_method, reference) VALUES (?, ?, ?, ?)');
+  const insertPayment = db.prepare(
+    'INSERT INTO payments (invoice_id, amount, payment_method, reference) VALUES (?, ?, ?, ?)'
+  );
   insertPayment.run(inv2, 50000, 'bank_transfer', 'PAY-2026-001');
 
   // ── Teacher Attendance ──
-  const insertTA = db.prepare('INSERT OR IGNORE INTO teacher_attendance (teacher_id, date, check_in, check_out, status) VALUES (?, ?, ?, ?, ?)');
+  const insertTA = db.prepare(
+    'INSERT OR IGNORE INTO teacher_attendance (teacher_id, date, check_in, check_out, status) VALUES (?, ?, ?, ?, ?)'
+  );
   for (const d of dates) {
     insertTA.run(userIds['teacher@school.com'], d, '08:30', '16:30', 'present');
     insertTA.run(userIds['teacher2@school.com'], d, '08:45', '16:30', 'present');
@@ -765,22 +1450,44 @@ function seedDatabase(db) {
   }
 
   // ── Notifications ──
-  const insertNotif = db.prepare('INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)');
-  insertNotif.run(userIds['student@school.com'], 'announcement', 'New Announcement', 'Welcome to the New School Year!', '/announcements');
-  insertNotif.run(userIds['student@school.com'], 'grade', 'Grade Posted', 'Your Algebra Homework 1 has been graded', '/gradebook');
-  insertNotif.run(userIds['teacher@school.com'], 'submission', 'New Submission', 'Aye Aye submitted Sonnet Analysis Essay', '/assignments');
+  const insertNotif = db.prepare(
+    'INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)'
+  );
+  insertNotif.run(
+    userIds['student@school.com'],
+    'announcement',
+    'New Announcement',
+    'Welcome to the New School Year!',
+    '/announcements'
+  );
+  insertNotif.run(
+    userIds['student@school.com'],
+    'grade',
+    'Grade Posted',
+    'Your Algebra Homework 1 has been graded',
+    '/gradebook'
+  );
+  insertNotif.run(
+    userIds['teacher@school.com'],
+    'submission',
+    'New Submission',
+    'Aye Aye submitted Sonnet Analysis Essay',
+    '/assignments'
+  );
 
   console.log('Sample data seeded successfully');
 }
 
 function seedCurriculum(db) {
   // Education Levels
-  const insertLevel = db.prepare('INSERT OR IGNORE INTO education_levels (code, name) VALUES (?, ?)');
+  const insertLevel = db.prepare(
+    'INSERT OR IGNORE INTO education_levels (code, name) VALUES (?, ?)'
+  );
   const levels = [
     ['KG', 'Kindergarten'],
     ['PRI', 'Primary School'],
     ['LS', 'Lower Secondary School'],
-    ['US', 'Upper Secondary School']
+    ['US', 'Upper Secondary School'],
   ];
   for (const level of levels) {
     insertLevel.run(level[0], level[1]);
@@ -792,12 +1499,18 @@ function seedCurriculum(db) {
   );
   const grades = [
     ['KG', 'Kindergarten', 'KG', 0],
-    ['G1', 'Grade 1', 'PRI', 1], ['G2', 'Grade 2', 'PRI', 2],
-    ['G3', 'Grade 3', 'PRI', 3], ['G4', 'Grade 4', 'PRI', 4],
-    ['G5', 'Grade 5', 'PRI', 5], ['G6', 'Grade 6', 'LS', 6],
-    ['G7', 'Grade 7', 'LS', 7], ['G8', 'Grade 8', 'LS', 8],
-    ['G9', 'Grade 9', 'LS', 9], ['G10', 'Grade 10', 'US', 10],
-    ['G11', 'Grade 11', 'US', 11], ['G12', 'Grade 12', 'US', 12]
+    ['G1', 'Grade 1', 'PRI', 1],
+    ['G2', 'Grade 2', 'PRI', 2],
+    ['G3', 'Grade 3', 'PRI', 3],
+    ['G4', 'Grade 4', 'PRI', 4],
+    ['G5', 'Grade 5', 'PRI', 5],
+    ['G6', 'Grade 6', 'LS', 6],
+    ['G7', 'Grade 7', 'LS', 7],
+    ['G8', 'Grade 8', 'LS', 8],
+    ['G9', 'Grade 9', 'LS', 9],
+    ['G10', 'Grade 10', 'US', 10],
+    ['G11', 'Grade 11', 'US', 11],
+    ['G12', 'Grade 12', 'US', 12],
   ];
   for (const g of grades) {
     const levelId = db.prepare('SELECT id FROM education_levels WHERE code = ?').get(g[2]);
@@ -830,7 +1543,7 @@ function seedCurriculum(db) {
     ['ENV', 'Environmental Studies', 'Kindergarten'],
     ['CRA', 'Creative Arts', 'Kindergarten'],
     ['MUSIC', 'Music', 'Kindergarten'],
-    ['PA', 'Physical Activities', 'Kindergarten']
+    ['PA', 'Physical Activities', 'Kindergarten'],
   ];
   for (const s of subjects) {
     insertSubject.run(s[0], s[1], s[2]);
@@ -844,19 +1557,19 @@ function seedCurriculum(db) {
   const getSubjectId = (code) => db.prepare('SELECT id FROM subjects WHERE code = ?').get(code)?.id;
 
   const gradeSubjectMap = {
-    'KG': ['MM','ENG','MATH','ENV','CRA','MUSIC','PA','LS'],
-    'G1': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
-    'G2': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
-    'G3': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
-    'G4': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
-    'G5': ['MM','ENG','MATH','SCI','SS','MCE','PE','LS','ART','LC'],
-    'G6': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
-    'G7': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
-    'G8': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
-    'G9': ['MM','ENG','MATH','SCI','HIST','GEO','MCE','PE','LS','ART','LC'],
-    'G10': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC'],
-    'G11': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC'],
-    'G12': ['MM','ENG','MATH','PHY','CHEM','BIO','HIST','GEO','ECO','MCE','PE','LC']
+    KG: ['MM', 'ENG', 'MATH', 'ENV', 'CRA', 'MUSIC', 'PA', 'LS'],
+    G1: ['MM', 'ENG', 'MATH', 'SCI', 'SS', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G2: ['MM', 'ENG', 'MATH', 'SCI', 'SS', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G3: ['MM', 'ENG', 'MATH', 'SCI', 'SS', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G4: ['MM', 'ENG', 'MATH', 'SCI', 'SS', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G5: ['MM', 'ENG', 'MATH', 'SCI', 'SS', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G6: ['MM', 'ENG', 'MATH', 'SCI', 'HIST', 'GEO', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G7: ['MM', 'ENG', 'MATH', 'SCI', 'HIST', 'GEO', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G8: ['MM', 'ENG', 'MATH', 'SCI', 'HIST', 'GEO', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G9: ['MM', 'ENG', 'MATH', 'SCI', 'HIST', 'GEO', 'MCE', 'PE', 'LS', 'ART', 'LC'],
+    G10: ['MM', 'ENG', 'MATH', 'PHY', 'CHEM', 'BIO', 'HIST', 'GEO', 'ECO', 'MCE', 'PE', 'LC'],
+    G11: ['MM', 'ENG', 'MATH', 'PHY', 'CHEM', 'BIO', 'HIST', 'GEO', 'ECO', 'MCE', 'PE', 'LC'],
+    G12: ['MM', 'ENG', 'MATH', 'PHY', 'CHEM', 'BIO', 'HIST', 'GEO', 'ECO', 'MCE', 'PE', 'LC'],
   };
 
   for (const [gradeCode, subjectCodes] of Object.entries(gradeSubjectMap)) {
