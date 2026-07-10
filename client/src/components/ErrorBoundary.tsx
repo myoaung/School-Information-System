@@ -1,5 +1,4 @@
 import { Component, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -33,9 +32,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return (
         <div className="min-h-screen flex flex-col">
           <nav className="bg-white shadow-sm border-b px-6 py-4">
-            <Link to="/" className="text-xl font-bold text-indigo-600">
+            <a href="/" className="text-xl font-bold text-indigo-600">
               SchoolHub
-            </Link>
+            </a>
           </nav>
           <main className="flex-grow flex items-center justify-center px-4">
             <div className="text-center max-w-md">
@@ -54,12 +53,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 </pre>
               )}
               <div className="flex gap-3 justify-center">
-                <Link
-                  to="/"
+                <a
+                  href="/"
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   Go Home
-                </Link>
+                </a>
                 <button
                   onClick={this.handleReset}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
