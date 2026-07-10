@@ -1,10 +1,35 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import api from '../services/api';
 
-const AuthContext = createContext(null);
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: 'admin' | 'teacher' | 'student' | 'parent';
+  phone?: string;
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  register: (email: string, password: string, name: string, role: string, phone?: string) => Promise<User>;
+  logout: () => void;
+  isAdmin: boolean;
+  isTeacher: boolean;
+  isStudent: boolean;
+  isParent: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +48,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<User> => {
     const res = await api.post('/auth/login', { email, password });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
@@ -32,7 +57,7 @@ export function AuthProvider({ children }) {
     return user;
   };
 
-  const register = async (email, password, name, role, phone) => {
+  const register = async (email: string, password: string, name: string, role: string, phone?: string): Promise<User> => {
     const res = await api.post('/auth/register', { email, password, name, role, phone });
     const { token, user } = res.data;
     localStorage.setItem('token', token);
@@ -47,7 +72,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
     login,
@@ -57,7 +82,7 @@ export function AuthProvider({ children }) {
     isAdmin: user?.role === 'admin',
     isTeacher: user?.role === 'teacher',
     isStudent: user?.role === 'student',
-    isParent: user?.role === 'parent'
+    isParent: user?.role === 'parent',
   };
 
   return (
@@ -67,7 +92,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

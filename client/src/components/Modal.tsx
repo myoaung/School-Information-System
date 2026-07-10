@@ -1,7 +1,27 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
-export default function Modal({ isOpen, onClose, title, children, size = 'md', role = 'dialog', 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy }) {
-  const ref = useRef(null);
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  role?: string;
+  'aria-labelledby'?: string;
+  'aria-describedby'?: string;
+}
+
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  role = 'dialog',
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
+}: ModalProps) {
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -13,7 +33,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', r
   }, [isOpen]);
 
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);

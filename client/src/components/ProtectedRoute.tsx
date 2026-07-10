@@ -1,7 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import type { ReactNode } from 'react';
 
-export default function ProtectedRoute({ children, requiredRole }) {
+interface ProtectedRouteProps {
+  children: ReactNode;
+  requiredRole?: string;
+}
+
+export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -20,5 +26,5 @@ export default function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 }
