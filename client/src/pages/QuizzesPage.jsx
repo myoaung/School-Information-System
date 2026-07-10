@@ -4,6 +4,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { toast } from 'sonner';
 
 export default function QuizzesPage() {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ export default function QuizzesPage() {
 
   useEffect(() => {
     fetchQuizzes();
-    api.get('/courses').then(r => setCourses(r.data.courses || [])).catch(() => {});
+    api.get('/courses').then(r => setCourses(r.data.courses || [])).catch(() => toast.error('Failed to load courses'));
   }, []);
 
   const openCreate = () => {

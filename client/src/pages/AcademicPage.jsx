@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -51,7 +52,7 @@ export default function AcademicPage() {
       setYears(yr.data.years);
       setSemesters(sem.data.semesters);
       setHolidays(hol.data.holidays);
-    }).catch(() => {});
+    }).catch(() => toast.error('Failed to load academic data'));
   };
 
   const handleSubmit = (e) => {

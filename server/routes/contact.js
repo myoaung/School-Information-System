@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { contactRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -20,8 +21,7 @@ router.post('/', contactRules, async (req, res) => {
       id: result.lastInsertRowid
     });
   } catch (err) {
-    console.error('Error submitting contact form:', err);
-    res.status(500).json({ error: 'Failed to submit contact form' });
+    sendError(res, err, 'Failed to submit contact form');
   }
 });
 
@@ -32,8 +32,7 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 
     res.json({ contacts });
   } catch (err) {
-    console.error('Error fetching contacts:', err);
-    res.status(500).json({ error: 'Failed to fetch contacts' });
+    sendError(res, err, 'Failed to fetch contacts');
   }
 });
 

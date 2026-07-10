@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function ParentPortalPage() {
   const { user } = useAuth();
@@ -17,17 +18,17 @@ export default function ParentPortalPage() {
   useEffect(() => {
     api.get('/parent/children')
       .then(r => { setChildren(r.data); if (r.data.length) setSelectedChild(r.data[0]); })
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load child data'))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     if (!selectedChild) return;
     const id = selectedChild.id;
-    api.get(`/parent/child/${id}/grades`).then(r => setGrades(r.data)).catch(() => {});
-    api.get(`/parent/child/${id}/attendance?limit=10`).then(r => setAttendance(r.data)).catch(() => {});
-    api.get(`/parent/child/${id}/assignments`).then(r => setAssignments(r.data)).catch(() => {});
-    api.get(`/parent/child/${id}/timetable`).then(r => setTimetable(r.data)).catch(() => {});
+    api.get(`/parent/child/${id}/grades`).then(r => setGrades(r.data)).catch(() => toast.error('Failed to load grades'));
+    api.get(`/parent/child/${id}/attendance?limit=10`).then(r => setAttendance(r.data)).catch(() => toast.error('Failed to load attendance'));
+    api.get(`/parent/child/${id}/assignments`).then(r => setAssignments(r.data)).catch(() => toast.error('Failed to load assignments'));
+    api.get(`/parent/child/${id}/timetable`).then(r => setTimetable(r.data)).catch(() => toast.error('Failed to load timetable'));
   }, [selectedChild]);
 
   if (loading) return <LoadingSkeleton />;

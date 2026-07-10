@@ -4,6 +4,7 @@ import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { toast } from 'sonner';
 
 export default function ClassesPage() {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export default function ClassesPage() {
   useEffect(() => {
     fetchClasses();
     if (isAdmin) {
-      api.get('/teachers').then(r => setTeachers(r.data.teachers)).catch(() => {});
+      api.get('/teachers').then(r => setTeachers(r.data.teachers)).catch(() => toast.error('Failed to load teachers'));
     }
   }, []);
 

@@ -12,6 +12,7 @@ export default function GradebookPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ assignment_score: '', quiz_score: '', exam_score: '', final_grade: '', gpa: '' });
   const [message, setMessage] = useState('');
+  const [gradeError, setGradeError] = useState(null);
 
   const fetchGrades = () => {
     setLoading(true);
@@ -25,6 +26,7 @@ export default function GradebookPage() {
   useEffect(() => { fetchGrades(); }, []);
 
   const handleSave = (studentId, courseId) => {
+    setGradeError(null);
     api.post('/gradebook', {
       student_id: studentId,
       course_id: courseId,
@@ -35,7 +37,7 @@ export default function GradebookPage() {
       gpa: Number(form.gpa) || null,
     })
       .then(() => { setMessage(t('gradebook.saved')); setEditing(null); fetchGrades(); })
-      .catch(() => setError(t('gradebook.saveError')));
+      .catch(() => { setError(t('gradebook.saveError')); setGradeError(t('gradebook.saveError')); });
   };
 
   const startEdit = (g) => {
@@ -66,6 +68,14 @@ export default function GradebookPage() {
 
       {message && <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-300 px-4 py-3 rounded-xl mb-6 text-sm">{message}</div>}
       {error && <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">{error}</div>}
+      {gradeError && (
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-6">
+          <p className="text-red-700 dark:text-red-300 text-sm">{gradeError}</p>
+          <button onClick={() => { setGradeError(null); if (editing) { const [sid, cid] = editing.split('-'); handleSave(Number(sid), Number(cid)); } }} className="text-red-600 dark:text-red-400 text-sm underline mt-1 hover:no-underline">
+            Try again
+          </button>
+        </div>
+      )}
 
       {grades.length > 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">

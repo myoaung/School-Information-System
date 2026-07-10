@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
 const { authMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/', authMiddleware, async (req, res) => {
     `, params);
     res.json({ resources });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch resources' });
+    sendError(res, err, 'Failed to fetch resources');
   }
 });
 

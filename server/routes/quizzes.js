@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { quizRules, quizQuestionRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
     `, params);
     res.json({ quizzes });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch quizzes' });
+    sendError(res, err, 'Failed to fetch quizzes');
   }
 });
 
@@ -47,7 +48,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     res.json({ quiz: { ...quiz, questions, attempts } });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch quiz' });
+    sendError(res, err, 'Failed to fetch quiz');
   }
 });
 
@@ -59,7 +60,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), quizRules, 
     const result = await db.run('INSERT INTO quizzes (course_id, title, description, time_limit_minutes, max_score, due_date, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)', [course_id, title, description || null, time_limit_minutes || null, max_score || 100, due_date || null, req.user.id]);
     res.status(201).json({ message: 'Quiz created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create quiz' });
+    sendError(res, err, 'Failed to create quiz');
   }
 });
 
@@ -71,7 +72,7 @@ router.post('/:id/questions', authMiddleware, roleMiddleware('admin', 'teacher')
     const result = await db.run('INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)', [req.params.id, question_text, question_type, options ? (typeof options === 'string' ? options : JSON.stringify(options)) : null, correct_answer || null, points || 1, question_order || 0]);
     res.status(201).json({ message: 'Question added', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to add question' });
+    sendError(res, err, 'Failed to add question');
   }
 });
 
@@ -86,7 +87,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (re
       [course_id, title, description || null, time_limit_minutes || null, max_score || 100, due_date || null, req.params.id]);
     res.json({ message: 'Quiz updated' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update quiz' });
+    sendError(res, err, 'Failed to update quiz');
   }
 });
 
@@ -100,7 +101,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async 
     await db.run('DELETE FROM quizzes WHERE id = ?', [req.params.id]);
     res.json({ message: 'Quiz deleted' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete quiz' });
+    sendError(res, err, 'Failed to delete quiz');
   }
 });
 
@@ -126,7 +127,7 @@ router.post('/:id/attempt', authMiddleware, async (req, res) => {
     const result = await db.run('INSERT INTO quiz_attempts (quiz_id, student_id, answers, score, completed_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)', [req.params.id, req.user.id, typeof answers === 'string' ? answers : JSON.stringify(answers), score]);
     res.status(201).json({ message: 'Quiz submitted', id: result.lastInsertRowid, score, max_score: quiz.max_score });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to submit quiz' });
+    sendError(res, err, 'Failed to submit quiz');
   }
 });
 

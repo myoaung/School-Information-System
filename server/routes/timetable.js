@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -33,8 +34,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     res.json({ timetable: grouped, days: DAYS });
   } catch (err) {
-    console.error('Error fetching timetable:', err);
-    res.status(500).json({ error: 'Failed to fetch timetable' });
+    sendError(res, err, 'Failed to fetch timetable');
   }
 });
 
@@ -59,8 +59,7 @@ router.get('/teacher', authMiddleware, async (req, res) => {
 
     res.json({ timetable: grouped, days: DAYS });
   } catch (err) {
-    console.error('Error fetching teacher timetable:', err);
-    res.status(500).json({ error: 'Failed to fetch timetable' });
+    sendError(res, err, 'Failed to fetch timetable');
   }
 });
 
@@ -100,8 +99,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
     const entry = await db.get('SELECT * FROM timetable WHERE id = ?', [result.lastInsertRowid]);
     res.status(201).json({ message: 'Timetable entry created', entry });
   } catch (err) {
-    console.error('Error creating timetable entry:', err);
-    res.status(500).json({ error: 'Failed to create timetable entry' });
+    sendError(res, err, 'Failed to create timetable entry');
   }
 });
 
@@ -125,8 +123,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
     const entry = await db.get('SELECT * FROM timetable WHERE id = ?', [req.params.id]);
     res.json({ message: 'Timetable entry updated', entry });
   } catch (err) {
-    console.error('Error updating timetable entry:', err);
-    res.status(500).json({ error: 'Failed to update timetable entry' });
+    sendError(res, err, 'Failed to update timetable entry');
   }
 });
 
@@ -139,8 +136,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     await db.run('DELETE FROM timetable WHERE id = ?', [req.params.id]);
     res.json({ message: 'Timetable entry deleted' });
   } catch (err) {
-    console.error('Error deleting timetable entry:', err);
-    res.status(500).json({ error: 'Failed to delete timetable entry' });
+    sendError(res, err, 'Failed to delete timetable entry');
   }
 });
 

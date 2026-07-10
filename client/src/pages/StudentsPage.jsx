@@ -5,6 +5,7 @@ import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { toast } from 'sonner';
 
 export default function StudentsPage() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export default function StudentsPage() {
       const allGrades = [];
       r.data.levels?.forEach(l => l.grades?.forEach(g => allGrades.push(g)));
       setGrades(allGrades);
-    }).catch(() => {});
+    }).catch(() => toast.error('Failed to load grades'));
   }, []);
 
   const handleSearch = (e) => { e.preventDefault(); fetchStudents(search); };

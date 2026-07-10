@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 const COLORS = {
   blue: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -22,17 +23,17 @@ export default function DashboardPage() {
   useEffect(() => {
     api.get('/reports/dashboard')
       .then(r => setStats(r.data.dashboard))
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load dashboard data'))
       .finally(() => setLoading(false));
 
     // Load at-risk students for admin/teacher
     if (isAdmin || isTeacher) {
       api.get('/ai/at-risk?minScore=30')
         .then(r => setAtRiskStudents(r.data.students || []))
-        .catch(() => {});
+        .catch(() => toast.error('Failed to load risk alerts'));
       api.get('/ai/stats')
         .then(r => setAnalyticsStats(r.data.stats))
-        .catch(() => {});
+        .catch(() => toast.error('Failed to load analytics'));
     }
   }, []);
 

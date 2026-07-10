@@ -1,5 +1,6 @@
 const express = require('express');
 const { db } = require('../data');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -35,8 +36,7 @@ router.get('/', async (req, res) => {
 
     res.json({ levels, grades, subjects, curriculum });
   } catch (err) {
-    console.error('Error fetching curriculum:', err);
-    res.status(500).json({ error: 'Failed to fetch curriculum' });
+    sendError(res, err, 'Failed to fetch curriculum');
   }
 });
 

@@ -5,6 +5,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { toast } from 'sonner';
 
 export default function TimetablePage() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export default function TimetablePage() {
   const [deleteId, setDeleteId] = useState(null);
   const [form, setForm] = useState({ subject_id: '', teacher_id: '', day_of_week: 0, start_time: '08:00', end_time: '09:00', room: '' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const dayNames = [
     t('timetable.monday'), t('timetable.tuesday'), t('timetable.wednesday'),
@@ -35,19 +37,19 @@ export default function TimetablePage() {
     setShowSuggestions(false);
     api.get('/timetable', { params: { class_id: selectedClass } })
       .then(r => setTimetable(r.data.timetable))
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load timetable'))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    api.get('/classes').then(r => setClasses(r.data.classes)).catch(() => {});
+    api.get('/classes').then(r => setClasses(r.data.classes)).catch(() => toast.error('Failed to load classes'));
     api.get('/curriculum').then(r => {
       const all = [];
       r.data.levels?.forEach(l => l.grades?.forEach(g => {}));
       setSubjects(r.data.subjects || []);
-    }).catch(() => {});
+    }).catch(() => toast.error('Failed to load subjects'));
     if (isAdmin) {
-      api.get('/teachers').then(r => setTeachers(r.data.teachers)).catch(() => {});
+      api.get('/teachers').then(r => setTeachers(r.data.teachers)).catch(() => toast.error('Failed to load teachers'));
     }
   }, []);
 
@@ -55,6 +57,7 @@ export default function TimetablePage() {
 
   const generateSchedule = async () => {
     if (!selectedClass) return;
+    setActionError(null);
     setGenerating(true);
     try {
       const genRes = await api.post('/ai/generate', { class_id: parseInt(selectedClass), respect_existing: false });
@@ -67,7 +70,7 @@ export default function TimetablePage() {
         alert('No schedule could be generated.');
       }
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to generate');
+      setActionError(err.response?.data?.error || 'Failed to generate schedule');
     } finally {
       setGenerating(false);
     }
@@ -75,11 +78,12 @@ export default function TimetablePage() {
 
   const loadSuggestions = async () => {
     if (!selectedClass) return;
+    setActionError(null);
     try {
       const res = await api.get(`/ai/suggestions/${selectedClass}`);
       setSuggestions(res.data.suggestions);
       setShowSuggestions(true);
-    } catch { alert('Failed to load suggestions'); }
+    } catch { setActionError('Failed to load AI suggestions'); }
   };
 
   const handleAddEntry = async (e) => {
@@ -145,6 +149,14 @@ export default function TimetablePage() {
                 className="px-4 py-2 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-all flex items-center gap-2">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 AI Tips
+              </button>
+            </div>
+          )}
+          {actionError && (
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3 mt-3">
+              <p className="text-red-700 dark:text-red-300 text-sm">{actionError}</p>
+              <button onClick={() => setActionError(null)} className="text-red-600 dark:text-red-400 text-sm underline mt-1 hover:no-underline">
+                Dismiss
               </button>
             </div>
           )}

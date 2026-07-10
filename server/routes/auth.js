@@ -5,6 +5,7 @@ const { db } = require('../data');
 const { authMiddleware } = require('../middleware/auth');
 const { JWT_SECRET } = require('../config');
 const { registerRules, loginRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -58,8 +59,7 @@ router.post('/register', registerRules, async (req, res) => {
       user: { id: result.lastInsertRowid, email, name, role }
     });
   } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ error: 'Registration failed' });
+    sendError(res, err, 'Registration failed');
   }
 });
 
@@ -97,8 +97,7 @@ router.post('/login', loginRules, async (req, res) => {
       user: { id: user.id, email: user.email, name: user.name, role: user.role }
     });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
+    sendError(res, err, 'Login failed');
   }
 });
 

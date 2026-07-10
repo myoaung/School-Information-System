@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -16,7 +17,7 @@ export default function AnalyticsPage() {
       api.get('/ai/stats').then(r => setStats(r.data.stats)),
       api.get(`/ai/at-risk?minScore=${filter.minScore}`).then(r => setAtRisk(r.data.students || [])),
       api.get('/ai/alerts').then(r => setAlerts(r.data.alerts || []))
-    ]).catch(() => {}).finally(() => setLoading(false));
+    ]).catch(() => toast.error('Failed to load analytics data')).finally(() => setLoading(false));
   }, [filter.minScore]);
 
   if (!isAdmin && !isTeacher) {

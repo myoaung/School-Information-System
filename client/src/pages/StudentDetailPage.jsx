@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
+import { toast } from 'sonner';
 
 export default function StudentDetailPage() {
   const { id } = useParams();
@@ -12,36 +13,39 @@ export default function StudentDetailPage() {
   const [reports, setReports] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
   useEffect(() => {
     api.get(`/students/${id}`)
       .then(r => setStudent(r.data.student))
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load student data'))
       .finally(() => setLoading(false));
     // Load existing reports
-    api.get(`/ai/report/${id}`).then(r => setReports(r.data.reports || [])).catch(() => {});
+    api.get(`/ai/report/${id}`).then(r => setReports(r.data.reports || [])).catch(() => toast.error('Failed to load reports'));
   }, [id]);
 
   const generateReport = async () => {
+    setActionError(null);
     setGenerating(true);
     try {
       const res = await api.post(`/ai/report/${id}`);
       setReports(prev => [res.data.report, ...prev]);
       setSelectedReport(res.data.report);
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to generate report');
+      setActionError(err.response?.data?.error || 'Failed to generate report');
     } finally {
       setGenerating(false);
     }
   };
 
   const approveReport = async (reportId) => {
+    setActionError(null);
     try {
       await api.put(`/ai/report/${reportId}/approve`);
       setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'approved' } : r));
       if (selectedReport?.id === reportId) setSelectedReport(prev => ({ ...prev, status: 'approved' }));
     } catch (err) {
-      alert('Failed to approve report');
+      setActionError('Failed to approve report');
     }
   };
 
@@ -117,6 +121,15 @@ export default function StudentDetailPage() {
                 </>
               )}
             </button>
+
+            {actionError && (
+              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+                <p className="text-red-700 dark:text-red-300 text-sm">{actionError}</p>
+                <button onClick={() => { setActionError(null); generateReport(); }} className="text-red-600 dark:text-red-400 text-sm underline mt-1 hover:no-underline">
+                  Try again
+                </button>
+              </div>
+            )}
 
             {reports.length > 0 && (
               <div className="mt-4 space-y-2">

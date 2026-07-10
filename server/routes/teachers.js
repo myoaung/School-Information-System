@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -30,8 +31,7 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 
     res.json({ teachers });
   } catch (err) {
-    console.error('Error fetching teachers:', err);
-    res.status(500).json({ error: 'Failed to fetch teachers' });
+    sendError(res, err, 'Failed to fetch teachers');
   }
 });
 
@@ -62,8 +62,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     res.json({ teacher: { ...teacher, classes } });
   } catch (err) {
-    console.error('Error fetching teacher:', err);
-    res.status(500).json({ error: 'Failed to fetch teacher' });
+    sendError(res, err, 'Failed to fetch teacher');
   }
 });
 
@@ -95,8 +94,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 
     res.status(201).json({ message: 'Teacher created', teacher: { id: userId, name, email, teacher_id: teacherId } });
   } catch (err) {
-    console.error('Error creating teacher:', err);
-    res.status(500).json({ error: 'Failed to create teacher' });
+    sendError(res, err, 'Failed to create teacher');
   }
 });
 
@@ -125,8 +123,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 
     res.json({ message: 'Teacher updated' });
   } catch (err) {
-    console.error('Error updating teacher:', err);
-    res.status(500).json({ error: 'Failed to update teacher' });
+    sendError(res, err, 'Failed to update teacher');
   }
 });
 
@@ -141,8 +138,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     await db.run('DELETE FROM users WHERE id = ?', [userId]);
     res.json({ message: 'Teacher deleted' });
   } catch (err) {
-    console.error('Error deleting teacher:', err);
-    res.status(500).json({ error: 'Failed to delete teacher' });
+    sendError(res, err, 'Failed to delete teacher');
   }
 });
 

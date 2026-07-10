@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 export default function ReportsPage() {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export default function ReportsPage() {
   };
 
   const fetchTeacherList = () => {
-    api.get('/teachers').then(r => setTeacherList(r.data.teachers)).catch(() => {});
+    api.get('/teachers').then(r => setTeacherList(r.data.teachers)).catch(() => toast.error('Failed to load teacher list'));
   };
 
   const fetchStudentReport = (studentId) => {

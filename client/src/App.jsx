@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
 import { FontProvider } from './context/FontContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -38,7 +40,9 @@ function App() {
   return (
     <AuthProvider>
       <FontProvider>
-        <Router>
+        <ErrorBoundary>
+          <Router>
+          <Toaster position="top-right" richColors closeButton duration={4000} />
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-grow">
@@ -217,6 +221,7 @@ function App() {
             <ChatWidget />
           </div>
         </Router>
+        </ErrorBoundary>
       </FontProvider>
     </AuthProvider>
   );

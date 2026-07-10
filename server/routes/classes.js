@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { classRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -18,8 +19,7 @@ router.get('/', async (req, res) => {
 
     res.json({ classes });
   } catch (err) {
-    console.error('Error fetching classes:', err);
-    res.status(500).json({ error: 'Failed to fetch classes' });
+    sendError(res, err, 'Failed to fetch classes');
   }
 });
 
@@ -48,8 +48,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({ class: { ...classData, students } });
   } catch (err) {
-    console.error('Error fetching class:', err);
-    res.status(500).json({ error: 'Failed to fetch class' });
+    sendError(res, err, 'Failed to fetch class');
   }
 });
 
@@ -71,8 +70,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), classRules, async (req
 
     res.status(201).json({ message: 'Class created', class: classData });
   } catch (err) {
-    console.error('Error creating class:', err);
-    res.status(500).json({ error: 'Failed to create class' });
+    sendError(res, err, 'Failed to create class');
   }
 });
 
@@ -99,8 +97,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 
     res.json({ message: 'Class updated', class: classData });
   } catch (err) {
-    console.error('Error updating class:', err);
-    res.status(500).json({ error: 'Failed to update class' });
+    sendError(res, err, 'Failed to update class');
   }
 });
 
@@ -132,8 +129,7 @@ router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), a
 
     res.json({ message: 'Student enrolled successfully' });
   } catch (err) {
-    console.error('Error enrolling student:', err);
-    res.status(500).json({ error: 'Failed to enroll student' });
+    sendError(res, err, 'Failed to enroll student');
   }
 });
 
@@ -148,8 +144,7 @@ router.get('/:id/schedule', async (req, res) => {
 
     res.json({ schedule: classData });
   } catch (err) {
-    console.error('Error fetching schedule:', err);
-    res.status(500).json({ error: 'Failed to fetch schedule' });
+    sendError(res, err, 'Failed to fetch schedule');
   }
 });
 

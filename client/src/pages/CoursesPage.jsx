@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { toast } from 'sonner';
 
 export default function CoursesPage() {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export default function CoursesPage() {
   useEffect(() => {
     fetchCourses();
     // Fetch classes and subjects for dropdowns
-    api.get('/classes').then(r => setClasses(r.data.classes || [])).catch(() => {});
+    api.get('/classes').then(r => setClasses(r.data.classes || [])).catch(() => toast.error('Failed to load classes'));
     api.get('/curriculum').then(r => {
       const allSubjects = [];
       r.data.levels?.forEach(l => l.grades?.forEach(g => {
@@ -43,9 +44,9 @@ export default function CoursesPage() {
       }));
       // Try direct subjects endpoint via curriculum data
       if (r.data.subjects) setSubjects(r.data.subjects);
-    }).catch(() => {});
+    }).catch(() => toast.error('Failed to load curriculum data'));
     // Fallback: fetch subjects directly if endpoint exists
-    api.get('/subjects').then(r => setSubjects(r.data.subjects || r.data || [])).catch(() => {});
+    api.get('/subjects').then(r => setSubjects(r.data.subjects || r.data || [])).catch(() => toast.error('Failed to load subjects'));
   }, []);
 
   const openCreate = () => {

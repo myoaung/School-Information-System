@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -41,8 +42,7 @@ router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, 
 
     res.json({ students });
   } catch (err) {
-    console.error('Error fetching students:', err);
-    res.status(500).json({ error: 'Failed to fetch students' });
+    sendError(res, err, 'Failed to fetch students');
   }
 });
 
@@ -89,8 +89,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     res.json({ student: { ...student, enrollments, attendance } });
   } catch (err) {
-    console.error('Error fetching student:', err);
-    res.status(500).json({ error: 'Failed to fetch student' });
+    sendError(res, err, 'Failed to fetch student');
   }
 });
 
@@ -129,8 +128,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 
     res.status(201).json({ message: 'Student created', student: { id: userId, name, email, student_id: studentId } });
   } catch (err) {
-    console.error('Error creating student:', err);
-    res.status(500).json({ error: 'Failed to create student' });
+    sendError(res, err, 'Failed to create student');
   }
 });
 
@@ -165,8 +163,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 
     res.json({ message: 'Student updated' });
   } catch (err) {
-    console.error('Error updating student:', err);
-    res.status(500).json({ error: 'Failed to update student' });
+    sendError(res, err, 'Failed to update student');
   }
 });
 
@@ -181,8 +178,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     await db.run('DELETE FROM users WHERE id = ?', [userId]);
     res.json({ message: 'Student deleted' });
   } catch (err) {
-    console.error('Error deleting student:', err);
-    res.status(500).json({ error: 'Failed to delete student' });
+    sendError(res, err, 'Failed to delete student');
   }
 });
 

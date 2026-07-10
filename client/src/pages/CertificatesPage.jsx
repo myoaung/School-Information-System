@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function CertificatesPage() {
   const { user, isAdmin, isTeacher } = useAuth();
@@ -11,9 +12,9 @@ export default function CertificatesPage() {
   const [form, setForm] = useState({ student_id: '', type: 'completion', data: { description: '', academic_year: '2026-2027', grade: '', gpa: '' } });
 
   useEffect(() => {
-    api.get('/certificates').then(r => setCertificates(r.data)).catch(() => {}).finally(() => setLoading(false));
+    api.get('/certificates').then(r => setCertificates(r.data)).catch(() => toast.error('Failed to load certificates')).finally(() => setLoading(false));
     if (isAdmin || isTeacher) {
-      api.get('/students').then(r => setStudents(r.data.students || [])).catch(() => {});
+      api.get('/students').then(r => setStudents(r.data.students || [])).catch(() => toast.error('Failed to load students'));
     }
   }, []);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
@@ -11,6 +12,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
+  const [sendError, setSendError] = useState(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -19,7 +21,7 @@ export default function ChatWidget() {
     if (!open || !isAuthenticated) return;
     api.get('/chat/history').then((res) => {
       setMessages(res.data);
-    }).catch(() => {});
+    }).catch(() => toast.error('Failed to load chat history'));
   }, [open, isAuthenticated]);
 
   // Auto-scroll to bottom
@@ -32,6 +34,7 @@ export default function ChatWidget() {
   const handleSend = async () => {
     if ((!input.trim() && !file) || loading) return;
 
+    setSendError(null);
     const userMsg = input.trim();
     setInput('');
     setLoading(true);
@@ -58,6 +61,7 @@ export default function ChatWidget() {
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? { ...m, reply: 'Sorry, something went wrong. Please try again.' } : m))
       );
+      setSendError('Failed to send message');
     } finally {
       setLoading(false);
     }
@@ -172,6 +176,16 @@ export default function ChatWidget() {
             <div className="px-3 py-1 bg-purple-50 flex items-center justify-between text-xs text-purple-700 shrink-0">
               <span className="truncate">📎 {file.name}</span>
               <button onClick={() => setFile(null)} className="text-purple-400 hover:text-purple-700 cursor-pointer ml-2">✕</button>
+            </div>
+          )}
+
+          {/* Send Error */}
+          {sendError && (
+            <div className="px-3 py-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs flex items-center justify-between rounded-t-lg">
+              <span>{sendError}</span>
+              <button onClick={() => { setSendError(null); handleSend(); }} className="underline hover:no-underline">
+                Retry
+              </button>
             </div>
           )}
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -47,7 +48,7 @@ export default function AssignmentsPage() {
   useEffect(() => {
     fetchAssignments();
     if (canManage) {
-      api.get('/courses').then(r => setCourses(r.data.courses)).catch(() => {});
+      api.get('/courses').then(r => setCourses(r.data.courses)).catch(() => toast.error('Failed to load courses'));
     }
   }, []);
 

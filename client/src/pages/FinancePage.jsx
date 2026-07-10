@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function FinancePage() {
   const { user, isAdmin } = useAuth();
@@ -19,11 +20,11 @@ export default function FinancePage() {
 
   useEffect(() => {
     if (isAdmin) {
-      api.get('/finance/overview').then(r => setOverview(r.data)).catch(() => {});
-      api.get('/students').then(r => setStudents(r.data.students || [])).catch(() => {});
-      api.get('/finance/fees').then(r => setFees(r.data)).catch(() => {});
+      api.get('/finance/overview').then(r => setOverview(r.data)).catch(() => toast.error('Failed to load finance overview'));
+      api.get('/students').then(r => setStudents(r.data.students || [])).catch(() => toast.error('Failed to load students'));
+      api.get('/finance/fees').then(r => setFees(r.data)).catch(() => toast.error('Failed to load fee structures'));
     }
-    api.get('/finance/invoices').then(r => setInvoices(r.data)).catch(() => {}).finally(() => setLoading(false));
+    api.get('/finance/invoices').then(r => setInvoices(r.data)).catch(() => toast.error('Failed to load invoices')).finally(() => setLoading(false));
   }, []);
 
   const loadInvoiceDetail = async (id) => {
@@ -31,7 +32,7 @@ export default function FinancePage() {
       const r = await api.get(`/finance/invoices/${id}`);
       setInvoiceDetail(r.data);
       setSelectedInvoice(id);
-    } catch {}
+    } catch { toast.error('Failed to load invoice details'); }
   };
 
   const handleCreateInvoice = async (e) => {

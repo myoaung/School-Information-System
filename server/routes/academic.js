@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get('/years', authMiddleware, async (req, res) => {
     const years = await db.all('SELECT * FROM academic_years ORDER BY start_date DESC');
     res.json({ years });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch academic years' });
+    sendError(res, err, 'Failed to fetch academic years');
   }
 });
 
@@ -23,7 +24,7 @@ router.post('/years', authMiddleware, roleMiddleware('admin'), async (req, res) 
     const result = await db.run('INSERT INTO academic_years (name, start_date, end_date, is_current) VALUES (?, ?, ?, ?)', [name, start_date, end_date, is_current ? 1 : 0]);
     res.status(201).json({ message: 'Academic year created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create academic year' });
+    sendError(res, err, 'Failed to create academic year');
   }
 });
 
@@ -33,7 +34,7 @@ router.delete('/years/:id', authMiddleware, roleMiddleware('admin'), async (req,
     await db.run('DELETE FROM academic_years WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete academic year' });
+    sendError(res, err, 'Failed to delete academic year');
   }
 });
 
@@ -49,7 +50,7 @@ router.get('/semesters', authMiddleware, async (req, res) => {
     }
     res.json({ semesters });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch semesters' });
+    sendError(res, err, 'Failed to fetch semesters');
   }
 });
 
@@ -62,7 +63,7 @@ router.post('/semesters', authMiddleware, roleMiddleware('admin'), async (req, r
     const result = await db.run('INSERT INTO semesters (academic_year_id, name, start_date, end_date, is_current) VALUES (?, ?, ?, ?, ?)', [academic_year_id, name, start_date, end_date, is_current ? 1 : 0]);
     res.status(201).json({ message: 'Semester created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create semester' });
+    sendError(res, err, 'Failed to create semester');
   }
 });
 
@@ -72,7 +73,7 @@ router.delete('/semesters/:id', authMiddleware, roleMiddleware('admin'), async (
     await db.run('DELETE FROM semesters WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete semester' });
+    sendError(res, err, 'Failed to delete semester');
   }
 });
 
@@ -88,7 +89,7 @@ router.get('/holidays', authMiddleware, async (req, res) => {
     }
     res.json({ holidays });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch holidays' });
+    sendError(res, err, 'Failed to fetch holidays');
   }
 });
 
@@ -100,7 +101,7 @@ router.post('/holidays', authMiddleware, roleMiddleware('admin'), async (req, re
     const result = await db.run('INSERT INTO holidays (academic_year_id, name, date, type) VALUES (?, ?, ?, ?)', [academic_year_id, name, date, type || 'school']);
     res.status(201).json({ message: 'Holiday created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create holiday' });
+    sendError(res, err, 'Failed to create holiday');
   }
 });
 
@@ -110,7 +111,7 @@ router.delete('/holidays/:id', authMiddleware, roleMiddleware('admin'), async (r
     await db.run('DELETE FROM holidays WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete holiday' });
+    sendError(res, err, 'Failed to delete holiday');
   }
 });
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function AnnouncementsPage() {
   const { t } = useTranslation();
@@ -36,8 +37,8 @@ export default function AnnouncementsPage() {
       const allGrades = [];
       r.data.levels?.forEach(l => l.grades?.forEach(g => allGrades.push(g)));
       setGrades(allGrades);
-    }).catch(() => {});
-    api.get('/classes').then(r => setClasses(r.data.classes || r.data || [])).catch(() => {});
+    }).catch(() => toast.error('Failed to load grades'));
+    api.get('/classes').then(r => setClasses(r.data.classes || r.data || [])).catch(() => toast.error('Failed to load classes'));
   }, []);
 
   useEffect(() => { fetchAnnouncements(); }, [filterGrade, filterClass]);

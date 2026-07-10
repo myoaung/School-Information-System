@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { courseRules, lessonRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/', authMiddleware, async (req, res) => {
     `, params);
     res.json({ courses });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch courses' });
+    sendError(res, err, 'Failed to fetch courses');
   }
 });
 
@@ -42,7 +43,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const quizzes = await db.all('SELECT * FROM quizzes WHERE course_id = ? ORDER BY due_date', [req.params.id]);
     res.json({ course: { ...course, lessons, resources, assignments, quizzes } });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch course' });
+    sendError(res, err, 'Failed to fetch course');
   }
 });
 
@@ -54,7 +55,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), courseRules
     const result = await db.run('INSERT INTO courses (class_id, subject_id, title, description) VALUES (?, ?, ?, ?)', [class_id, subject_id, title, description || null]);
     res.status(201).json({ message: 'Course created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create course' });
+    sendError(res, err, 'Failed to create course');
   }
 });
 
@@ -66,7 +67,7 @@ router.post('/:id/lessons', authMiddleware, roleMiddleware('admin', 'teacher'), 
     const result = await db.run('INSERT INTO lessons (course_id, title, content, lesson_order, duration_minutes) VALUES (?, ?, ?, ?, ?)', [req.params.id, title, content || null, lesson_order || 0, duration_minutes || null]);
     res.status(201).json({ message: 'Lesson added', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to add lesson' });
+    sendError(res, err, 'Failed to add lesson');
   }
 });
 
@@ -78,7 +79,7 @@ router.post('/:id/resources', authMiddleware, roleMiddleware('admin', 'teacher')
     const result = await db.run('INSERT INTO resources (course_id, title, type, url, description, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)', [req.params.id, title, type, url || null, description || null, req.user.id]);
     res.status(201).json({ message: 'Resource added', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to add resource' });
+    sendError(res, err, 'Failed to add resource');
   }
 });
 

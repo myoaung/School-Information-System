@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export default function MessagesPage() {
     const endpoint = tab === 'inbox' ? '/messages/inbox' : '/messages/sent';
     api.get(endpoint)
       .then(r => setMessages(r.data))
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load messages'))
       .finally(() => setLoading(false));
   };
 
@@ -26,7 +27,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (showCompose) {
-      api.get('/messages/users').then(r => setUsers(r.data)).catch(() => {});
+      api.get('/messages/users').then(r => setUsers(r.data)).catch(() => toast.error('Failed to load users'));
     }
   }, [showCompose]);
 
@@ -50,7 +51,7 @@ export default function MessagesPage() {
     try {
       await api.put(`/messages/${id}/read`);
       setMessages(msgs => msgs.map(m => m.id === id ? { ...m, is_read: 1 } : m));
-    } catch {}
+    } catch { toast.error('Failed to mark message as read'); }
   };
 
   const deleteMsg = async (id) => {
@@ -59,7 +60,7 @@ export default function MessagesPage() {
       await api.delete(`/messages/${id}`);
       setMessages(msgs => msgs.filter(m => m.id !== id));
       if (selectedMsg?.id === id) setSelectedMsg(null);
-    } catch {}
+    } catch { toast.error('Failed to delete message'); }
   };
 
   return (

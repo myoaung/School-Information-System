@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { announcementRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -37,8 +38,7 @@ router.get('/', async (req, res) => {
 
     res.json({ announcements });
   } catch (err) {
-    console.error('Error fetching announcements:', err);
-    res.status(500).json({ error: 'Failed to fetch announcements' });
+    sendError(res, err, 'Failed to fetch announcements');
   }
 });
 
@@ -61,8 +61,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({ announcement });
   } catch (err) {
-    console.error('Error fetching announcement:', err);
-    res.status(500).json({ error: 'Failed to fetch announcement' });
+    sendError(res, err, 'Failed to fetch announcement');
   }
 });
 
@@ -88,8 +87,7 @@ router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcemen
 
     res.status(201).json({ message: 'Announcement created', announcement });
   } catch (err) {
-    console.error('Error creating announcement:', err);
-    res.status(500).json({ error: 'Failed to create announcement' });
+    sendError(res, err, 'Failed to create announcement');
   }
 });
 
@@ -128,8 +126,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     res.json({ message: 'Announcement updated', announcement });
   } catch (err) {
-    console.error('Error updating announcement:', err);
-    res.status(500).json({ error: 'Failed to update announcement' });
+    sendError(res, err, 'Failed to update announcement');
   }
 });
 
@@ -149,8 +146,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
     res.json({ message: 'Announcement deleted' });
   } catch (err) {
-    console.error('Error deleting announcement:', err);
-    res.status(500).json({ error: 'Failed to delete announcement' });
+    sendError(res, err, 'Failed to delete announcement');
   }
 });
 

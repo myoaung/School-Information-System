@@ -2,6 +2,7 @@ const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { assignmentRules } = require('../middleware/validate');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
     `, params);
     res.json({ assignments });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch assignments' });
+    sendError(res, err, 'Failed to fetch assignments');
   }
 });
 
@@ -45,7 +46,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
     res.json({ assignment: { ...assignment, submissions } });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch assignment' });
+    sendError(res, err, 'Failed to fetch assignment');
   }
 });
 
@@ -57,7 +58,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), assignmentR
     const result = await db.run('INSERT INTO assignments (course_id, title, description, due_date, max_score, allow_late, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)', [course_id, title, description || null, due_date || null, max_score || 100, allow_late ? 1 : 0, req.user.id]);
     res.status(201).json({ message: 'Assignment created', id: result.lastInsertRowid });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create assignment' });
+    sendError(res, err, 'Failed to create assignment');
   }
 });
 
@@ -78,7 +79,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     await db.run('INSERT INTO submissions (assignment_id, student_id, content, status) VALUES (?, ?, ?, ?)', [req.params.id, req.user.id, content || '', status]);
     res.status(201).json({ message: 'Assignment submitted', status });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to submit assignment' });
+    sendError(res, err, 'Failed to submit assignment');
   }
 });
 
@@ -92,7 +93,7 @@ router.post('/submissions/:id/grade', authMiddleware, roleMiddleware('admin', 't
     await db.run('UPDATE submissions SET score = ?, feedback = ?, status = ?, graded_at = CURRENT_TIMESTAMP, graded_by = ? WHERE id = ?', [score, feedback || null, 'graded', req.user.id, req.params.id]);
     res.json({ message: 'Submission graded' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to grade submission' });
+    sendError(res, err, 'Failed to grade submission');
   }
 });
 

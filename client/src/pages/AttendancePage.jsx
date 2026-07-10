@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 export default function AttendancePage() {
   const { t } = useTranslation();
@@ -13,9 +14,10 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
-    api.get('/classes').then(r => setClasses(r.data.classes)).catch(() => {});
+    api.get('/classes').then(r => setClasses(r.data.classes)).catch(() => toast.error('Failed to load classes'));
   }, []);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export default function AttendancePage() {
     setLoading(true);
     api.get('/attendance', { params: { class_id: selectedClass, date } })
       .then(r => setAttendance(r.data.attendance.map(a => ({ ...a, status: a.status || 'present' }))))
-      .catch(() => {})
+      .catch(() => toast.error('Failed to load attendance'))
       .finally(() => setLoading(false));
   }, [selectedClass, date]);
 
@@ -32,6 +34,7 @@ export default function AttendancePage() {
   };
 
   const handleSave = async () => {
+    setSaveError(null);
     setSaving(true);
     try {
       await api.post('/attendance', {
@@ -43,6 +46,7 @@ export default function AttendancePage() {
       setTimeout(() => setMessage(''), 3000);
     } catch {
       setMessage(t('attendance.saveError'));
+      setSaveError(t('attendance.saveError'));
     } finally {
       setSaving(false);
     }
@@ -146,6 +150,14 @@ export default function AttendancePage() {
                   className="px-6 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {saving ? t('attendance.saving') : t('attendance.save')}
+                </button>
+              </div>
+            )}
+            {saveError && (
+              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3 mt-3">
+                <p className="text-red-700 dark:text-red-300 text-sm">{saveError}</p>
+                <button onClick={() => { setSaveError(null); handleSave(); }} className="text-red-600 dark:text-red-400 text-sm underline mt-1 hover:no-underline">
+                  Try again
                 </button>
               </div>
             )}

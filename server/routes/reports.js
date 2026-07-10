@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -93,8 +94,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Dashboard report error:', err);
-    res.status(500).json({ error: 'Failed to generate dashboard data' });
+    sendError(res, err, 'Failed to generate dashboard data');
   }
 });
 
@@ -177,8 +177,7 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Teacher report error:', err);
-    res.status(500).json({ error: 'Failed to generate teacher report' });
+    sendError(res, err, 'Failed to generate teacher report');
   }
 });
 
@@ -259,8 +258,7 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), asyn
       }
     });
   } catch (err) {
-    console.error('Reports overview error:', err);
-    res.status(500).json({ error: 'Failed to generate overview report' });
+    sendError(res, err, 'Failed to generate overview report');
   }
 });
 
@@ -356,8 +354,7 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Student report error:', err);
-    res.status(500).json({ error: 'Failed to generate student report' });
+    sendError(res, err, 'Failed to generate student report');
   }
 });
 
@@ -460,8 +457,7 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), asy
       }
     });
   } catch (err) {
-    console.error('Class report error:', err);
-    res.status(500).json({ error: 'Failed to generate class report' });
+    sendError(res, err, 'Failed to generate class report');
   }
 });
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -9,12 +10,12 @@ export default function NotificationBell() {
   const ref = useRef(null);
 
   useEffect(() => {
-    api.get('/notifications/unread-count').then(r => setUnreadCount(r.data.count)).catch(() => {});
+    api.get('/notifications/unread-count').then(r => setUnreadCount(r.data.count)).catch(() => toast.error('Failed to load notification count'));
   }, []);
 
   useEffect(() => {
     if (open) {
-      api.get('/notifications?limit=10').then(r => setNotifications(r.data)).catch(() => {});
+      api.get('/notifications?limit=10').then(r => setNotifications(r.data)).catch(() => toast.error('Failed to load notifications'));
     }
   }, [open]);
 
@@ -31,7 +32,7 @@ export default function NotificationBell() {
       await api.put(`/notifications/${id}/read`);
       setNotifications(n => n.map(notif => notif.id === id ? { ...notif, is_read: 1 } : notif));
       setUnreadCount(c => Math.max(0, c - 1));
-    } catch {}
+    } catch { toast.error('Failed to mark notification as read'); }
   };
 
   const markAllRead = async () => {
@@ -39,7 +40,7 @@ export default function NotificationBell() {
       await api.put('/notifications/read-all');
       setNotifications(n => n.map(notif => ({ ...notif, is_read: 1 })));
       setUnreadCount(0);
-    } catch {}
+    } catch { toast.error('Failed to mark all as read'); }
   };
 
   const typeIcons = {
