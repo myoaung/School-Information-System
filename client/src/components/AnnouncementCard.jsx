@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../context/LanguageContext';
 
-const AnnouncementCard = React.memo(function AnnouncementCard({ announcement }) {
+const AnnouncementCard = memo(function AnnouncementCard({ announcement }) {
   const { t, formatDateShort } = useTranslation();
 
   const isNewAnnouncement = (dateStr) => {
