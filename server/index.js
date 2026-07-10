@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Skip dotenv in test mode — setup.js controls env vars
+if (process.env.NODE_ENV !== 'test') {
+  require('dotenv').config();
+}
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -232,7 +235,7 @@ app.use((err, req, res, next) => {
 });
 
 // ── Server Start ──
-if (process.env.VERCEL !== '1') {
+if (process.env.VERCEL !== '1' && require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${NODE_ENV}]`);
   });
