@@ -249,15 +249,16 @@ export default function ReportsPage() {
                 <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Course Grades</h3>
               </div>
               <table className="w-full text-sm">
+                <caption className="sr-only">Course Grades</caption>
                 <thead>
                   <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-                    <th className="text-left px-4 py-3 font-semibold">Subject</th>
-                    <th className="text-left px-4 py-3 font-semibold">Course</th>
-                    <th className="text-center px-4 py-3 font-semibold">Assignment</th>
-                    <th className="text-center px-4 py-3 font-semibold">Quiz</th>
-                    <th className="text-center px-4 py-3 font-semibold">Exam</th>
-                    <th className="text-center px-4 py-3 font-semibold">Grade</th>
-                    <th className="text-center px-4 py-3 font-semibold">GPA</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Subject</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Course</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Assignment</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Quiz</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Exam</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Grade</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">GPA</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -286,12 +287,13 @@ export default function ReportsPage() {
                 <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Assignment Submissions</h3>
               </div>
               <table className="w-full text-sm">
+                <caption className="sr-only">Assignment Submissions</caption>
                 <thead>
                   <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-                    <th className="text-left px-4 py-3 font-semibold">Assignment</th>
-                    <th className="text-left px-4 py-3 font-semibold">Course</th>
-                    <th className="text-center px-4 py-3 font-semibold">Score</th>
-                    <th className="text-center px-4 py-3 font-semibold">Status</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Assignment</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Course</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Score</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -325,11 +327,12 @@ export default function ReportsPage() {
                 <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Quiz Attempts</h3>
               </div>
               <table className="w-full text-sm">
+                <caption className="sr-only">Quiz Attempts</caption>
                 <thead>
                   <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-                    <th className="text-left px-4 py-3 font-semibold">Quiz</th>
-                    <th className="text-left px-4 py-3 font-semibold">Course</th>
-                    <th className="text-center px-4 py-3 font-semibold">Score</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Quiz</th>
+                    <th scope="col" className="text-left px-4 py-3 font-semibold">Course</th>
+                    <th scope="col" className="text-center px-4 py-3 font-semibold">Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -433,15 +436,16 @@ export default function ReportsPage() {
                     <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Course Performance</h3>
                   </div>
                   <table className="w-full text-sm">
+                    <caption className="sr-only">Course Performance</caption>
                     <thead>
                       <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-                        <th className="text-left px-4 py-3 font-semibold">Subject</th>
-                        <th className="text-left px-4 py-3 font-semibold">Course</th>
-                        <th className="text-center px-4 py-3 font-semibold">Students</th>
-                        <th className="text-center px-4 py-3 font-semibold">Avg GPA</th>
-                        <th className="text-center px-4 py-3 font-semibold">Avg Assignment</th>
-                        <th className="text-center px-4 py-3 font-semibold">Avg Quiz</th>
-                        <th className="text-center px-4 py-3 font-semibold">Avg Exam</th>
+                        <th scope="col" className="text-left px-4 py-3 font-semibold">Subject</th>
+                        <th scope="col" className="text-left px-4 py-3 font-semibold">Course</th>
+                        <th scope="col" className="text-center px-4 py-3 font-semibold">Students</th>
+                        <th scope="col" className="text-center px-4 py-3 font-semibold">Avg GPA</th>
+                        <th scope="col" className="text-center px-4 py-3 font-semibold">Avg Assignment</th>
+                        <th scope="col" className="text-center px-4 py-3 font-semibold">Avg Quiz</th>
+                        <th scope="col" className="text-center px-4 py-3 font-semibold">Avg Exam</th>
                       </tr>
                     </thead>
                     <tbody>

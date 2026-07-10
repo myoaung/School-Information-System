@@ -59,6 +59,7 @@ export default function ChatLogsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('chatLogs.searchPlaceholder')}
+              aria-label={t('chatLogs.searchPlaceholder')}
               className="px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-white dark:bg-gray-800"
             />
             <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer">
@@ -76,15 +77,16 @@ export default function ChatLogsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                <caption className="sr-only">{t('chatLogs.title')}</caption>
                 <thead>
                   <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-left">
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.user')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.role')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.message')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.reply')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.file')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.date')}</th>
-                    <th className="px-4 py-3 font-medium">{t('chatLogs.actions')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.user')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.role')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.message')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.reply')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.file')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.date')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('chatLogs.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-purple-50 dark:divide-purple-900">

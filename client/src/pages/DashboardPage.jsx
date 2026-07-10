@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
       {/* Stats Widgets */}
       {!loading && stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" aria-live="polite">
           {(isAdmin || isTeacher) ? (
             <>
               <StatCard label={t('dashboard.stats.students')} value={stats.totalStudents} color="blue" />

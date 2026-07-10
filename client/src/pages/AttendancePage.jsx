@@ -110,11 +110,12 @@ export default function AttendancePage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                <caption className="sr-only">{t('attendance.title')}</caption>
                 <thead>
                   <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-left">
-                    <th className="px-4 py-3 font-medium">{t('attendance.student')}</th>
-                    <th className="px-4 py-3 font-medium">{t('attendance.studentId')}</th>
-                    <th className="px-4 py-3 font-medium">{t('attendance.status')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('attendance.student')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('attendance.studentId')}</th>
+                    <th scope="col" className="px-4 py-3 font-medium">{t('attendance.status')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-purple-50 dark:divide-purple-900">

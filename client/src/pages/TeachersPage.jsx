@@ -94,6 +94,7 @@ export default function TeachersPage() {
           )}
           <form onSubmit={handleSearch} className="flex gap-2">
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('teachers.searchPlaceholder')}
+              aria-label={t('teachers.searchPlaceholder')}
               className="px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-white dark:bg-gray-800" />
             <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer">{t('teachers.search')}</button>
           </form>
@@ -106,15 +107,16 @@ export default function TeachersPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
+              <caption className="sr-only">{t('teachers.title')}</caption>
               <thead>
                 <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-left">
-                  <th className="px-4 py-3 font-medium">{t('teachers.teacherId')}</th>
-                  <th className="px-4 py-3 font-medium">{t('teachers.name')}</th>
-                  <th className="px-4 py-3 font-medium">{t('teachers.email')}</th>
-                  <th className="px-4 py-3 font-medium">{t('teachers.qualification')}</th>
-                  <th className="px-4 py-3 font-medium">{t('teachers.specialization')}</th>
-                  <th className="px-4 py-3 font-medium">{t('teachers.status')}</th>
-                  {isAdmin && <th className="px-4 py-3 font-medium">Actions</th>}
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.teacherId')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.name')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.email')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.qualification')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.specialization')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('teachers.status')}</th>
+                  {isAdmin && <th scope="col" className="px-4 py-3 font-medium">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-purple-50 dark:divide-purple-900">

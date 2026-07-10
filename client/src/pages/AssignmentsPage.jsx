@@ -191,6 +191,7 @@ export default function AssignmentsPage() {
                 <div className="mt-4 pt-4 border-t border-purple-100 dark:border-purple-800">
                   <textarea value={submitContent} onChange={e => setSubmitContent(e.target.value)}
                     placeholder={t('assignments.submitPlaceholder')}
+                    aria-label={t('assignments.submitPlaceholder')}
                     className="w-full px-4 py-2 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 resize-none" rows={3} />
                   <button onClick={() => handleSubmit(a.id)}
                     className="mt-2 px-4 py-2 bg-green-600 text-white rounded-xl text-sm hover:bg-green-700 transition-colors cursor-pointer">
@@ -222,8 +223,10 @@ export default function AssignmentsPage() {
                         {grading === s.id && (
                           <div className="flex gap-2 items-center mt-2">
                             <input type="number" value={gradeScore} onChange={e => setGradeScore(e.target.value)} placeholder={t('assignments.score')}
+                              aria-label={t('assignments.score')}
                               className="w-20 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm" />
                             <input type="text" value={gradeFeedback} onChange={e => setGradeFeedback(e.target.value)} placeholder={t('assignments.feedback')}
+                              aria-label={t('assignments.feedback')}
                               className="flex-1 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm" />
                             <button onClick={() => handleGrade(s.id)}
                               className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 cursor-pointer">{t('assignments.save')}</button>

@@ -208,11 +208,12 @@ export default function FinancePage() {
       {tab === 'fees' && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden">
           <table className="w-full">
+            <caption className="sr-only">Fee Structures</caption>
             <thead><tr className="bg-purple-50 dark:bg-gray-800">
-              <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Fee Type</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Grade</th>
-              <th className="px-4 py-3 text-right text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Amount</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Academic Year</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Fee Type</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Grade</th>
+              <th scope="col" className="px-4 py-3 text-right text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Amount</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Academic Year</th>
             </tr></thead>
             <tbody>{fees.map(f => (
               <tr key={f.id} className="border-t border-purple-50 dark:border-gray-800">

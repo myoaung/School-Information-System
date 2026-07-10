@@ -107,9 +107,11 @@ export default function AnnouncementsPage() {
           <div className="space-y-3">
             <input type="text" placeholder={t('announcements.titlePlaceholder')} value={form.title}
               onChange={e => setForm({...form, title: e.target.value})} required
+              aria-label={t('announcements.titlePlaceholder')}
               className="w-full px-4 py-3 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
             <textarea placeholder={t('announcements.contentPlaceholder')} value={form.content} rows={4}
               onChange={e => setForm({...form, content: e.target.value})} required
+              aria-label={t('announcements.contentPlaceholder')}
               className="w-full px-4 py-3 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" />
             <div className="grid grid-cols-2 gap-3">
               <select value={form.grade_id} onChange={e => setForm({...form, grade_id: e.target.value})}
@@ -158,7 +160,7 @@ export default function AnnouncementsPage() {
       {error && <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">{error}</div>}
 
       {announcements.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-live="polite">
           {announcements.map(a => (
             <div key={a.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 hover:shadow-lg transition-shadow relative">
               {isNew(a.created_at) && (

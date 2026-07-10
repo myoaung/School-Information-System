@@ -81,17 +81,18 @@ export default function GradebookPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
+              <caption className="sr-only">{t('gradebook.title')}</caption>
               <thead>
                 <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-                  {(isAdmin || isTeacher) && <th className="text-left px-4 py-3 font-semibold">{t('gradebook.student')}</th>}
-                  <th className="text-left px-4 py-3 font-semibold">{t('gradebook.course')}</th>
-                  <th className="text-left px-4 py-3 font-semibold">{t('gradebook.subject')}</th>
-                  <th className="text-center px-4 py-3 font-semibold">{t('gradebook.assignmentScore')}</th>
-                  <th className="text-center px-4 py-3 font-semibold">{t('gradebook.quizScore')}</th>
-                  <th className="text-center px-4 py-3 font-semibold">{t('gradebook.examScore')}</th>
-                  <th className="text-center px-4 py-3 font-semibold">{t('gradebook.finalGrade')}</th>
-                  <th className="text-center px-4 py-3 font-semibold">{t('gradebook.gpa')}</th>
-                  {(isAdmin || isTeacher) && <th className="text-center px-4 py-3 font-semibold">{t('assignments.grade')}</th>}
+                  {(isAdmin || isTeacher) && <th scope="col" className="text-left px-4 py-3 font-semibold">{t('gradebook.student')}</th>}
+                  <th scope="col" className="text-left px-4 py-3 font-semibold">{t('gradebook.course')}</th>
+                  <th scope="col" className="text-left px-4 py-3 font-semibold">{t('gradebook.subject')}</th>
+                  <th scope="col" className="text-center px-4 py-3 font-semibold">{t('gradebook.assignmentScore')}</th>
+                  <th scope="col" className="text-center px-4 py-3 font-semibold">{t('gradebook.quizScore')}</th>
+                  <th scope="col" className="text-center px-4 py-3 font-semibold">{t('gradebook.examScore')}</th>
+                  <th scope="col" className="text-center px-4 py-3 font-semibold">{t('gradebook.finalGrade')}</th>
+                  <th scope="col" className="text-center px-4 py-3 font-semibold">{t('gradebook.gpa')}</th>
+                  {(isAdmin || isTeacher) && <th scope="col" className="text-center px-4 py-3 font-semibold">{t('assignments.grade')}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -109,22 +110,27 @@ export default function GradebookPage() {
                         <>
                           <td className="px-2 py-3 text-center">
                             <input type="number" value={form.assignment_score} onChange={e => setForm({...form, assignment_score: e.target.value})}
+                              aria-label={t('gradebook.assignmentScore')}
                               className="w-16 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm text-center" />
                           </td>
                           <td className="px-2 py-3 text-center">
                             <input type="number" value={form.quiz_score} onChange={e => setForm({...form, quiz_score: e.target.value})}
+                              aria-label={t('gradebook.quizScore')}
                               className="w-16 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm text-center" />
                           </td>
                           <td className="px-2 py-3 text-center">
                             <input type="number" value={form.exam_score} onChange={e => setForm({...form, exam_score: e.target.value})}
+                              aria-label={t('gradebook.examScore')}
                               className="w-16 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm text-center" />
                           </td>
                           <td className="px-2 py-3 text-center">
                             <input type="text" value={form.final_grade} onChange={e => setForm({...form, final_grade: e.target.value})}
+                              aria-label={t('gradebook.finalGrade')}
                               className="w-16 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm text-center" placeholder="A" />
                           </td>
                           <td className="px-2 py-3 text-center">
                             <input type="number" step="0.01" value={form.gpa} onChange={e => setForm({...form, gpa: e.target.value})}
+                              aria-label={t('gradebook.gpa')}
                               className="w-16 px-2 py-1 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-lg text-sm text-center" placeholder="4.0" />
                           </td>
                           <td className="px-2 py-3 text-center">

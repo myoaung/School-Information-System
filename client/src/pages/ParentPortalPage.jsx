@@ -148,13 +148,14 @@ export default function ParentPortalPage() {
           {activeTab === 'grades' && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden">
               <table className="w-full">
+                <caption className="sr-only">Student Grades</caption>
                 <thead><tr className="bg-purple-50 dark:bg-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Course</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Assignment</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Quiz</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Exam</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Grade</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">GPA</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Course</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Assignment</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Quiz</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Exam</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Grade</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">GPA</th>
                 </tr></thead>
                 <tbody>{grades.map(g => (
                   <tr key={g.course_id} className="border-t border-purple-50 dark:border-gray-800">
@@ -174,10 +175,11 @@ export default function ParentPortalPage() {
           {activeTab === 'attendance' && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden">
               <table className="w-full">
+                <caption className="sr-only">Attendance Records</caption>
                 <thead><tr className="bg-purple-50 dark:bg-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Class</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Status</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Date</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Class</th>
+                  <th scope="col" className="px-4 py-3 text-center text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Status</th>
                 </tr></thead>
                 <tbody>{(attendance?.records || []).map((r, i) => (
                   <tr key={i} className="border-t border-purple-50 dark:border-gray-800">
@@ -212,12 +214,13 @@ export default function ParentPortalPage() {
           {activeTab === 'timetable' && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md overflow-hidden">
               <table className="w-full">
+                <caption className="sr-only">Weekly Timetable</caption>
                 <thead><tr className="bg-purple-50 dark:bg-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Day</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Time</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Subject</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Teacher</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Room</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Day</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Time</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Subject</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Teacher</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Room</th>
                 </tr></thead>
                 <tbody>{timetable.map(t => (
                   <tr key={t.id} className="border-t border-purple-50 dark:border-gray-800">

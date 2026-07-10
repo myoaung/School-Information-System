@@ -47,8 +47,11 @@ function App() {
           <Router>
           <Toaster position="top-right" richColors closeButton duration={4000} />
           <div className="min-h-screen flex flex-col">
+            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">
+              Skip to main content
+            </a>
             <Navbar />
-            <main className="flex-grow">
+            <main id="main-content" className="flex-grow">
               <Suspense fallback={
                 <div className="flex justify-center items-center min-h-[60vh]">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>

@@ -16,6 +16,8 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const hamburgerRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   // Close menus on outside click
   useEffect(() => {
@@ -28,6 +30,42 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Focus trap for mobile menu
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    // Focus first focusable element in the mobile menu
+    const menu = mobileMenuRef.current;
+    if (menu) {
+      const focusable = menu.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length > 0) focusable[0].focus();
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        hamburgerRef.current?.focus();
+        return;
+      }
+      if (e.key === 'Tab' && menu) {
+        const focusable = menu.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -35,7 +73,10 @@ export default function Navbar() {
     setUserMenuOpen(false);
   };
 
-  const closeMobileMenu = () => setMobileMenuOpen(false);
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    setTimeout(() => hamburgerRef.current?.focus(), 0);
+  };
   const toggleLanguage = () => setLocale(locale === 'mm' ? 'en' : 'mm');
 
   const isActive = (path) => location.pathname === path;
@@ -115,13 +156,13 @@ export default function Navbar() {
       </div>
     </div>
 
-    <nav className="sticky top-0 z-50 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 shadow-lg shadow-purple-900/20">
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 shadow-lg shadow-purple-900/20" role="navigation" aria-label="Main navigation">
       {/* Main nav bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between h-12 items-center">
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
-            <Link to="/" className="flex items-center gap-2 group" onClick={closeMobileMenu}>
+            <Link to="/" className="flex items-center gap-2 group" onClick={closeMobileMenu} aria-label="SchoolHub - Go to homepage">
               <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center group-hover:bg-white/25 transition-colors">
                 <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -135,16 +176,16 @@ export default function Navbar() {
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-0.5">
             {/* Public links */}
-            <Link to="/announcements" className={navLinkClass('/announcements')}>
+            <Link to="/announcements" className={navLinkClass('/announcements')} aria-current={isActive('/announcements') ? 'page' : undefined}>
               {t('nav.announcements')}
             </Link>
-            <Link to="/classes" className={navLinkClass('/classes')}>
+            <Link to="/classes" className={navLinkClass('/classes')} aria-current={isActive('/classes') ? 'page' : undefined}>
               {t('nav.classes')}
             </Link>
-            <Link to="/curriculum" className={navLinkClass('/curriculum')}>
+            <Link to="/curriculum" className={navLinkClass('/curriculum')} aria-current={isActive('/curriculum') ? 'page' : undefined}>
               {t('nav.curriculum')}
             </Link>
-            <Link to="/contact" className={navLinkClass('/contact')}>
+            <Link to="/contact" className={navLinkClass('/contact')} aria-current={isActive('/contact') ? 'page' : undefined}>
               {t('nav.contact')}
             </Link>
 
@@ -241,9 +282,11 @@ export default function Navbar() {
               {locale === 'mm' ? '🇲🇲' : '🇬🇧'}
             </button>
             <button
+              ref={hamburgerRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer min-h-[44px] min-w-[44px]"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-label="Toggle navigation menu"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {mobileMenuOpen ? (
@@ -259,7 +302,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-black/10 animate-in slide-in-from-top-2">
+        <div ref={mobileMenuRef} className="md:hidden border-t border-white/10 bg-black/10 animate-in slide-in-from-top-2">
           <div className="max-h-[70vh] overflow-y-auto px-3 pt-2 pb-4 space-y-1">
             <Link to="/announcements" className="mobile-nav-link" onClick={closeMobileMenu}>
               {t('nav.announcements')}

@@ -104,6 +104,7 @@ export default function StudentsPage() {
           )}
           <form onSubmit={handleSearch} className="flex gap-2">
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('students.searchPlaceholder')}
+              aria-label={t('students.searchPlaceholder')}
               className="px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-white dark:bg-gray-800" />
             <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer">{t('students.search')}</button>
           </form>
@@ -116,15 +117,16 @@ export default function StudentsPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
+              <caption className="sr-only">{t('students.title')}</caption>
               <thead>
                 <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-left">
-                  <th className="px-4 py-3 font-medium">{t('students.studentId')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.name')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.email')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.grade')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.section')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.status')}</th>
-                  <th className="px-4 py-3 font-medium">{t('students.actions')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.studentId')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.name')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.email')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.grade')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.section')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.status')}</th>
+                  <th scope="col" className="px-4 py-3 font-medium">{t('students.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-purple-50 dark:divide-purple-900">
