@@ -346,6 +346,13 @@ export default function Navbar() {
                             Documents
                           </Link>
                           <Link
+                            to="/library"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            Library
+                          </Link>
+                          <Link
                             to="/reports"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
@@ -545,6 +552,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/certificates" className="mobile-nav-link" onClick={closeMobileMenu}>
                     {t('nav.certificates')}
+                  </Link>
+                  <Link to="/library" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    Library
                   </Link>
                   {user.role === 'parent' && (
                     <Link to="/parent" className="mobile-nav-link" onClick={closeMobileMenu}>
