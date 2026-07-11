@@ -446,13 +446,13 @@ router.get(
         "SELECT COUNT(*) as c FROM inventory_transactions WHERE status = 'issued'"
       );
       const overdue = await db.get(
-        "SELECT COUNT(*) as c FROM inventory_transactions WHERE status = 'issued' AND due_date < date('now')"
+        "SELECT COUNT(*) as c FROM inventory_transactions WHERE status = 'issued' AND due_date < to_char(CURRENT_DATE, 'YYYY-MM-DD')"
       );
       const lowStock = await db.get(
         'SELECT COUNT(*) as c FROM inventory_items WHERE quantity <= 5'
       );
       const maintenanceDue = await db.get(
-        "SELECT COUNT(*) as c FROM inventory_items WHERE id IN (SELECT item_id FROM inventory_maintenance WHERE next_service_date <= date('now'))"
+        "SELECT COUNT(*) as c FROM inventory_items WHERE id IN (SELECT item_id FROM inventory_maintenance WHERE next_service_date <= to_char(CURRENT_DATE, 'YYYY-MM-DD'))"
       );
 
       // By category
