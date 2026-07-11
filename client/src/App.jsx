@@ -47,6 +47,7 @@ const LibraryPage = lazy(() => import('./pages/LibraryPage'));
 const LeavePage = lazy(() => import('./pages/LeavePage'));
 const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const ExpensePage = lazy(() => import('./pages/ExpensePage'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 
 function App() {
   return (
@@ -246,6 +247,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <ExpensePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/inventory"
+                      element={
+                        <ProtectedRoute>
+                          <InventoryPage />
                         </ProtectedRoute>
                       }
                     />

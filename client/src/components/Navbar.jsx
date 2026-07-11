@@ -374,6 +374,13 @@ export default function Navbar() {
                             Expenses
                           </Link>
                           <Link
+                            to="/inventory"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            Inventory
+                          </Link>
+                          <Link
                             to="/reports"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
@@ -582,6 +589,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/expenses" className="mobile-nav-link" onClick={closeMobileMenu}>
                     Expenses
+                  </Link>
+                  <Link to="/inventory" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    Inventory
                   </Link>
                   <Link to="/library" className="mobile-nav-link" onClick={closeMobileMenu}>
                     Library
