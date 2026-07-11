@@ -360,6 +360,13 @@ export default function Navbar() {
                             Leave
                           </Link>
                           <Link
+                            to="/notifications"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            Notifications
+                          </Link>
+                          <Link
                             to="/reports"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
@@ -562,6 +569,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/leaves" className="mobile-nav-link" onClick={closeMobileMenu}>
                     Leave
+                  </Link>
+                  <Link to="/notifications" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    Notifications
                   </Link>
                   <Link to="/library" className="mobile-nav-link" onClick={closeMobileMenu}>
                     Library
