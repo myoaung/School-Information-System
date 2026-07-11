@@ -257,7 +257,7 @@ router.get(
 
       // Total income (from payments table)
       const totalIncome = await db.get(
-        `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE 1=1 ${dateFilter.replace(/expense_date/g, 'payment_date')}`,
+        `SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE 1=1 ${dateFilter.replace(/expense_date/g, 'paid_at')}`,
         params
       );
 
@@ -269,9 +269,9 @@ router.get(
         params
       );
 
-      // Monthly trend (last 6 months)
+      // Monthly trend (last 6 months) - compatible with both SQLite and PostgreSQL
       const monthlyTrend = await db.all(
-        `SELECT strftime('%Y-%m', expense_date) as month,
+        `SELECT SUBSTR(expense_date, 1, 7) as month,
               SUM(amount) as total
        FROM expenses WHERE status = 'approved'
        GROUP BY month ORDER BY month DESC LIMIT 6`
