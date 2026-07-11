@@ -44,6 +44,7 @@ const TeacherWorkloadPage = lazy(() => import('./pages/TeacherWorkloadPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 const QRScanPage = lazy(() => import('./pages/QRScanPage'));
 const LibraryPage = lazy(() => import('./pages/LibraryPage'));
+const LeavePage = lazy(() => import('./pages/LeavePage'));
 
 function App() {
   return (
@@ -219,6 +220,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <LibraryPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/leaves"
+                      element={
+                        <ProtectedRoute>
+                          <LeavePage />
                         </ProtectedRoute>
                       }
                     />
