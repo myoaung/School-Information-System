@@ -18,6 +18,7 @@ server/tests/test.db-shm
 # Personal reports & docs (not for public repo)
 ch-3/myoaung/
 ch-4/myoaung/
+CH - 6/
 docs/
 
 # Playwright E2E test artifacts
