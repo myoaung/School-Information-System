@@ -78,9 +78,10 @@ function parseInsert(sql, params) {
 
 /**
  * Extract SET clause from UPDATE
+ * Handles both parameterized values (?) and SQL functions (CURRENT_TIMESTAMP, etc.)
  */
 function parseUpdate(sql, params) {
-  // UPDATE table SET col1 = ?, col2 = ? WHERE id = ?
+  // UPDATE table SET col1 = ?, col2 = CURRENT_TIMESTAMP WHERE id = ?
   const match = sql.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i);
   if (!match) return null;
 
@@ -88,11 +89,26 @@ function parseUpdate(sql, params) {
   const setClause = match[2];
   const whereClause = match[3];
 
-  // Parse SET columns
-  const setParts = setClause.split(',').map((p) => {
-    const [col] = p.split('=');
-    return col.trim();
-  });
+  // Parse SET parts — each is "col = value" where value may be ? or a SQL function
+  const setParts = [];
+  const setValues = [];
+  let paramIndex = 0;
+
+  for (const part of setClause.split(',')) {
+    const [colRaw, valRaw] = part.split('=');
+    const col = colRaw.trim();
+    const val = valRaw?.trim();
+
+    setParts.push(col);
+
+    if (val === '?') {
+      // Parameterized value — consume from params
+      setValues.push(params[paramIndex++]);
+    } else {
+      // SQL function or literal (CURRENT_TIMESTAMP, NOW(), etc.) — pass through
+      setValues.push(val);
+    }
+  }
 
   // Parse WHERE params
   const whereParams = whereClause
@@ -103,7 +119,7 @@ function parseUpdate(sql, params) {
     })
     .filter(Boolean);
 
-  return { table, setParts, whereClause, whereParams };
+  return { table, setParts, setValues, whereClause, whereParams };
 }
 
 // ─── Unified Database Interface ─────────────────────────────────
@@ -234,9 +250,10 @@ const db = {
     if (type === 'update') {
       const parsed = parseUpdate(sql, params);
       if (parsed) {
+        // Build row from parsed setValues (handles both ? params and SQL functions)
         const row = {};
         parsed.setParts.forEach((col, i) => {
-          row[col] = params[i];
+          row[col] = parsed.setValues[i];
         });
 
         const client = supabaseAdmin || supabase;
