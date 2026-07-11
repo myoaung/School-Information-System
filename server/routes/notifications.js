@@ -74,6 +74,19 @@ router.put('/read-all', authMiddleware, async (req, res) => {
   }
 });
 
+// ─── Get Unread Count ──────────────────────────────────────────
+router.get('/unread-count', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.get(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND read = 0',
+      [req.user.id]
+    );
+    res.json({ count: result?.count || 0 });
+  } catch (err) {
+    sendError(res, err, 'Failed to get unread count');
+  }
+});
+
 // ─── Delete Notification ───────────────────────────────────────
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
