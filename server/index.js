@@ -45,6 +45,7 @@ const auditRoutes = require('./routes/audit');
 const teacherWorkloadRoutes = require('./routes/teacher-workload');
 const uploadRoutes = require('./routes/upload');
 const documentRoutes = require('./routes/documents');
+const qrAttendanceRoutes = require('./routes/qr-attendance');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -188,6 +189,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/teachers/workload', teacherWorkloadRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/attendance', qrAttendanceRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/academic', academicRoutes);
 app.use('/api/courses', courseRoutes);

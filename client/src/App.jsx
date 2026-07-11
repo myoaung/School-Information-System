@@ -41,6 +41,7 @@ const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const AuditLogsPage = lazy(() => import('./pages/AuditLogsPage'));
 const TeacherWorkloadPage = lazy(() => import('./pages/TeacherWorkloadPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
+const QRScanPage = lazy(() => import('./pages/QRScanPage'));
 
 function App() {
   return (
@@ -74,6 +75,14 @@ function App() {
                     <Route path="/classes" element={<ClassesPage />} />
                     <Route path="/curriculum" element={<CurriculumPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route
+                      path="/scan"
+                      element={
+                        <ProtectedRoute>
+                          <QRScanPage />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route
                       path="/dashboard"
                       element={
