@@ -431,6 +431,31 @@ export default function Navbar() {
                           >
                             {t('nav.finance')}
                           </Link>
+                          {isAdmin && (
+                            <>
+                              <Link
+                                to="/cash-control"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                              >
+                                Cash Control
+                              </Link>
+                              <Link
+                                to="/budgeting"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                              >
+                                Budgeting
+                              </Link>
+                              <Link
+                                to="/accounts-receivable"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                              >
+                                Accounts Receivable
+                              </Link>
+                            </>
+                          )}
                           <Link
                             to="/certificates"
                             onClick={() => setUserMenuOpen(false)}
@@ -608,6 +633,27 @@ export default function Navbar() {
                   <Link to="/finance" className="mobile-nav-link" onClick={closeMobileMenu}>
                     {t('nav.finance')}
                   </Link>
+                  {isAdmin && (
+                    <>
+                      <Link
+                        to="/cash-control"
+                        className="mobile-nav-link"
+                        onClick={closeMobileMenu}
+                      >
+                        Cash Control
+                      </Link>
+                      <Link to="/budgeting" className="mobile-nav-link" onClick={closeMobileMenu}>
+                        Budgeting
+                      </Link>
+                      <Link
+                        to="/accounts-receivable"
+                        className="mobile-nav-link"
+                        onClick={closeMobileMenu}
+                      >
+                        Accounts Receivable
+                      </Link>
+                    </>
+                  )}
                   <Link to="/certificates" className="mobile-nav-link" onClick={closeMobileMenu}>
                     {t('nav.certificates')}
                   </Link>

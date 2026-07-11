@@ -52,6 +52,9 @@ const HRPage = lazy(() => import('./pages/HRPage'));
 const MyProfilePage = lazy(() => import('./pages/MyProfilePage'));
 const RecruitmentPage = lazy(() => import('./pages/RecruitmentPage'));
 const TrainingPage = lazy(() => import('./pages/TrainingPage'));
+const CashControlPage = lazy(() => import('./pages/CashControlPage'));
+const BudgetingPage = lazy(() => import('./pages/BudgetingPage'));
+const AccountsReceivablePage = lazy(() => import('./pages/AccountsReceivablePage'));
 
 function App() {
   return (
@@ -291,6 +294,30 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <TrainingPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/cash-control"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <CashControlPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/budgeting"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <BudgetingPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/accounts-receivable"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <AccountsReceivablePage />
                         </ProtectedRoute>
                       }
                     />
