@@ -50,6 +50,7 @@ const libraryRoutes = require('./routes/library');
 const leaveRoutes = require('./routes/leaves');
 const expenseRoutes = require('./routes/expenses');
 const inventoryRoutes = require('./routes/inventory');
+const hrRoutes = require('./routes/hr');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -217,6 +218,7 @@ app.use('/api/library', libraryRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/hr', hrRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {

@@ -1,0 +1,26 @@
+# GSD Configuration
+
+project:
+  name: School Information System
+  type: brownfield
+  runtime: node
+
+phases:
+  - id: phase-1-hr-portal
+    name: HR Portal
+    status: pending
+    plans:
+      - id: plan-1.1
+        name: Staff Profiles & Contracts
+        status: pending
+      - id: plan-1.2
+        name: Performance Reviews
+        status: pending
+      - id: plan-1.3
+        name: HR Dashboard & Analytics
+        status: pending
+
+workstreams:
+  - id: default
+    name: Main
+    active: true
