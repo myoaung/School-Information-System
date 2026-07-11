@@ -19,7 +19,7 @@ router.get('/', authMiddleware, async (req, res) => {
       params.push(type);
     }
     if (unread_only === 'true') {
-      where.push('n.read = 0');
+      where.push('n.is_read = 0');
     }
 
     const whereClause = `WHERE ${where.join(' AND ')}`;
@@ -34,7 +34,7 @@ router.get('/', authMiddleware, async (req, res) => {
     );
 
     const unreadCount = await db.get(
-      'SELECT COUNT(*) as c FROM notifications WHERE user_id = ? AND read = 0',
+      'SELECT COUNT(*) as c FROM notifications WHERE user_id = ? AND is_read = 0',
       [req.user.id]
     );
 
@@ -55,7 +55,7 @@ router.put('/:id/read', authMiddleware, async (req, res) => {
     ]);
     if (!notif) return res.status(404).json({ error: 'Notification not found' });
 
-    await db.run('UPDATE notifications SET read = 1 WHERE id = ?', [id]);
+    await db.run('UPDATE notifications SET is_read = 1 WHERE id = ?', [id]);
 
     res.json({ message: 'Marked as read' });
   } catch (err) {
@@ -66,7 +66,9 @@ router.put('/:id/read', authMiddleware, async (req, res) => {
 // ─── Mark All as Read ──────────────────────────────────────────
 router.put('/read-all', authMiddleware, async (req, res) => {
   try {
-    await db.run('UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0', [req.user.id]);
+    await db.run('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [
+      req.user.id,
+    ]);
 
     res.json({ message: 'All marked as read' });
   } catch (err) {
@@ -78,7 +80,7 @@ router.put('/read-all', authMiddleware, async (req, res) => {
 router.get('/unread-count', authMiddleware, async (req, res) => {
   try {
     const result = await db.get(
-      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND read = 0',
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
       [req.user.id]
     );
     res.json({ count: result?.count || 0 });
