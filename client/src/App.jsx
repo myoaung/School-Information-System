@@ -46,6 +46,7 @@ const QRScanPage = lazy(() => import('./pages/QRScanPage'));
 const LibraryPage = lazy(() => import('./pages/LibraryPage'));
 const LeavePage = lazy(() => import('./pages/LeavePage'));
 const NotificationPage = lazy(() => import('./pages/NotificationPage'));
+const ExpensePage = lazy(() => import('./pages/ExpensePage'));
 
 function App() {
   return (
@@ -237,6 +238,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <NotificationPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/expenses"
+                      element={
+                        <ProtectedRoute>
+                          <ExpensePage />
                         </ProtectedRoute>
                       }
                     />

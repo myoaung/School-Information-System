@@ -48,6 +48,7 @@ const documentRoutes = require('./routes/documents');
 const qrAttendanceRoutes = require('./routes/qr-attendance');
 const libraryRoutes = require('./routes/library');
 const leaveRoutes = require('./routes/leaves');
+const expenseRoutes = require('./routes/expenses');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -213,6 +214,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {
