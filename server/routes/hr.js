@@ -485,7 +485,7 @@ router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) =
       "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active'"
     );
     const expiringContracts = await db.get(
-      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+30 days')"
+      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= to_char(CURRENT_DATE + INTERVAL '30 days', 'YYYY-MM-DD')"
     );
     const pendingLeaves = await db.get(
       "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"
