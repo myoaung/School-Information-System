@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
 import ProtectedRoute from './components/ProtectedRoute';
+import OfflineIndicator from './components/OfflineIndicator';
 
 // Lazy-loaded page components — each becomes its own chunk
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -50,6 +51,7 @@ function App() {
         <ErrorBoundary>
           <Router>
             <Toaster position="top-right" richColors closeButton duration={4000} />
+            <OfflineIndicator />
             <div className="min-h-screen flex flex-col">
               <a
                 href="#main-content"

@@ -1,0 +1,18 @@
+{
+  "name": "SchoolHub - School Information System",
+  "short_name": "SchoolHub",
+  "description": "Full-stack school management with AI-powered features",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#7c3aed",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
