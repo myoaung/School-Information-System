@@ -388,6 +388,29 @@ export default function Navbar() {
                             HR
                           </Link>
                           <Link
+                            to="/my-profile"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            My Profile
+                          </Link>
+                          {isAdmin && (
+                            <Link
+                              to="/recruitment"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                            >
+                              Recruitment
+                            </Link>
+                          )}
+                          <Link
+                            to="/training"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            Training
+                          </Link>
+                          <Link
                             to="/reports"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
@@ -602,6 +625,17 @@ export default function Navbar() {
                   </Link>
                   <Link to="/hr" className="mobile-nav-link" onClick={closeMobileMenu}>
                     HR
+                  </Link>
+                  <Link to="/my-profile" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    My Profile
+                  </Link>
+                  {isAdmin && (
+                    <Link to="/recruitment" className="mobile-nav-link" onClick={closeMobileMenu}>
+                      Recruitment
+                    </Link>
+                  )}
+                  <Link to="/training" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    Training
                   </Link>
                   <Link to="/library" className="mobile-nav-link" onClick={closeMobileMenu}>
                     Library

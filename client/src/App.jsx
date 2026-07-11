@@ -49,6 +49,9 @@ const NotificationPage = lazy(() => import('./pages/NotificationPage'));
 const ExpensePage = lazy(() => import('./pages/ExpensePage'));
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const HRPage = lazy(() => import('./pages/HRPage'));
+const MyProfilePage = lazy(() => import('./pages/MyProfilePage'));
+const RecruitmentPage = lazy(() => import('./pages/RecruitmentPage'));
+const TrainingPage = lazy(() => import('./pages/TrainingPage'));
 
 function App() {
   return (
@@ -264,6 +267,30 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <HRPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-profile"
+                      element={
+                        <ProtectedRoute>
+                          <MyProfilePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/recruitment"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <RecruitmentPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/training"
+                      element={
+                        <ProtectedRoute>
+                          <TrainingPage />
                         </ProtectedRoute>
                       }
                     />

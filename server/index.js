@@ -51,6 +51,8 @@ const leaveRoutes = require('./routes/leaves');
 const expenseRoutes = require('./routes/expenses');
 const inventoryRoutes = require('./routes/inventory');
 const hrRoutes = require('./routes/hr');
+const recruitmentRoutes = require('./routes/recruitment');
+const trainingRoutes = require('./routes/training');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -219,6 +221,8 @@ app.use('/api/leaves', leaveRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/hr', hrRoutes);
+app.use('/api/recruitment', recruitmentRoutes);
+app.use('/api/training', trainingRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {

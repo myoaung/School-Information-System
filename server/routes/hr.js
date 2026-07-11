@@ -516,4 +516,101 @@ router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) =
   }
 });
 
+// ─── Employee Self-Service ────────────────────────────────────
+
+// Get my profile (teacher self-service)
+router.get('/my/profile', authMiddleware, async (req, res) => {
+  try {
+    const profile = await db.get(
+      `SELECT u.id, u.name, u.email, u.role, u.phone as user_phone,
+              t.teacher_id, t.phone, t.qualification, t.specialization,
+              t.hire_date, t.status as employment_status, t.address
+       FROM users u
+       LEFT JOIN teachers t ON t.user_id = u.id
+       WHERE u.id = ?`,
+      [req.user.id]
+    );
+
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+    // Get active contract
+    const contract = await db.get(
+      `SELECT * FROM staff_contracts WHERE staff_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1`,
+      [req.user.id]
+    );
+
+    // Leave balance — count approved leaves this year
+    const leaveBalance = await db.get(
+      `SELECT COUNT(*) as used FROM leave_requests
+       WHERE user_id = ? AND status = 'approved'
+       AND start_date >= to_char(CURRENT_DATE, 'YYYY') || '-01-01'`,
+      [req.user.id]
+    );
+
+    res.json({ profile, contract, leaveBalance: { used: leaveBalance?.used || 0, allowed: 14 } });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch profile');
+  }
+});
+
+// Update my profile (phone, address only)
+router.put('/my/profile', authMiddleware, async (req, res) => {
+  try {
+    const { phone, address } = req.body;
+
+    // Check if teacher profile exists
+    const existing = await db.get('SELECT * FROM teachers WHERE user_id = ?', [req.user.id]);
+
+    if (existing) {
+      await db.run('UPDATE teachers SET phone = ?, address = ? WHERE user_id = ?', [
+        phone ?? existing.phone,
+        address ?? existing.address,
+        req.user.id,
+      ]);
+    } else {
+      await db.run('INSERT INTO teachers (user_id, phone, address) VALUES (?, ?, ?)', [
+        req.user.id,
+        phone || null,
+        address || null,
+      ]);
+    }
+
+    res.json({ message: 'Profile updated' });
+  } catch (err) {
+    sendError(res, err, 'Failed to update profile');
+  }
+});
+
+// My leave history
+router.get('/my/leaves', authMiddleware, async (req, res) => {
+  try {
+    const leaves = await db.all(
+      `SELECT lr.*, ab.name as approved_by_name
+       FROM leave_requests lr
+       LEFT JOIN users ab ON lr.approved_by = ab.id
+       WHERE lr.user_id = ?
+       ORDER BY lr.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ leaves });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch leave history');
+  }
+});
+
+// My contract history
+router.get('/my/contracts', authMiddleware, async (req, res) => {
+  try {
+    const contracts = await db.all(
+      `SELECT * FROM staff_contracts WHERE staff_id = ? ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ contracts });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch contract history');
+  }
+});
+
 module.exports = router;
