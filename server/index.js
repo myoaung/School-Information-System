@@ -44,6 +44,7 @@ const certificateRoutes = require('./routes/certificates');
 const auditRoutes = require('./routes/audit');
 const teacherWorkloadRoutes = require('./routes/teacher-workload');
 const uploadRoutes = require('./routes/upload');
+const documentRoutes = require('./routes/documents');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -205,6 +206,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/documents', documentRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {

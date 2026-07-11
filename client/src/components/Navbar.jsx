@@ -339,6 +339,13 @@ export default function Navbar() {
                             {t('resources.title')}
                           </Link>
                           <Link
+                            to="/documents"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                          >
+                            Documents
+                          </Link>
+                          <Link
                             to="/reports"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
@@ -523,6 +530,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/resources" className="mobile-nav-link" onClick={closeMobileMenu}>
                     {t('resources.title')}
+                  </Link>
+                  <Link to="/documents" className="mobile-nav-link" onClick={closeMobileMenu}>
+                    Documents
                   </Link>
                   <Link to="/reports" className="mobile-nav-link" onClick={closeMobileMenu}>
                     {t('reports.title')}

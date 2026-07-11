@@ -40,6 +40,7 @@ const CertificatesPage = lazy(() => import('./pages/CertificatesPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const AuditLogsPage = lazy(() => import('./pages/AuditLogsPage'));
 const TeacherWorkloadPage = lazy(() => import('./pages/TeacherWorkloadPage'));
+const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 
 function App() {
   return (
@@ -190,6 +191,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <ResourcesPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/documents"
+                      element={
+                        <ProtectedRoute>
+                          <DocumentsPage />
                         </ProtectedRoute>
                       }
                     />
