@@ -206,6 +206,275 @@ router.get('/contracts/expiring', authMiddleware, roleMiddleware('admin'), async
   }
 });
 
+// ─── Performance Reviews ───────────────────────────────────────
+
+const REVIEW_TYPES = ['probation', 'annual', 'mid_year', 'observation', 'goal_setting', 'other'];
+const RATINGS = ['excellent', 'good', 'satisfactory', 'needs_improvement', 'unsatisfactory'];
+const REVIEW_STATUSES = ['draft', 'submitted', 'acknowledged', 'completed'];
+
+// List reviews
+router.get('/reviews', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+  try {
+    const { staff_id, review_type, status } = req.query;
+
+    let where = [];
+    let params = [];
+
+    if (staff_id) {
+      where.push('pr.staff_id = ?');
+      params.push(staff_id);
+    }
+    if (review_type) {
+      where.push('pr.review_type = ?');
+      params.push(review_type);
+    }
+    if (status) {
+      where.push('pr.status = ?');
+      params.push(status);
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+    const reviews = await db.all(
+      `SELECT pr.*, u.name as staff_name, u.email as staff_email,
+              r.name as reviewer_name
+       FROM performance_reviews pr
+       LEFT JOIN users u ON pr.staff_id = u.id
+       LEFT JOIN users r ON pr.reviewer_id = r.id
+       ${whereClause}
+       ORDER BY pr.created_at DESC`,
+      params
+    );
+
+    res.json({ reviews });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch reviews');
+  }
+});
+
+// Get single review
+router.get('/reviews/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const review = await db.get(
+      `SELECT pr.*, u.name as staff_name, u.email as staff_email,
+              r.name as reviewer_name
+       FROM performance_reviews pr
+       LEFT JOIN users u ON pr.staff_id = u.id
+       LEFT JOIN users r ON pr.reviewer_id = r.id
+       WHERE pr.id = ?`,
+      [id]
+    );
+
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
+    res.json({ review });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch review');
+  }
+});
+
+// Create review
+router.post('/reviews', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const {
+      staff_id,
+      review_type,
+      review_period,
+      rating,
+      strengths,
+      areas_for_improvement,
+      goals,
+      development_plan,
+      comments,
+      review_date,
+      next_review_date,
+    } = req.body;
+
+    if (!staff_id || !review_type) {
+      return res.status(400).json({ error: 'staff_id and review_type are required' });
+    }
+
+    if (!REVIEW_TYPES.includes(review_type)) {
+      return res
+        .status(400)
+        .json({ error: `Invalid review type. Must be: ${REVIEW_TYPES.join(', ')}` });
+    }
+
+    const result = await db.run(
+      `INSERT INTO performance_reviews (staff_id, review_type, review_period, reviewer_id, rating, strengths, areas_for_improvement, goals, development_plan, comments, review_date, next_review_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        staff_id,
+        review_type,
+        review_period || null,
+        req.user.id,
+        rating || null,
+        strengths || null,
+        areas_for_improvement || null,
+        goals || null,
+        development_plan || null,
+        comments || null,
+        review_date || new Date().toISOString().split('T')[0],
+        next_review_date || null,
+      ]
+    );
+
+    const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [
+      result.lastInsertRowid,
+    ]);
+
+    res.status(201).json({ message: 'Review created', review });
+
+    auditLog(req, {
+      action: 'create',
+      entityType: 'performance_review',
+      entityId: result.lastInsertRowid,
+      newValues: { staff_id, review_type },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to create review');
+  }
+});
+
+// Update review
+router.put('/reviews/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const {
+      review_type,
+      review_period,
+      rating,
+      strengths,
+      areas_for_improvement,
+      goals,
+      development_plan,
+      comments,
+      review_date,
+      next_review_date,
+    } = req.body;
+
+    const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [id]);
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
+    await db.run(
+      `UPDATE performance_reviews SET review_type = ?, review_period = ?, rating = ?, strengths = ?,
+       areas_for_improvement = ?, goals = ?, development_plan = ?, comments = ?,
+       review_date = ?, next_review_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [
+        review_type ?? review.review_type,
+        review_period ?? review.review_period,
+        rating ?? review.rating,
+        strengths ?? review.strengths,
+        areas_for_improvement ?? review.areas_for_improvement,
+        goals ?? review.goals,
+        development_plan ?? review.development_plan,
+        comments ?? review.comments,
+        review_date ?? review.review_date,
+        next_review_date ?? review.next_review_date,
+        id,
+      ]
+    );
+
+    res.json({ message: 'Review updated' });
+
+    auditLog(req, {
+      action: 'update',
+      entityType: 'performance_review',
+      entityId: id,
+      newValues: { review_type, rating },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to update review');
+  }
+});
+
+// Submit review
+router.put('/reviews/:id/submit', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [id]);
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
+    if (review.status !== 'draft') {
+      return res.status(400).json({ error: `Cannot submit review with status '${review.status}'` });
+    }
+
+    await db.run(
+      "UPDATE performance_reviews SET status = 'submitted', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [id]
+    );
+
+    res.json({ message: 'Review submitted' });
+
+    auditLog(req, {
+      action: 'submit',
+      entityType: 'performance_review',
+      entityId: id,
+      newValues: { status: 'submitted' },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to submit review');
+  }
+});
+
+// Acknowledge review (teacher)
+router.put('/reviews/:id/acknowledge', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [id]);
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
+    // Only the staff member being reviewed can acknowledge
+    if (review.staff_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (review.status !== 'submitted') {
+      return res
+        .status(400)
+        .json({ error: `Cannot acknowledge review with status '${review.status}'` });
+    }
+
+    await db.run(
+      "UPDATE performance_reviews SET status = 'acknowledged', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [id]
+    );
+
+    res.json({ message: 'Review acknowledged' });
+
+    auditLog(req, {
+      action: 'acknowledge',
+      entityType: 'performance_review',
+      entityId: id,
+      newValues: { status: 'acknowledged' },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to acknowledge review');
+  }
+});
+
+// Get my reviews (teacher view)
+router.get('/reviews/my/list', authMiddleware, async (req, res) => {
+  try {
+    const reviews = await db.all(
+      `SELECT pr.*, r.name as reviewer_name
+       FROM performance_reviews pr
+       LEFT JOIN users r ON pr.reviewer_id = r.id
+       WHERE pr.staff_id = ?
+       ORDER BY pr.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ reviews });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch your reviews');
+  }
+});
+
 // ─── HR Statistics ─────────────────────────────────────────────
 router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {

@@ -3,6 +3,79 @@ import api from '../services/api';
 import Modal from '../components/Modal';
 import { toast } from 'sonner';
 
+const REVIEW_TYPES = [
+  {
+    value: 'probation',
+    label: 'Probation',
+    color: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  },
+  {
+    value: 'annual',
+    label: 'Annual',
+    color: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  },
+  {
+    value: 'mid_year',
+    label: 'Mid-Year',
+    color: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+  },
+  {
+    value: 'observation',
+    label: 'Observation',
+    color: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+  },
+  {
+    value: 'goal_setting',
+    label: 'Goal Setting',
+    color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  },
+];
+
+const RATINGS = [
+  {
+    value: 'excellent',
+    label: 'Excellent',
+    color: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+    icon: '⭐',
+  },
+  {
+    value: 'good',
+    label: 'Good',
+    color: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+    icon: '👍',
+  },
+  {
+    value: 'satisfactory',
+    label: 'Satisfactory',
+    color: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+    icon: '👌',
+  },
+  {
+    value: 'needs_improvement',
+    label: 'Needs Improvement',
+    color: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300',
+    icon: '📈',
+  },
+  {
+    value: 'unsatisfactory',
+    label: 'Unsatisfactory',
+    color: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+    icon: '⚠️',
+  },
+];
+
+const REVIEW_STATUSES = {
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  acknowledged: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+  completed: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+};
+
 const CONTRACT_TYPES = [
   {
     value: 'permanent',
@@ -43,10 +116,26 @@ export default function HRPage() {
   const [staff, setStaff] = useState([]);
   const [stats, setStats] = useState(null);
   const [expiring, setExpiring] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showContractModal, setShowContractModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    staff_id: '',
+    review_type: 'annual',
+    review_period: '',
+    rating: '',
+    strengths: '',
+    areas_for_improvement: '',
+    goals: '',
+    development_plan: '',
+    comments: '',
+    review_date: new Date().toISOString().split('T')[0],
+    next_review_date: '',
+  });
   const [form, setForm] = useState({
     contract_type: 'permanent',
     start_date: new Date().toISOString().split('T')[0],
@@ -80,11 +169,23 @@ export default function HRPage() {
       .catch(() => {});
   };
 
+  const fetchReviews = () => {
+    api
+      .get('/hr/reviews')
+      .then((r) => setReviews(r.data.reviews))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     fetchStaff();
     fetchStats();
     fetchExpiring();
+    fetchReviews();
   }, []);
+
+  useEffect(() => {
+    if (tab === 'reviews') fetchReviews();
+  }, [tab]);
 
   const openContractModal = (staffMember) => {
     setSelectedStaff(staffMember);
@@ -127,6 +228,59 @@ export default function HRPage() {
         amount
       ) + ' MMK'
     );
+  };
+
+  const openReviewModal = (staffMember) => {
+    setSelectedStaff(staffMember);
+    setReviewForm({
+      staff_id: staffMember.id,
+      review_type: 'annual',
+      review_period: '',
+      rating: '',
+      strengths: '',
+      areas_for_improvement: '',
+      goals: '',
+      development_plan: '',
+      comments: '',
+      review_date: new Date().toISOString().split('T')[0],
+      next_review_date: '',
+    });
+    setShowReviewModal(true);
+  };
+
+  const handleCreateReview = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post('/hr/reviews', reviewForm);
+      setShowReviewModal(false);
+      toast.success('Review created');
+      fetchReviews();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create review');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmitReview = async (id) => {
+    try {
+      await api.put(`/hr/reviews/${id}/submit`);
+      toast.success('Review submitted');
+      fetchReviews();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to submit');
+    }
+  };
+
+  const handleAcknowledgeReview = async (id) => {
+    try {
+      await api.put(`/hr/reviews/${id}/acknowledge`);
+      toast.success('Review acknowledged');
+      fetchReviews();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to acknowledge');
+    }
   };
 
   const formatDate = (dateStr) => {
@@ -210,6 +364,7 @@ export default function HRPage() {
           { key: 'staff', label: '👥 Staff' },
           { key: 'contracts', label: '📋 Contracts' },
           { key: 'expiring', label: '⏰ Expiring' },
+          { key: 'reviews', label: '⭐ Reviews' },
         ].map((t) => (
           <button
             key={t.key}
@@ -417,6 +572,95 @@ export default function HRPage() {
         </div>
       )}
 
+      {/* Reviews Tab */}
+      {tab === 'reviews' && (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => openReviewModal({ id: '', name: 'Select Staff' })}
+              className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-sm hover:bg-cyan-700 transition-colors cursor-pointer"
+            >
+              + New Review
+            </button>
+          </div>
+          {reviews.length > 0 ? (
+            <div className="space-y-3">
+              {reviews.map((r) => {
+                const reviewType = REVIEW_TYPES.find((t) => t.value === r.review_type);
+                const rating = RATINGS.find((rt) => rt.value === r.rating);
+                return (
+                  <div
+                    key={r.id}
+                    className="bg-white dark:bg-gray-900 rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium text-purple-900 dark:text-purple-100">
+                          {r.staff_name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${reviewType?.color}`}
+                          >
+                            {reviewType?.label}
+                          </span>
+                          {r.rating && (
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${rating?.color}`}
+                            >
+                              {rating?.icon} {rating?.label}
+                            </span>
+                          )}
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${REVIEW_STATUSES[r.status]}`}
+                          >
+                            {r.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {r.status === 'draft' && (
+                          <button
+                            onClick={() => handleSubmitReview(r.id)}
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                          >
+                            Submit
+                          </button>
+                        )}
+                        {r.status === 'submitted' && (
+                          <button
+                            onClick={() => handleAcknowledgeReview(r.id)}
+                            className="text-xs text-green-600 hover:text-green-800 font-medium cursor-pointer"
+                          >
+                            Acknowledge
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {r.review_period && (
+                      <p className="text-xs text-purple-500 mt-2">Period: {r.review_period}</p>
+                    )}
+                    {r.strengths && (
+                      <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 line-clamp-2">
+                        <span className="font-medium">Strengths:</span> {r.strengths}
+                      </p>
+                    )}
+                    <p className="text-xs text-purple-400 mt-2">
+                      By {r.reviewer_name || 'Unknown'} ·{' '}
+                      {new Date(r.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl shadow-md">
+              <p className="text-purple-500">No performance reviews yet</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Contract Modal */}
       <Modal
         isOpen={showContractModal}
@@ -526,6 +770,127 @@ export default function HRPage() {
               className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Creating...' : 'Create Contract'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        title={`New Review: ${selectedStaff?.name}`}
+      >
+        <form onSubmit={handleCreateReview} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                Review Type
+              </label>
+              <select
+                value={reviewForm.review_type}
+                onChange={(e) => setReviewForm({ ...reviewForm, review_type: e.target.value })}
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 cursor-pointer"
+              >
+                {REVIEW_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                Rating
+              </label>
+              <select
+                value={reviewForm.rating}
+                onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 cursor-pointer"
+              >
+                <option value="">Select rating</option>
+                {RATINGS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.icon} {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                Review Period
+              </label>
+              <input
+                type="text"
+                value={reviewForm.review_period}
+                onChange={(e) => setReviewForm({ ...reviewForm, review_period: e.target.value })}
+                placeholder="e.g., 2026 Q1"
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                Review Date
+              </label>
+              <input
+                type="date"
+                value={reviewForm.review_date}
+                onChange={(e) => setReviewForm({ ...reviewForm, review_date: e.target.value })}
+                className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Strengths
+            </label>
+            <textarea
+              value={reviewForm.strengths}
+              onChange={(e) => setReviewForm({ ...reviewForm, strengths: e.target.value })}
+              rows={2}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Areas for Improvement
+            </label>
+            <textarea
+              value={reviewForm.areas_for_improvement}
+              onChange={(e) =>
+                setReviewForm({ ...reviewForm, areas_for_improvement: e.target.value })
+              }
+              rows={2}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Goals
+            </label>
+            <textarea
+              value={reviewForm.goals}
+              onChange={(e) => setReviewForm({ ...reviewForm, goals: e.target.value })}
+              rows={2}
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowReviewModal(false)}
+              className="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
+            >
+              {saving ? 'Creating...' : 'Create Review'}
             </button>
           </div>
         </form>
