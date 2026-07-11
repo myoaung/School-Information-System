@@ -7,6 +7,47 @@ const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
+// ─── Lifecycle Constants ────────────────────────────────────────
+const ALL_STATUSES = [
+  'applicant',
+  'approved',
+  'active',
+  'suspended',
+  'graduated',
+  'transferred',
+  'withdrawn',
+  'archived',
+];
+
+const VALID_TRANSITIONS = {
+  applicant: ['approved', 'withdrawn'],
+  approved: ['active', 'withdrawn'],
+  active: ['suspended', 'graduated', 'transferred', 'withdrawn'],
+  suspended: ['active', 'withdrawn'],
+  graduated: ['archived'],
+  transferred: ['archived'],
+  withdrawn: ['archived'],
+};
+
+// ─── Lifecycle Summary (must be before /:id routes) ─────────────
+router.get('/lifecycle/summary', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const counts = await db.all(`SELECT status, COUNT(*) as count FROM students GROUP BY status`);
+
+    const summary = {};
+    ALL_STATUSES.forEach((s) => {
+      summary[s] = 0;
+    });
+    counts.forEach((r) => {
+      summary[r.status] = r.count;
+    });
+
+    res.json({ summary, total: counts.reduce((sum, r) => sum + r.count, 0) });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch lifecycle summary');
+  }
+});
+
 // Get all students (admin/teacher)
 router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
@@ -175,12 +216,10 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
       ]
     );
 
-    res
-      .status(201)
-      .json({
-        message: 'Student created',
-        student: { id: userId, name, email, student_id: studentId },
-      });
+    res.status(201).json({
+      message: 'Student created',
+      student: { id: userId, name, email, student_id: studentId },
+    });
 
     auditLog(req, {
       action: 'create',
@@ -262,6 +301,98 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
     });
   } catch (err) {
     sendError(res, err, 'Failed to update student');
+  }
+});
+
+// ─── Student Lifecycle ──────────────────────────────────────────
+
+// Change student status (admin only)
+router.post('/:id/status', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { status: newStatus, reason } = req.body;
+
+    if (!newStatus) return res.status(400).json({ error: 'Status is required' });
+    if (!ALL_STATUSES.includes(newStatus)) {
+      return res
+        .status(400)
+        .json({ error: `Invalid status. Must be one of: ${ALL_STATUSES.join(', ')}` });
+    }
+
+    const profile = await db.get(
+      `SELECT s.status, s.id as profile_id FROM students s WHERE s.user_id = ?`,
+      [userId]
+    );
+    if (!profile) return res.status(404).json({ error: 'Student not found' });
+
+    const currentStatus = profile.status;
+
+    // Check if status is actually changing
+    if (currentStatus === newStatus) {
+      return res.status(400).json({ error: 'Student already has this status' });
+    }
+
+    // Validate transition (allow if no transition defined — backward compatible)
+    const allowed = VALID_TRANSITIONS[currentStatus];
+    if (allowed && !allowed.includes(newStatus)) {
+      return res.status(400).json({
+        error: `Cannot transition from '${currentStatus}' to '${newStatus}'. Allowed: ${allowed.join(', ')}`,
+      });
+    }
+
+    // Require reason for certain transitions
+    const requiresReason = ['graduated', 'transferred', 'withdrawn', 'archived'];
+    if (requiresReason.includes(newStatus) && !reason) {
+      return res.status(400).json({ error: `Reason is required for '${newStatus}' status` });
+    }
+
+    // Update status
+    await db.run('UPDATE students SET status = ? WHERE user_id = ?', [newStatus, userId]);
+
+    // Record history
+    await db.run(
+      `INSERT INTO student_status_history (student_id, from_status, to_status, reason, changed_by)
+       VALUES (?, ?, ?, ?, ?)`,
+      [profile.profile_id, currentStatus, newStatus, reason || null, req.user.id]
+    );
+
+    res.json({
+      message: `Status changed from '${currentStatus}' to '${newStatus}'`,
+      status: newStatus,
+    });
+
+    auditLog(req, {
+      action: 'status_change',
+      entityType: 'student',
+      entityId: userId,
+      oldValues: { status: currentStatus },
+      newValues: { status: newStatus, reason },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to change student status');
+  }
+});
+
+// Get student status history
+router.get('/:id/status-history', authMiddleware, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    const profile = await db.get('SELECT id FROM students WHERE user_id = ?', [userId]);
+    if (!profile) return res.status(404).json({ error: 'Student not found' });
+
+    const history = await db.all(
+      `SELECT h.*, u.name as changed_by_name
+       FROM student_status_history h
+       LEFT JOIN users u ON h.changed_by = u.id
+       WHERE h.student_id = ?
+       ORDER BY h.created_at DESC`,
+      [profile.id]
+    );
+
+    res.json({ history });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch status history');
   }
 });
 

@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [atRiskStudents, setAtRiskStudents] = useState([]);
   const [analyticsStats, setAnalyticsStats] = useState(null);
+  const [lifecycle, setLifecycle] = useState(null);
 
   useEffect(() => {
     api
@@ -40,6 +41,11 @@ export default function DashboardPage() {
         .get('/ai/stats')
         .then((r) => setAnalyticsStats(r.data.stats))
         .catch(() => toast.error('Failed to load analytics'));
+      // Load lifecycle summary
+      api
+        .get('/students/lifecycle/summary')
+        .then((r) => setLifecycle(r.data))
+        .catch(() => {});
     }
   }, []);
 
@@ -191,6 +197,88 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Student Lifecycle Summary (Admin only) */}
+      {isAdmin && lifecycle && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-950/40 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-purple-600 dark:text-purple-400"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                  <path d="M16 3.13a4 4 0 010 7.75" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                Student Lifecycle
+              </h2>
+            </div>
+            <Link
+              to="/students"
+              className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 font-medium"
+            >
+              Manage →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {[
+              {
+                key: 'applicant',
+                label: 'Applicant',
+                color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+              },
+              {
+                key: 'approved',
+                label: 'Approved',
+                color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300',
+              },
+              {
+                key: 'active',
+                label: 'Active',
+                color: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+              },
+              {
+                key: 'suspended',
+                label: 'Suspended',
+                color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
+              },
+              {
+                key: 'graduated',
+                label: 'Graduated',
+                color: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+              },
+              {
+                key: 'transferred',
+                label: 'Transferred',
+                color: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+              },
+              {
+                key: 'withdrawn',
+                label: 'Withdrawn',
+                color: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+              },
+              {
+                key: 'archived',
+                label: 'Archived',
+                color: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+              },
+            ].map(({ key, label, color }) => (
+              <div key={key} className={`p-3 rounded-xl text-center ${color}`}>
+                <p className="text-2xl font-bold">{lifecycle.summary[key] || 0}</p>
+                <p className="text-xs font-medium mt-1">{label}</p>
+              </div>
             ))}
           </div>
         </div>

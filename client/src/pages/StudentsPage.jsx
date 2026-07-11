@@ -15,6 +15,7 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
@@ -32,17 +33,20 @@ export default function StudentsPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const fetchStudents = (q = '') => {
+  const fetchStudents = (q = '', status = '') => {
     setLoading(true);
+    const params = {};
+    if (q) params.search = q;
+    if (status) params.status = status;
     api
-      .get('/students', { params: { search: q } })
+      .get('/students', { params })
       .then((r) => setStudents(r.data.students))
       .catch(() => setError(t('students.loadError')))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudents(search, statusFilter);
     api
       .get('/curriculum')
       .then((r) => {
@@ -55,7 +59,12 @@ export default function StudentsPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchStudents(search);
+    fetchStudents(search, statusFilter);
+  };
+
+  const handleStatusFilter = (status) => {
+    setStatusFilter(status);
+    fetchStudents(search, status);
   };
 
   const openCreate = () => {
@@ -102,7 +111,7 @@ export default function StudentsPage() {
         await api.post('/students', form);
       }
       setShowModal(false);
-      fetchStudents(search);
+      fetchStudents(search, statusFilter);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to save');
     } finally {
@@ -114,7 +123,7 @@ export default function StudentsPage() {
     try {
       await api.delete(`/students/${deleteId}`);
       setDeleteId(null);
-      fetchStudents(search);
+      fetchStudents(search, statusFilter);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete');
     }
@@ -149,7 +158,7 @@ export default function StudentsPage() {
             {t('students.title')}
           </h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {isAdmin && (
             <button
               onClick={openCreate}
@@ -167,6 +176,21 @@ export default function StudentsPage() {
               New Student
             </button>
           )}
+          <select
+            value={statusFilter}
+            onChange={(e) => handleStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 cursor-pointer"
+          >
+            <option value="">All Statuses</option>
+            <option value="applicant">Applicant</option>
+            <option value="approved">Approved</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="graduated">Graduated</option>
+            <option value="transferred">Transferred</option>
+            <option value="withdrawn">Withdrawn</option>
+            <option value="archived">Archived</option>
+          </select>
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="text"
@@ -245,7 +269,15 @@ export default function StudentsPage() {
                               ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300'
                               : s.status === 'graduated'
                                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                : s.status === 'applicant'
+                                  ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                  : s.status === 'approved'
+                                    ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300'
+                                    : s.status === 'transferred'
+                                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
+                                      : s.status === 'withdrawn'
+                                        ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
+                                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
                         }`}
                       >
                         {s.status || 'active'}
