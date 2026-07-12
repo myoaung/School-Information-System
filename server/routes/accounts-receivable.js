@@ -171,15 +171,13 @@ router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), as
 
     // Students with outstanding balances
     const studentsWithDebt = await db.all(
-      `SELECT u.id, u.name, u.email, g.name as grade_name,
+      `SELECT u.id, u.name, u.email,
               COUNT(i.id) as invoice_count,
               SUM(i.amount) as total_invoiced
        FROM users u
        JOIN invoices i ON i.student_id = u.id
-       LEFT JOIN students s ON s.user_id = u.id
-       LEFT JOIN grades g ON s.grade_id = g.id
        WHERE i.status IN ('pending', 'overdue')
-       GROUP BY u.id
+       GROUP BY u.id, u.name, u.email
        ORDER BY total_invoiced DESC
        LIMIT 20`
     );
