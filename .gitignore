@@ -32,3 +32,6 @@ proposals/
 .playwright-mcp/
 home-page-check.png
 .env*
+
+# Build output
+server/public/
