@@ -90,8 +90,8 @@ const allowedOrigins = process.env.CLIENT_URL
 
 // Production origins for Vercel deployment
 const productionOrigins = [
-  'https://schoolhub-mu.vercel.app',
-  'https://www.schoolhub-mu.vercel.app',
+  'https://schoolhub-mm.vercel.app',
+  'https://www.schoolhub-mm.vercel.app',
 ];
 
 app.use(
