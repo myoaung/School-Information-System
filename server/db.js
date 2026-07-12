@@ -48,9 +48,26 @@ function initDatabase() {
       name TEXT NOT NULL,
       description TEXT,
       teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      academic_year_id INTEGER REFERENCES academic_years(id),
+      grade_id INTEGER REFERENCES grades(id),
+      section TEXT DEFAULT 'A',
+      capacity INTEGER DEFAULT 40,
       schedule TEXT,
       room TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      status TEXT CHECK(status IN ('draft','incomplete','ready','active')) DEFAULT 'draft',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS class_subject_teachers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      subject_id INTEGER NOT NULL REFERENCES subjects(id),
+      teacher_id INTEGER REFERENCES users(id),
+      academic_year_id INTEGER REFERENCES academic_years(id),
+      is_required INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(class_id, subject_id, academic_year_id)
     );
 
     CREATE TABLE IF NOT EXISTS enrollments (
@@ -480,6 +497,54 @@ function initDatabase() {
       reconciled INTEGER DEFAULT 0
     );
   `);
+
+  // ── Migration: Add new columns to existing tables ──
+  const classesColumns = db
+    .prepare('PRAGMA table_info(classes)')
+    .all()
+    .map((c) => c.name);
+  const migrations = [
+    {
+      table: 'classes',
+      col: 'academic_year_id',
+      sql: 'ALTER TABLE classes ADD COLUMN academic_year_id INTEGER REFERENCES academic_years(id)',
+    },
+    {
+      table: 'classes',
+      col: 'grade_id',
+      sql: 'ALTER TABLE classes ADD COLUMN grade_id INTEGER REFERENCES grades(id)',
+    },
+    {
+      table: 'classes',
+      col: 'section',
+      sql: "ALTER TABLE classes ADD COLUMN section TEXT DEFAULT 'A'",
+    },
+    {
+      table: 'classes',
+      col: 'capacity',
+      sql: 'ALTER TABLE classes ADD COLUMN capacity INTEGER DEFAULT 40',
+    },
+    {
+      table: 'classes',
+      col: 'status',
+      sql: "ALTER TABLE classes ADD COLUMN status TEXT CHECK(status IN ('draft','incomplete','ready','active')) DEFAULT 'draft'",
+    },
+    {
+      table: 'classes',
+      col: 'updated_at',
+      sql: "ALTER TABLE classes ADD COLUMN updated_at DATETIME DEFAULT ''",
+    },
+  ];
+
+  for (const m of migrations) {
+    if (!classesColumns.includes(m.col)) {
+      try {
+        db.exec(m.sql);
+      } catch (e) {
+        /* column may already exist */
+      }
+    }
+  }
 
   // Seed chart of accounts if empty
   const accountCount = db.prepare('SELECT COUNT(*) as count FROM accounts').get();

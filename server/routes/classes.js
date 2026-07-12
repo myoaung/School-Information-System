@@ -9,13 +9,41 @@ const router = express.Router();
 // Get all classes (public)
 router.get('/', async (req, res) => {
   try {
-    const classes = await db.all(`
-      SELECT c.*, u.name as teacher_name,
-        (SELECT COUNT(*) FROM enrollments WHERE class_id = c.id) as student_count
+    const { academic_year_id, grade_id, status } = req.query;
+
+    let where = [];
+    let params = [];
+
+    if (academic_year_id) {
+      where.push('c.academic_year_id = ?');
+      params.push(academic_year_id);
+    }
+    if (grade_id) {
+      where.push('c.grade_id = ?');
+      params.push(grade_id);
+    }
+    if (status) {
+      where.push('c.status = ?');
+      params.push(status);
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+    const classes = await db.all(
+      `
+      SELECT c.*, u.name as teacher_name, g.name as grade_name, ay.name as year_name,
+        (SELECT COUNT(*) FROM enrollments WHERE class_id = c.id) as student_count,
+        (SELECT COUNT(*) FROM class_subject_teachers WHERE class_id = c.id) as total_subjects,
+        (SELECT COUNT(*) FROM class_subject_teachers WHERE class_id = c.id AND teacher_id IS NOT NULL) as assigned_teachers
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
+      LEFT JOIN grades g ON c.grade_id = g.id
+      LEFT JOIN academic_years ay ON c.academic_year_id = ay.id
+      ${whereClause}
       ORDER BY c.name
-    `);
+    `,
+      params
+    );
 
     res.json({ classes });
   } catch (err) {
@@ -26,25 +54,31 @@ router.get('/', async (req, res) => {
 // Get single class with enrollments
 router.get('/:id', async (req, res) => {
   try {
-    const classData = await db.get(`
+    const classData = await db.get(
+      `
       SELECT c.*, u.name as teacher_name
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
       WHERE c.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });
     }
 
     // Get enrolled students
-    const students = await db.all(`
+    const students = await db.all(
+      `
       SELECT u.id, u.name, u.email
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
       WHERE e.class_id = ?
       ORDER BY u.name
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     res.json({ class: { ...classData, students } });
   } catch (err) {
@@ -55,15 +89,36 @@ router.get('/:id', async (req, res) => {
 // Create class (admin only)
 router.post('/', authMiddleware, roleMiddleware('admin'), classRules, async (req, res) => {
   try {
-    const { name, description, teacher_id, schedule, room } = req.body;
+    const {
+      name,
+      description,
+      teacher_id,
+      academic_year_id,
+      grade_id,
+      section,
+      capacity,
+      schedule,
+      room,
+    } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Class name is required' });
     }
 
     const result = await db.run(
-      'INSERT INTO classes (name, description, teacher_id, schedule, room) VALUES (?, ?, ?, ?, ?)',
-      [name, description || null, teacher_id || null, schedule || null, room || null]
+      `INSERT INTO classes (name, description, teacher_id, academic_year_id, grade_id, section, capacity, schedule, room)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        description || null,
+        teacher_id || null,
+        academic_year_id || null,
+        grade_id || null,
+        section || 'A',
+        capacity || 40,
+        schedule || null,
+        room || null,
+      ]
     );
 
     const classData = await db.get('SELECT * FROM classes WHERE id = ?', [result.lastInsertRowid]);
@@ -77,7 +132,17 @@ router.post('/', authMiddleware, roleMiddleware('admin'), classRules, async (req
 // Update class (admin only)
 router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const { name, description, teacher_id, schedule, room } = req.body;
+    const {
+      name,
+      description,
+      teacher_id,
+      academic_year_id,
+      grade_id,
+      section,
+      capacity,
+      schedule,
+      room,
+    } = req.body;
 
     const existing = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
     if (!existing) {
@@ -89,8 +154,21 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
     }
 
     await db.run(
-      'UPDATE classes SET name = ?, description = ?, teacher_id = ?, schedule = ?, room = ? WHERE id = ?',
-      [name, description || null, teacher_id || null, schedule || null, room || null, req.params.id]
+      `UPDATE classes SET name = ?, description = ?, teacher_id = ?, academic_year_id = ?,
+       grade_id = ?, section = ?, capacity = ?, schedule = ?, room = ?,
+       updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [
+        name,
+        description ?? existing.description,
+        teacher_id ?? existing.teacher_id,
+        academic_year_id ?? existing.academic_year_id,
+        grade_id ?? existing.grade_id,
+        section ?? existing.section,
+        capacity ?? existing.capacity,
+        schedule ?? existing.schedule,
+        room ?? existing.room,
+        req.params.id,
+      ]
     );
 
     const classData = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
@@ -115,17 +193,26 @@ router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), a
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [student_id, 'student']);
+    const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [
+      student_id,
+      'student',
+    ]);
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const existing = await db.get('SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?', [req.params.id, student_id]);
+    const existing = await db.get(
+      'SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?',
+      [req.params.id, student_id]
+    );
     if (existing) {
       return res.status(409).json({ error: 'Student already enrolled' });
     }
 
-    await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', [req.params.id, student_id]);
+    await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', [
+      req.params.id,
+      student_id,
+    ]);
 
     res.json({ message: 'Student enrolled successfully' });
   } catch (err) {
@@ -136,7 +223,9 @@ router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), a
 // Get class schedule
 router.get('/:id/schedule', async (req, res) => {
   try {
-    const classData = await db.get('SELECT id, name, schedule, room FROM classes WHERE id = ?', [req.params.id]);
+    const classData = await db.get('SELECT id, name, schedule, room FROM classes WHERE id = ?', [
+      req.params.id,
+    ]);
 
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });

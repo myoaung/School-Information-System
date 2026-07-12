@@ -18,6 +18,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'));
 const AnnouncementDetailPage = lazy(() => import('./pages/AnnouncementDetailPage'));
 const ClassesPage = lazy(() => import('./pages/ClassesPage'));
+const ClassDetailPage = lazy(() => import('./pages/ClassDetailPage'));
 const CurriculumPage = lazy(() => import('./pages/CurriculumPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ChatLogsPage = lazy(() => import('./pages/ChatLogsPage'));
@@ -88,6 +89,14 @@ function App() {
                     <Route path="/announcements" element={<AnnouncementsPage />} />
                     <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
                     <Route path="/classes" element={<ClassesPage />} />
+                    <Route
+                      path="/classes/:id"
+                      element={
+                        <ProtectedRoute>
+                          <ClassDetailPage />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/curriculum" element={<CurriculumPage />} />
                     <Route path="/contact" element={<ContactPage />} />
                     <Route
