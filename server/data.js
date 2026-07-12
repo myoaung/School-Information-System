@@ -66,7 +66,9 @@ function extractTableName(sql) {
  */
 function parseInsert(sql, params) {
   // INSERT INTO table (col1, col2, ...) VALUES (?, ?, ...)
-  const match = sql.match(/INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
+  // Normalize whitespace to handle multi-line SQL
+  const normalized = sql.replace(/\s+/g, ' ').trim();
+  const match = normalized.match(/INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
   if (!match) return null;
 
   const table = match[1];
@@ -82,7 +84,9 @@ function parseInsert(sql, params) {
  */
 function parseUpdate(sql, params) {
   // UPDATE table SET col1 = ?, col2 = CURRENT_TIMESTAMP WHERE id = ?
-  const match = sql.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i);
+  // Normalize whitespace to handle multi-line SQL
+  const normalized = sql.replace(/\s+/g, ' ').trim();
+  const match = normalized.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i);
   if (!match) return null;
 
   const table = match[1];
@@ -104,8 +108,14 @@ function parseUpdate(sql, params) {
     if (val === '?') {
       // Parameterized value — consume from params
       setValues.push(params[paramIndex++]);
+    } else if (val === 'CURRENT_TIMESTAMP' || val === 'NOW()') {
+      // SQL timestamp function — convert to JavaScript ISO string
+      setValues.push(new Date().toISOString());
+    } else if (val?.startsWith("'") && val?.endsWith("'")) {
+      // String literal — strip quotes
+      setValues.push(val.slice(1, -1));
     } else {
-      // SQL function or literal (CURRENT_TIMESTAMP, NOW(), etc.) — pass through
+      // Other SQL function or literal — pass through
       setValues.push(val);
     }
   }

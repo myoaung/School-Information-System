@@ -45,7 +45,7 @@ router.get('/programs', authMiddleware, async (req, res) => {
 });
 
 // Create program
-router.post('/programs', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/programs', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { title, description, trainer, start_date, end_date, location, max_participants } =
       req.body;
@@ -87,7 +87,7 @@ router.post('/programs', authMiddleware, roleMiddleware('admin'), async (req, re
 });
 
 // Update program
-router.put('/programs/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/programs/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const {
@@ -140,7 +140,7 @@ router.put('/programs/:id', authMiddleware, roleMiddleware('admin'), async (req,
 });
 
 // Delete program
-router.delete('/programs/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/programs/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -164,60 +164,65 @@ router.delete('/programs/:id', authMiddleware, roleMiddleware('admin'), async (r
 // ─── Training Assignments ─────────────────────────────────────
 
 // Assign staff to program
-router.post('/programs/:id/assign', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const programId = parseInt(req.params.id);
-    const { staff_ids } = req.body;
+router.post(
+  '/programs/:id/assign',
+  authMiddleware,
+  roleMiddleware('admin', 'hr'),
+  async (req, res) => {
+    try {
+      const programId = parseInt(req.params.id);
+      const { staff_ids } = req.body;
 
-    if (!staff_ids || !Array.isArray(staff_ids) || staff_ids.length === 0) {
-      return res.status(400).json({ error: 'staff_ids array is required' });
-    }
-
-    const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [programId]);
-    if (!program) return res.status(404).json({ error: 'Training program not found' });
-
-    // Check max participants
-    if (program.max_participants) {
-      const currentCount = await db.get(
-        'SELECT COUNT(*) as c FROM training_assignments WHERE program_id = ?',
-        [programId]
-      );
-      if (currentCount.c + staff_ids.length > program.max_participants) {
-        return res.status(400).json({
-          error: `Cannot assign ${staff_ids.length} staff. Max participants is ${program.max_participants} (${currentCount.c} already enrolled)`,
-        });
+      if (!staff_ids || !Array.isArray(staff_ids) || staff_ids.length === 0) {
+        return res.status(400).json({ error: 'staff_ids array is required' });
       }
-    }
 
-    let assigned = 0;
-    for (const staffId of staff_ids) {
-      try {
-        await db.run('INSERT INTO training_assignments (program_id, staff_id) VALUES (?, ?)', [
-          programId,
-          staffId,
-        ]);
-        assigned++;
-      } catch (err) {
-        // Skip duplicates (UNIQUE constraint)
-        if (!err.message?.includes('UNIQUE')) throw err;
+      const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [programId]);
+      if (!program) return res.status(404).json({ error: 'Training program not found' });
+
+      // Check max participants
+      if (program.max_participants) {
+        const currentCount = await db.get(
+          'SELECT COUNT(*) as c FROM training_assignments WHERE program_id = ?',
+          [programId]
+        );
+        if (currentCount.c + staff_ids.length > program.max_participants) {
+          return res.status(400).json({
+            error: `Cannot assign ${staff_ids.length} staff. Max participants is ${program.max_participants} (${currentCount.c} already enrolled)`,
+          });
+        }
       }
+
+      let assigned = 0;
+      for (const staffId of staff_ids) {
+        try {
+          await db.run('INSERT INTO training_assignments (program_id, staff_id) VALUES (?, ?)', [
+            programId,
+            staffId,
+          ]);
+          assigned++;
+        } catch (err) {
+          // Skip duplicates (UNIQUE constraint)
+          if (!err.message?.includes('UNIQUE')) throw err;
+        }
+      }
+
+      res.json({ message: `${assigned} staff assigned to training` });
+
+      auditLog(req, {
+        action: 'assign',
+        entityType: 'training_assignment',
+        entityId: programId,
+        newValues: { staff_ids, assigned },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to assign staff');
     }
-
-    res.json({ message: `${assigned} staff assigned to training` });
-
-    auditLog(req, {
-      action: 'assign',
-      entityType: 'training_assignment',
-      entityId: programId,
-      newValues: { staff_ids, assigned },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to assign staff');
   }
-});
+);
 
 // Update assignment (admin)
-router.put('/assignments/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/assignments/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status, completion_date, certificate_url, feedback, rating } = req.body;
@@ -281,7 +286,7 @@ router.get('/my', authMiddleware, async (req, res) => {
 });
 
 // Training stats (admin)
-router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/stats', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const activePrograms = await db.get(
       "SELECT COUNT(*) as c FROM training_programs WHERE status IN ('planned', 'active')"

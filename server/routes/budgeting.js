@@ -9,7 +9,7 @@ const router = express.Router();
 const BUDGET_PERIODS = ['annual', 'quarterly', 'monthly'];
 
 // ─── List Budgets ─────────────────────────────────────────────
-router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { academic_year_id, category } = req.query;
 
@@ -76,7 +76,7 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // ─── Create Budget ────────────────────────────────────────────
-router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const {
       academic_year_id,
@@ -129,7 +129,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // ─── Update Budget ────────────────────────────────────────────
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { category, description, allocated_amount, period, period_start, period_end } = req.body;
@@ -165,7 +165,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 });
 
 // ─── Delete Budget ────────────────────────────────────────────
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -187,7 +187,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
 });
 
 // ─── Budget Summary (Overview) ────────────────────────────────
-router.get('/summary', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { academic_year_id } = req.query;
 
@@ -246,23 +246,28 @@ router.get('/summary', authMiddleware, roleMiddleware('admin'), async (req, res)
 });
 
 // ─── Available Categories ─────────────────────────────────────
-router.get('/categories', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    // Return expense categories that are actually used, plus budget-specific ones
-    const used = await db.all('SELECT DISTINCT category FROM expenses');
+router.get(
+  '/categories',
+  authMiddleware,
+  roleMiddleware('admin', 'accountant'),
+  async (req, res) => {
+    try {
+      // Return expense categories that are actually used, plus budget-specific ones
+      const used = await db.all('SELECT DISTINCT category FROM expenses');
 
-    const categories = [
-      ...used.map((u) => u.category),
-      'events',
-      'infrastructure',
-      'technology',
-      'professional_development',
-    ];
+      const categories = [
+        ...used.map((u) => u.category),
+        'events',
+        'infrastructure',
+        'technology',
+        'professional_development',
+      ];
 
-    res.json({ categories: [...new Set(categories)].sort() });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch categories');
+      res.json({ categories: [...new Set(categories)].sort() });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch categories');
+    }
   }
-});
+);
 
 module.exports = router;

@@ -56,6 +56,7 @@ const trainingRoutes = require('./routes/training');
 const cashControlRoutes = require('./routes/cash-control');
 const budgetingRoutes = require('./routes/budgeting');
 const accountsReceivableRoutes = require('./routes/accounts-receivable');
+const accountingRoutes = require('./routes/accounting');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -229,6 +230,7 @@ app.use('/api/training', trainingRoutes);
 app.use('/api/cash-control', cashControlRoutes);
 app.use('/api/budgeting', budgetingRoutes);
 app.use('/api/accounts-receivable', accountsReceivableRoutes);
+app.use('/api/accounting', accountingRoutes);
 
 // ── Health Check ──
 app.get('/api/health', async (req, res) => {

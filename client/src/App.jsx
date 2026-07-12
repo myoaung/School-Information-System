@@ -55,6 +55,7 @@ const TrainingPage = lazy(() => import('./pages/TrainingPage'));
 const CashControlPage = lazy(() => import('./pages/CashControlPage'));
 const BudgetingPage = lazy(() => import('./pages/BudgetingPage'));
 const AccountsReceivablePage = lazy(() => import('./pages/AccountsReceivablePage'));
+const AccountingPage = lazy(() => import('./pages/AccountingPage'));
 
 function App() {
   return (
@@ -284,7 +285,7 @@ function App() {
                     <Route
                       path="/recruitment"
                       element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredRole={['admin', 'hr']}>
                           <RecruitmentPage />
                         </ProtectedRoute>
                       }
@@ -292,7 +293,7 @@ function App() {
                     <Route
                       path="/training"
                       element={
-                        <ProtectedRoute>
+                        <ProtectedRoute requiredRole={['admin', 'hr']}>
                           <TrainingPage />
                         </ProtectedRoute>
                       }
@@ -300,7 +301,7 @@ function App() {
                     <Route
                       path="/cash-control"
                       element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredRole={['admin', 'accountant']}>
                           <CashControlPage />
                         </ProtectedRoute>
                       }
@@ -308,7 +309,7 @@ function App() {
                     <Route
                       path="/budgeting"
                       element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredRole={['admin', 'accountant']}>
                           <BudgetingPage />
                         </ProtectedRoute>
                       }
@@ -316,8 +317,16 @@ function App() {
                     <Route
                       path="/accounts-receivable"
                       element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredRole={['admin', 'accountant']}>
                           <AccountsReceivablePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/accounting"
+                      element={
+                        <ProtectedRoute requiredRole={['admin', 'accountant']}>
+                          <AccountingPage />
                         </ProtectedRoute>
                       }
                     />

@@ -140,72 +140,82 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req,
 });
 
 // ─── Approve Expense (admin only) ──────────────────────────────
-router.put('/:id/approve', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.put(
+  '/:id/approve',
+  authMiddleware,
+  roleMiddleware('admin', 'accountant'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [id]);
-    if (!expense) return res.status(404).json({ error: 'Expense not found' });
+      const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [id]);
+      if (!expense) return res.status(404).json({ error: 'Expense not found' });
 
-    if (expense.status !== 'pending') {
-      return res
-        .status(400)
-        .json({ error: `Cannot approve expense with status '${expense.status}'` });
+      if (expense.status !== 'pending') {
+        return res
+          .status(400)
+          .json({ error: `Cannot approve expense with status '${expense.status}'` });
+      }
+
+      await db.run("UPDATE expenses SET status = 'approved', approved_by = ? WHERE id = ?", [
+        req.user.id,
+        id,
+      ]);
+
+      res.json({ message: 'Expense approved' });
+
+      auditLog(req, {
+        action: 'approve',
+        entityType: 'expense',
+        entityId: id,
+        newValues: { status: 'approved' },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to approve expense');
     }
-
-    await db.run("UPDATE expenses SET status = 'approved', approved_by = ? WHERE id = ?", [
-      req.user.id,
-      id,
-    ]);
-
-    res.json({ message: 'Expense approved' });
-
-    auditLog(req, {
-      action: 'approve',
-      entityType: 'expense',
-      entityId: id,
-      newValues: { status: 'approved' },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to approve expense');
   }
-});
+);
 
 // ─── Reject Expense (admin only) ───────────────────────────────
-router.put('/:id/reject', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { notes } = req.body;
+router.put(
+  '/:id/reject',
+  authMiddleware,
+  roleMiddleware('admin', 'accountant'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { notes } = req.body;
 
-    const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [id]);
-    if (!expense) return res.status(404).json({ error: 'Expense not found' });
+      const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [id]);
+      if (!expense) return res.status(404).json({ error: 'Expense not found' });
 
-    if (expense.status !== 'pending') {
-      return res
-        .status(400)
-        .json({ error: `Cannot reject expense with status '${expense.status}'` });
+      if (expense.status !== 'pending') {
+        return res
+          .status(400)
+          .json({ error: `Cannot reject expense with status '${expense.status}'` });
+      }
+
+      await db.run(
+        "UPDATE expenses SET status = 'rejected', notes = COALESCE(?, notes) WHERE id = ?",
+        [notes || null, id]
+      );
+
+      res.json({ message: 'Expense rejected' });
+
+      auditLog(req, {
+        action: 'reject',
+        entityType: 'expense',
+        entityId: id,
+        newValues: { status: 'rejected' },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to reject expense');
     }
-
-    await db.run(
-      "UPDATE expenses SET status = 'rejected', notes = COALESCE(?, notes) WHERE id = ?",
-      [notes || null, id]
-    );
-
-    res.json({ message: 'Expense rejected' });
-
-    auditLog(req, {
-      action: 'reject',
-      entityType: 'expense',
-      entityId: id,
-      newValues: { status: 'rejected' },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to reject expense');
   }
-});
+);
 
 // ─── Delete Expense (admin only) ───────────────────────────────
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 

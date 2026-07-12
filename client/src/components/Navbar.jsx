@@ -271,244 +271,293 @@ export default function Navbar() {
                       </svg>
                     </button>
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden z-50">
-                        <div className="px-4 py-3 border-b border-purple-100 dark:border-gray-700">
-                          <p className="text-sm font-bold text-purple-900 dark:text-purple-100">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-purple-500 dark:text-purple-400">
-                            {user.email}
-                          </p>
-                          <span className="inline-block mt-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-[10px] font-medium capitalize">
-                            {t(`common.role.${user.role}`)}
-                          </span>
+                      <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-purple-100 dark:border-gray-700 overflow-hidden z-50">
+                        {/* User Info Header */}
+                        <div className="px-4 py-3 border-b border-purple-100 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-purple-200 dark:bg-purple-700 rounded-full flex items-center justify-center text-purple-700 dark:text-purple-200 font-bold">
+                              {user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-purple-500 dark:text-purple-400">
+                                {user.email}
+                              </p>
+                              <span className="inline-block mt-0.5 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-[10px] font-medium capitalize">
+                                {user.role}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="py-1">
-                          <Link
-                            to="/dashboard"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <rect x="3" y="3" width="7" height="7" />
-                              <rect x="14" y="3" width="7" height="7" />
-                              <rect x="14" y="14" width="7" height="7" />
-                              <rect x="3" y="14" width="7" height="7" />
-                            </svg>
-                            {t('nav.dashboard')}
-                          </Link>
-                          <Link
-                            to="/courses"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('courses.title')}
-                          </Link>
-                          <Link
-                            to="/assignments"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('assignments.title')}
-                          </Link>
-                          <Link
-                            to="/quizzes"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('quizzes.title')}
-                          </Link>
-                          <Link
-                            to="/gradebook"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('gradebook.title')}
-                          </Link>
-                          <Link
-                            to="/resources"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('resources.title')}
-                          </Link>
-                          <Link
-                            to="/documents"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Documents
-                          </Link>
-                          <Link
-                            to="/library"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Library
-                          </Link>
-                          <Link
-                            to="/leaves"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Leave
-                          </Link>
-                          <Link
-                            to="/notifications"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Notifications
-                          </Link>
-                          <Link
-                            to="/expenses"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Expenses
-                          </Link>
-                          <Link
-                            to="/inventory"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Inventory
-                          </Link>
-                          <Link
-                            to="/hr"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            HR
-                          </Link>
-                          <Link
-                            to="/my-profile"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            My Profile
-                          </Link>
-                          {isAdmin && (
+
+                        {/* Responsive Grid Menu - Columns adapt based on role */}
+                        <div
+                          className={`grid divide-x divide-purple-100 dark:divide-gray-700 ${
+                            isAdmin || user?.role === 'accountant' || user?.role === 'hr'
+                              ? 'grid-cols-3 w-[480px]'
+                              : 'grid-cols-2 w-[320px]'
+                          }`}
+                        >
+                          {/* Column 1 - Main Navigation */}
+                          <div className="py-2">
+                            <div className="px-3 py-1 text-[10px] font-bold text-purple-400 dark:text-purple-500 uppercase tracking-wider">
+                              Main
+                            </div>
                             <Link
-                              to="/recruitment"
+                              to="/dashboard"
                               onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
                             >
-                              Recruitment
+                              Dashboard
                             </Link>
-                          )}
-                          <Link
-                            to="/training"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            Training
-                          </Link>
-                          <Link
-                            to="/reports"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('reports.title')}
-                          </Link>
-                          <Link
-                            to="/messages"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('nav.messages')}
-                          </Link>
-                          <Link
-                            to="/finance"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('nav.finance')}
-                          </Link>
-                          {isAdmin && (
-                            <>
+                            <Link
+                              to="/my-profile"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              My Profile
+                            </Link>
+                            <Link
+                              to="/notifications"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Notifications
+                            </Link>
+                            <Link
+                              to="/messages"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Messages
+                            </Link>
+                            <Link
+                              to="/documents"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Documents
+                            </Link>
+                            <Link
+                              to="/leaves"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Leave
+                            </Link>
+                            <Link
+                              to="/reports"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Reports
+                            </Link>
+                            <Link
+                              to="/certificates"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Certificates
+                            </Link>
+                            {user?.role === 'parent' && (
                               <Link
-                                to="/cash-control"
+                                to="/parent"
                                 onClick={() => setUserMenuOpen(false)}
-                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                                className="block px-3 py-1.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 font-medium"
                               >
-                                Cash Control
+                                Parent Portal
                               </Link>
+                            )}
+                          </div>
+
+                          {/* Column 2 - Academic */}
+                          <div className="py-2">
+                            <div className="px-3 py-1 text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider">
+                              Academic
+                            </div>
+                            <Link
+                              to="/courses"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Courses
+                            </Link>
+                            <Link
+                              to="/assignments"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Assignments
+                            </Link>
+                            <Link
+                              to="/quizzes"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Quizzes
+                            </Link>
+                            <Link
+                              to="/gradebook"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Gradebook
+                            </Link>
+                            <Link
+                              to="/library"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Library
+                            </Link>
+                            <Link
+                              to="/resources"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                            >
+                              Resources
+                            </Link>
+                            {(isAdmin || user?.role === 'hr') && (
                               <Link
-                                to="/budgeting"
+                                to="/training"
                                 onClick={() => setUserMenuOpen(false)}
-                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
                               >
-                                Budgeting
+                                Training
                               </Link>
+                            )}
+                            {isAdmin && (
                               <Link
-                                to="/accounts-receivable"
+                                to="/academic"
                                 onClick={() => setUserMenuOpen(false)}
-                                className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
                               >
-                                Accounts Receivable
+                                Curriculum
                               </Link>
-                            </>
+                            )}
+                          </div>
+
+                          {/* Column 3 - Finance & HR (Admin/Accountant/HR only) */}
+                          {(isAdmin || user?.role === 'accountant' || user?.role === 'hr') && (
+                            <div className="py-2">
+                              {/* Finance Section */}
+                              {(isAdmin || user?.role === 'accountant') && (
+                                <>
+                                  <div className="px-3 py-1 text-[10px] font-bold text-cyan-500 dark:text-cyan-400 uppercase tracking-wider">
+                                    Finance
+                                  </div>
+                                  <Link
+                                    to="/finance"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Overview
+                                  </Link>
+                                  <Link
+                                    to="/accounting"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Accounting
+                                  </Link>
+                                  <Link
+                                    to="/cash-control"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Cash Control
+                                  </Link>
+                                  <Link
+                                    to="/budgeting"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Budgeting
+                                  </Link>
+                                  <Link
+                                    to="/accounts-receivable"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Receivable
+                                  </Link>
+                                  <Link
+                                    to="/expenses"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Expenses
+                                  </Link>
+                                </>
+                              )}
+
+                              {/* HR Section */}
+                              {(isAdmin || user?.role === 'hr') && (
+                                <>
+                                  <div className="px-3 py-1 mt-1 text-[10px] font-bold text-pink-500 dark:text-pink-400 uppercase tracking-wider">
+                                    HR
+                                  </div>
+                                  <Link
+                                    to="/hr"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Staff
+                                  </Link>
+                                  <Link
+                                    to="/recruitment"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Recruitment
+                                  </Link>
+                                </>
+                              )}
+
+                              {/* Admin Section */}
+                              {isAdmin && (
+                                <>
+                                  <div className="px-3 py-1 mt-1 text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                                    Admin
+                                  </div>
+                                  <Link
+                                    to="/inventory"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Inventory
+                                  </Link>
+                                  <Link
+                                    to="/teacher-workload"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Workload
+                                  </Link>
+                                  <Link
+                                    to="/analytics"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Analytics
+                                  </Link>
+                                  <Link
+                                    to="/admin/audit-logs"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Audit Logs
+                                  </Link>
+                                </>
+                              )}
+                            </div>
                           )}
-                          <Link
-                            to="/certificates"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                          >
-                            {t('nav.certificates')}
-                          </Link>
-                          {user.role === 'parent' && (
-                            <Link
-                              to="/parent"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                            >
-                              {t('nav.parentPortal')}
-                            </Link>
-                          )}
-                          {isAdmin && (
-                            <Link
-                              to="/academic"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10 border-t border-purple-100 dark:border-gray-700"
-                            >
-                              {t('academic.title')}
-                            </Link>
-                          )}
-                          {isAdmin && (
-                            <Link
-                              to="/teacher-workload"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                            >
-                              {t('nav.teacherWorkload')}
-                            </Link>
-                          )}
-                          {isAdmin && (
-                            <Link
-                              to="/admin/audit-logs"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                            >
-                              {t('nav.auditLogs', 'Audit Logs')}
-                            </Link>
-                          )}
-                          {(isAdmin || isTeacher) && (
-                            <Link
-                              to="/analytics"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 transition-colors pl-10"
-                            >
-                              {t('nav.analytics')}
-                            </Link>
-                          )}
-                          <div className="border-t border-purple-100 dark:border-gray-700 mt-1" />
+                        </div>
+
+                        {/* Logout */}
+                        <div className="border-t border-purple-100 dark:border-gray-700">
                           <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
@@ -524,7 +573,7 @@ export default function Navbar() {
                               <polyline points="16 17 21 12 16 7" />
                               <line x1="21" y1="12" x2="9" y2="12" />
                             </svg>
-                            {t('nav.logout')}
+                            Sign Out
                           </button>
                         </div>
                       </div>
@@ -651,6 +700,9 @@ export default function Navbar() {
                         onClick={closeMobileMenu}
                       >
                         Accounts Receivable
+                      </Link>
+                      <Link to="/accounting" className="mobile-nav-link" onClick={closeMobileMenu}>
+                        Accounting
                       </Link>
                     </>
                   )}

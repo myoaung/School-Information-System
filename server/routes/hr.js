@@ -10,7 +10,7 @@ const CONTRACT_TYPES = ['permanent', 'temporary', 'probation', 'contract', 'inte
 const CONTRACT_STATUSES = ['active', 'expired', 'terminated', 'renewed'];
 
 // ─── List Staff with Contract Info ─────────────────────────────
-router.get('/staff', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/staff', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { status, department } = req.query;
 
@@ -48,7 +48,7 @@ router.get('/staff', authMiddleware, roleMiddleware('admin'), async (req, res) =
 });
 
 // ─── Get Single Staff Member ───────────────────────────────────
-router.get('/staff/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/staff/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -83,7 +83,7 @@ router.get('/staff/:id', authMiddleware, roleMiddleware('admin'), async (req, re
 });
 
 // ─── Create Contract ───────────────────────────────────────────
-router.post('/contracts', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/contracts', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { staff_id, contract_type, start_date, end_date, salary, position, department, notes } =
       req.body;
@@ -140,7 +140,7 @@ router.post('/contracts', authMiddleware, roleMiddleware('admin'), async (req, r
 });
 
 // ─── Update Contract ───────────────────────────────────────────
-router.put('/contracts/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/contracts/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { contract_type, start_date, end_date, salary, position, department, status, notes } =
@@ -185,26 +185,31 @@ router.put('/contracts/:id', authMiddleware, roleMiddleware('admin'), async (req
 });
 
 // ─── Get Expiring Contracts ────────────────────────────────────
-router.get('/contracts/expiring', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const { days } = req.query;
-    const daysAhead = parseInt(days) || 30;
+router.get(
+  '/contracts/expiring',
+  authMiddleware,
+  roleMiddleware('admin', 'hr'),
+  async (req, res) => {
+    try {
+      const { days } = req.query;
+      const daysAhead = parseInt(days) || 30;
 
-    const contracts = await db.all(
-      `SELECT sc.*, u.name as staff_name, u.email as staff_email
+      const contracts = await db.all(
+        `SELECT sc.*, u.name as staff_name, u.email as staff_email
        FROM staff_contracts sc
        LEFT JOIN users u ON sc.staff_id = u.id
        WHERE sc.status = 'active' AND sc.end_date IS NOT NULL
        AND sc.end_date <= date('now', '+' || ? || ' days')
        ORDER BY sc.end_date ASC`,
-      [daysAhead]
-    );
+        [daysAhead]
+      );
 
-    res.json({ contracts });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch expiring contracts');
+      res.json({ contracts });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch expiring contracts');
+    }
   }
-});
+);
 
 // ─── Performance Reviews ───────────────────────────────────────
 
@@ -276,7 +281,7 @@ router.get('/reviews/:id', authMiddleware, roleMiddleware('admin', 'teacher'), a
 });
 
 // Create review
-router.post('/reviews', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/reviews', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const {
       staff_id,
@@ -339,7 +344,7 @@ router.post('/reviews', authMiddleware, roleMiddleware('admin'), async (req, res
 });
 
 // Update review
-router.put('/reviews/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/reviews/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const {
@@ -391,34 +396,41 @@ router.put('/reviews/:id', authMiddleware, roleMiddleware('admin'), async (req, 
 });
 
 // Submit review
-router.put('/reviews/:id/submit', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.put(
+  '/reviews/:id/submit',
+  authMiddleware,
+  roleMiddleware('admin', 'hr'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [id]);
-    if (!review) return res.status(404).json({ error: 'Review not found' });
+      const review = await db.get('SELECT * FROM performance_reviews WHERE id = ?', [id]);
+      if (!review) return res.status(404).json({ error: 'Review not found' });
 
-    if (review.status !== 'draft') {
-      return res.status(400).json({ error: `Cannot submit review with status '${review.status}'` });
+      if (review.status !== 'draft') {
+        return res
+          .status(400)
+          .json({ error: `Cannot submit review with status '${review.status}'` });
+      }
+
+      await db.run(
+        "UPDATE performance_reviews SET status = 'submitted', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [id]
+      );
+
+      res.json({ message: 'Review submitted' });
+
+      auditLog(req, {
+        action: 'submit',
+        entityType: 'performance_review',
+        entityId: id,
+        newValues: { status: 'submitted' },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to submit review');
     }
-
-    await db.run(
-      "UPDATE performance_reviews SET status = 'submitted', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [id]
-    );
-
-    res.json({ message: 'Review submitted' });
-
-    auditLog(req, {
-      action: 'submit',
-      entityType: 'performance_review',
-      entityId: id,
-      newValues: { status: 'submitted' },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to submit review');
   }
-});
+);
 
 // Acknowledge review (teacher)
 router.put('/reviews/:id/acknowledge', authMiddleware, async (req, res) => {
@@ -476,7 +488,7 @@ router.get('/reviews/my/list', authMiddleware, async (req, res) => {
 });
 
 // ─── HR Statistics ─────────────────────────────────────────────
-router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/stats', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const totalStaff = await db.get(
       "SELECT COUNT(*) as c FROM users WHERE role IN ('teacher', 'admin')"

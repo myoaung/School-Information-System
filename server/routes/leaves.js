@@ -123,8 +123,8 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── Approve Leave Request (admin only) ────────────────────────
-router.put('/:id/approve', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+// ─── Approve Leave Request (admin/HR only) ────────────────────────
+router.put('/:id/approve', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { admin_notes } = req.body;
@@ -171,8 +171,8 @@ router.put('/:id/approve', authMiddleware, roleMiddleware('admin'), async (req, 
   }
 });
 
-// ─── Reject Leave Request (admin only) ─────────────────────────
-router.put('/:id/reject', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+// ─── Reject Leave Request (admin/HR only) ─────────────────────────
+router.put('/:id/reject', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { admin_notes } = req.body;

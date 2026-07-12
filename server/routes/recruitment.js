@@ -14,7 +14,7 @@ const INTERVIEW_RESULTS = ['pending', 'pass', 'fail', 'conditional'];
 // ─── Job Postings ─────────────────────────────────────────────
 
 // List job postings
-router.get('/postings', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/postings', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -45,7 +45,7 @@ router.get('/postings', authMiddleware, roleMiddleware('admin'), async (req, res
 });
 
 // Create job posting
-router.post('/postings', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/postings', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const {
       title,
@@ -100,7 +100,7 @@ router.post('/postings', authMiddleware, roleMiddleware('admin'), async (req, re
 });
 
 // Update job posting
-router.put('/postings/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/postings/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const {
@@ -153,7 +153,7 @@ router.put('/postings/:id', authMiddleware, roleMiddleware('admin'), async (req,
 });
 
 // Delete job posting
-router.delete('/postings/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/postings/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -177,7 +177,7 @@ router.delete('/postings/:id', authMiddleware, roleMiddleware('admin'), async (r
 // ─── Applications ─────────────────────────────────────────────
 
 // List applications (admin)
-router.get('/applications', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/applications', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { posting_id, status } = req.query;
 
@@ -252,7 +252,7 @@ router.post('/applications', async (req, res) => {
 });
 
 // Update application status
-router.put('/applications/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/applications/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status, notes } = req.body;
@@ -298,7 +298,7 @@ router.put('/applications/:id', authMiddleware, roleMiddleware('admin'), async (
 // ─── Interviews ───────────────────────────────────────────────
 
 // Schedule interview
-router.post('/interviews', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/interviews', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const { application_id, interviewer_id, scheduled_at, location, notes } = req.body;
 
@@ -341,7 +341,7 @@ router.post('/interviews', authMiddleware, roleMiddleware('admin'), async (req, 
 });
 
 // Update interview result
-router.put('/interviews/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/interviews/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { result: interviewResult, feedback } = req.body;
@@ -376,7 +376,7 @@ router.put('/interviews/:id', authMiddleware, roleMiddleware('admin'), async (re
 
 // ─── Recruitment Stats ────────────────────────────────────────
 
-router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/stats', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
   try {
     const openPostings = await db.get(
       "SELECT COUNT(*) as c FROM job_postings WHERE status = 'open'"

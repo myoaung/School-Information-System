@@ -397,7 +397,95 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
     CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_type, entity_id);
     CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
+
+    -- Accounting tables
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('asset', 'liability', 'equity', 'revenue', 'expense')),
+      parent_id INTEGER REFERENCES accounts(id),
+      is_active INTEGER DEFAULT 1,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_accounts_type ON accounts(type);
+    CREATE INDEX IF NOT EXISTS idx_accounts_code ON accounts(code);
+
+    CREATE TABLE IF NOT EXISTS journal_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_date TEXT NOT NULL,
+      reference TEXT,
+      description TEXT NOT NULL,
+      status TEXT CHECK(status IN ('draft', 'posted', 'reversed')) DEFAULT 'draft',
+      source_type TEXT,
+      source_id INTEGER,
+      academic_year_id INTEGER,
+      posted_by INTEGER REFERENCES users(id),
+      posted_at DATETIME,
+      reversed_by INTEGER REFERENCES users(id),
+      reversed_at DATETIME,
+      reversal_reason TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_journal_entries_date ON journal_entries(entry_date);
+    CREATE INDEX IF NOT EXISTS idx_journal_entries_status ON journal_entries(status);
+
+    CREATE TABLE IF NOT EXISTS journal_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      journal_entry_id INTEGER NOT NULL REFERENCES journal_entries(id) ON DELETE CASCADE,
+      account_id INTEGER NOT NULL REFERENCES accounts(id),
+      debit REAL DEFAULT 0 CHECK(debit >= 0),
+      credit REAL DEFAULT 0 CHECK(credit >= 0),
+      description TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_journal_lines_entry ON journal_lines(journal_entry_id);
+    CREATE INDEX IF NOT EXISTS idx_journal_lines_account ON journal_lines(account_id);
+
+    CREATE TABLE IF NOT EXISTS accounting_periods (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      status TEXT CHECK(status IN ('open', 'closed')) DEFAULT 'open',
+      closed_by INTEGER REFERENCES users(id),
+      closed_at DATETIME,
+      academic_year_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS bank_reconciliations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL REFERENCES accounts(id),
+      statement_date TEXT NOT NULL,
+      statement_balance REAL NOT NULL,
+      book_balance REAL NOT NULL,
+      difference REAL NOT NULL,
+      status TEXT CHECK(status IN ('draft', 'reconciled')) DEFAULT 'draft',
+      notes TEXT,
+      reconciled_by INTEGER REFERENCES users(id),
+      reconciled_at DATETIME,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS reconciliation_lines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reconciliation_id INTEGER NOT NULL REFERENCES bank_reconciliations(id) ON DELETE CASCADE,
+      journal_entry_id INTEGER NOT NULL REFERENCES journal_entries(id),
+      reconciled INTEGER DEFAULT 0
+    );
   `);
+
+  // Seed chart of accounts if empty
+  const accountCount = db.prepare('SELECT COUNT(*) as count FROM accounts').get();
+  if (accountCount.count === 0) {
+    seedChartOfAccounts(db);
+  }
 
   // Seed curriculum data first (subjects needed by seedDatabase)
   const gradeCount = db.prepare('SELECT COUNT(*) as count FROM grades').get();
@@ -1476,6 +1564,43 @@ function seedDatabase(db) {
   );
 
   console.log('Sample data seeded successfully');
+}
+
+function seedChartOfAccounts(db) {
+  const insert = db.prepare(
+    'INSERT INTO accounts (code, name, type, description) VALUES (?, ?, ?, ?)'
+  );
+
+  // Assets
+  insert.run('1000', 'Cash', 'asset', 'Cash on hand and in registers');
+  insert.run('1100', 'Bank Account', 'asset', 'Main bank account');
+  insert.run('1200', 'Accounts Receivable', 'asset', 'Amounts owed by students/parents');
+  insert.run('1300', 'Prepaid Expenses', 'asset', 'Expenses paid in advance');
+
+  // Liabilities
+  insert.run('2000', 'Accounts Payable', 'liability', 'Amounts owed to suppliers');
+  insert.run('2100', 'Unearned Revenue', 'liability', 'Fees received but not yet earned');
+  insert.run('2200', 'Tax Payable', 'liability', 'Taxes collected and payable');
+
+  // Equity
+  insert.run('3000', 'Retained Earnings', 'equity', 'Accumulated earnings');
+  insert.run('3100', 'Current Year Earnings', 'equity', 'Current year net income/loss');
+
+  // Revenue
+  insert.run('4000', 'Tuition Fees', 'revenue', 'Income from tuition fees');
+  insert.run('4100', 'Registration Fees', 'revenue', 'Income from registration fees');
+  insert.run('4200', 'Other Income', 'revenue', 'Miscellaneous income');
+
+  // Expenses
+  insert.run('5000', 'Salary Expense', 'expense', 'Staff salaries and wages');
+  insert.run('5100', 'Utility Expense', 'expense', 'Electricity, water, internet');
+  insert.run('5200', 'Supply Expense', 'expense', 'Office and school supplies');
+  insert.run('5300', 'Maintenance Expense', 'expense', 'Building and equipment maintenance');
+  insert.run('5400', 'Transport Expense', 'expense', 'Vehicle and transportation costs');
+  insert.run('5500', 'Event Expense', 'expense', 'School events and activities');
+  insert.run('5600', 'Miscellaneous Expense', 'expense', 'Other operating expenses');
+
+  console.log('Chart of accounts seeded successfully');
 }
 
 function seedCurriculum(db) {

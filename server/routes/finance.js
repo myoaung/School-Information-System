@@ -36,7 +36,7 @@ router.get('/fees', authMiddleware, async (req, res) => {
 });
 
 // Create fee structure
-router.post('/fees', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/fees', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { grade_id, fee_type, amount, academic_year_id } = req.body;
     if (!fee_type || !amount)
@@ -59,7 +59,7 @@ router.post('/fees', authMiddleware, roleMiddleware('admin'), async (req, res) =
 });
 
 // Update fee structure
-router.put('/fees/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/fees/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { grade_id, fee_type, amount, academic_year_id } = req.body;
     await db.run(
@@ -80,20 +80,25 @@ router.put('/fees/:id', authMiddleware, roleMiddleware('admin'), async (req, res
 });
 
 // Delete fee structure
-router.delete('/fees/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    await db.run('DELETE FROM fee_structures WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Deleted' });
+router.delete(
+  '/fees/:id',
+  authMiddleware,
+  roleMiddleware('admin', 'accountant'),
+  async (req, res) => {
+    try {
+      await db.run('DELETE FROM fee_structures WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Deleted' });
 
-    auditLog(req, {
-      action: 'delete',
-      entityType: 'fee_structure',
-      entityId: parseInt(req.params.id),
-    });
-  } catch (err) {
-    sendError(res, err);
+      auditLog(req, {
+        action: 'delete',
+        entityType: 'fee_structure',
+        entityId: parseInt(req.params.id),
+      });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // ── Invoices ──
 
@@ -165,7 +170,7 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
 router.post(
   '/invoices',
   authMiddleware,
-  roleMiddleware('admin'),
+  roleMiddleware('admin', 'accountant'),
   invoiceRules,
   async (req, res) => {
     try {
@@ -191,22 +196,27 @@ router.post(
 );
 
 // Update invoice status
-router.put('/invoices/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const { status } = req.body;
-    await db.run('UPDATE invoices SET status = ? WHERE id = ?', [status, req.params.id]);
-    res.json({ message: 'Updated' });
+router.put(
+  '/invoices/:id',
+  authMiddleware,
+  roleMiddleware('admin', 'accountant'),
+  async (req, res) => {
+    try {
+      const { status } = req.body;
+      await db.run('UPDATE invoices SET status = ? WHERE id = ?', [status, req.params.id]);
+      res.json({ message: 'Updated' });
 
-    auditLog(req, {
-      action: 'update',
-      entityType: 'invoice',
-      entityId: parseInt(req.params.id),
-      newValues: { status },
-    });
-  } catch (err) {
-    sendError(res, err);
+      auditLog(req, {
+        action: 'update',
+        entityType: 'invoice',
+        entityId: parseInt(req.params.id),
+        newValues: { status },
+      });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // ── Payments ──
 
@@ -214,7 +224,7 @@ router.put('/invoices/:id', authMiddleware, roleMiddleware('admin'), async (req,
 router.post(
   '/payments',
   authMiddleware,
-  roleMiddleware('admin'),
+  roleMiddleware('admin', 'accountant'),
   paymentRules,
   async (req, res) => {
     try {
@@ -289,7 +299,7 @@ router.get('/student/:id/summary', authMiddleware, async (req, res) => {
 });
 
 // Finance overview (admin)
-router.get('/overview', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/overview', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const totalInvoiced = (await db.get('SELECT COALESCE(SUM(amount), 0) as total FROM invoices'))
       .total;
