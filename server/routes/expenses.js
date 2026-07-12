@@ -18,126 +18,143 @@ const CATEGORIES = [
 const PAYMENT_METHODS = ['cash', 'bank_transfer', 'cheque', 'mobile_payment', 'other'];
 
 // ─── List Expenses ─────────────────────────────────────────────
-router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { category, status, start_date, end_date } = req.query;
+router.get(
+  '/',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher', 'accountant'),
+  async (req, res) => {
+    try {
+      const { category, status, start_date, end_date } = req.query;
 
-    let where = [];
-    let params = [];
+      let where = [];
+      let params = [];
 
-    if (category) {
-      where.push('e.category = ?');
-      params.push(category);
-    }
-    if (status) {
-      where.push('e.status = ?');
-      params.push(status);
-    }
-    if (start_date) {
-      where.push('e.expense_date >= ?');
-      params.push(start_date);
-    }
-    if (end_date) {
-      where.push('e.expense_date <= ?');
-      params.push(end_date);
-    }
+      if (category) {
+        where.push('e.category = ?');
+        params.push(category);
+      }
+      if (status) {
+        where.push('e.status = ?');
+        params.push(status);
+      }
+      if (start_date) {
+        where.push('e.expense_date >= ?');
+        params.push(start_date);
+      }
+      if (end_date) {
+        where.push('e.expense_date <= ?');
+        params.push(end_date);
+      }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const expenses = await db.all(
-      `SELECT e.*, u.name as created_by_name, ab.name as approved_by_name
+      const expenses = await db.all(
+        `SELECT e.*, u.name as created_by_name, ab.name as approved_by_name
        FROM expenses e
        LEFT JOIN users u ON e.created_by = u.id
        LEFT JOIN users ab ON e.approved_by = ab.id
        ${whereClause}
        ORDER BY e.expense_date DESC`,
-      params
-    );
+        params
+      );
 
-    res.json({ expenses });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch expenses');
+      res.json({ expenses });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch expenses');
+    }
   }
-});
+);
 
 // ─── Get Single Expense ────────────────────────────────────────
-router.get('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.get(
+  '/:id',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher', 'accountant'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const expense = await db.get(
-      `SELECT e.*, u.name as created_by_name, ab.name as approved_by_name
+      const expense = await db.get(
+        `SELECT e.*, u.name as created_by_name, ab.name as approved_by_name
        FROM expenses e
        LEFT JOIN users u ON e.created_by = u.id
        LEFT JOIN users ab ON e.approved_by = ab.id
        WHERE e.id = ?`,
-      [id]
-    );
+        [id]
+      );
 
-    if (!expense) return res.status(404).json({ error: 'Expense not found' });
+      if (!expense) return res.status(404).json({ error: 'Expense not found' });
 
-    res.json({ expense });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch expense');
+      res.json({ expense });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch expense');
+    }
   }
-});
+);
 
 // ─── Create Expense ────────────────────────────────────────────
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const {
-      category,
-      description,
-      amount,
-      expense_date,
-      paid_to,
-      payment_method,
-      receipt_url,
-      notes,
-    } = req.body;
-
-    if (!category || !description || !amount || !expense_date) {
-      return res
-        .status(400)
-        .json({ error: 'category, description, amount, and expense_date are required' });
-    }
-
-    if (!CATEGORIES.includes(category)) {
-      return res.status(400).json({ error: `Invalid category. Must be: ${CATEGORIES.join(', ')}` });
-    }
-
-    const method = PAYMENT_METHODS.includes(payment_method) ? payment_method : 'cash';
-
-    const result = await db.run(
-      `INSERT INTO expenses (category, description, amount, expense_date, paid_to, payment_method, receipt_url, notes, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
+router.post(
+  '/',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher', 'accountant'),
+  async (req, res) => {
+    try {
+      const {
         category,
         description,
         amount,
         expense_date,
-        paid_to || null,
-        method,
-        receipt_url || null,
-        notes || null,
-        req.user.id,
-      ]
-    );
+        paid_to,
+        payment_method,
+        receipt_url,
+        notes,
+      } = req.body;
 
-    const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [result.lastInsertRowid]);
+      if (!category || !description || !amount || !expense_date) {
+        return res
+          .status(400)
+          .json({ error: 'category, description, amount, and expense_date are required' });
+      }
 
-    res.status(201).json({ message: 'Expense created', expense });
+      if (!CATEGORIES.includes(category)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid category. Must be: ${CATEGORIES.join(', ')}` });
+      }
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'expense',
-      entityId: result.lastInsertRowid,
-      newValues: { category, amount, expense_date },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to create expense');
+      const method = PAYMENT_METHODS.includes(payment_method) ? payment_method : 'cash';
+
+      const result = await db.run(
+        `INSERT INTO expenses (category, description, amount, expense_date, paid_to, payment_method, receipt_url, notes, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          category,
+          description,
+          amount,
+          expense_date,
+          paid_to || null,
+          method,
+          receipt_url || null,
+          notes || null,
+          req.user.id,
+        ]
+      );
+
+      const expense = await db.get('SELECT * FROM expenses WHERE id = ?', [result.lastInsertRowid]);
+
+      res.status(201).json({ message: 'Expense created', expense });
+
+      auditLog(req, {
+        action: 'create',
+        entityType: 'expense',
+        entityId: result.lastInsertRowid,
+        newValues: { category, amount, expense_date },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to create expense');
+    }
   }
-});
+);
 
 // ─── Approve Expense (admin only) ──────────────────────────────
 router.put(
@@ -236,7 +253,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), asy
 router.get(
   '/summary/financial',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  roleMiddleware('admin', 'teacher', 'accountant'),
   async (req, res) => {
     try {
       const { start_date, end_date } = req.query;
