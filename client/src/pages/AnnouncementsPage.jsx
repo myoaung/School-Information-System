@@ -76,7 +76,7 @@ export default function AnnouncementsPage() {
   const isNew = (dateStr) => {
     const created = new Date(dateStr);
     const now = new Date();
-    return now - created < 7 * 24 * 60 * 60 * 1000;
+    return now - created < 24 * 60 * 60 * 1000; // 24 hours
   };
 
   if (loading)
@@ -222,46 +222,44 @@ export default function AnnouncementsPage() {
         </form>
       )}
 
-      {/* Filters - only shown to admin and teacher */}
-      {(isAdmin || isTeacher) && (
-        <div className="flex flex-wrap gap-3 mb-6">
-          <select
-            value={filterGrade}
-            onChange={(e) => setFilterGrade(e.target.value)}
-            className="px-3 py-2 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 cursor-pointer"
+      {/* Filters - shown to all users */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <select
+          value={filterGrade}
+          onChange={(e) => setFilterGrade(e.target.value)}
+          className="px-3 py-2 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 cursor-pointer"
+        >
+          <option value="">{t('announcements.allGrades')}</option>
+          {grades.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={filterClass}
+          onChange={(e) => setFilterClass(e.target.value)}
+          className="px-3 py-2 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 cursor-pointer"
+        >
+          <option value="">{t('announcements.allClasses')}</option>
+          {classes.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {(filterGrade || filterClass) && (
+          <button
+            onClick={() => {
+              setFilterGrade('');
+              setFilterClass('');
+            }}
+            className="px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-xl cursor-pointer"
           >
-            <option value="">{t('announcements.allGrades')}</option>
-            {grades.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filterClass}
-            onChange={(e) => setFilterClass(e.target.value)}
-            className="px-3 py-2 border border-purple-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl text-sm text-purple-900 dark:text-purple-100 cursor-pointer"
-          >
-            <option value="">{t('announcements.allClasses')}</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {(filterGrade || filterClass) && (
-            <button
-              onClick={() => {
-                setFilterGrade('');
-                setFilterClass('');
-              }}
-              className="px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-xl cursor-pointer"
-            >
-              {t('announcements.clearFilters')}
-            </button>
-          )}
-        </div>
-      )}
+            {t('announcements.clearFilters')}
+          </button>
+        )}
+      </div>
 
       {error && (
         <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">

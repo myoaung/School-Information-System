@@ -7,6 +7,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     role: 'student',
@@ -103,6 +104,13 @@ export default function RegisterPage() {
                 label: t('register.email'),
                 ph: t('register.email'),
                 ac: 'email',
+              },
+              {
+                id: 'phone',
+                type: 'tel',
+                label: t('register.phone') || 'Phone Number',
+                ph: t('register.phonePlaceholder') || '+95 9 123 456 789',
+                ac: 'tel',
               },
               {
                 id: 'password',
