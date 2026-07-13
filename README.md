@@ -1,97 +1,133 @@
-# 🏫 School Information System
+# 🏫 SchoolHub — School Information System
 
-A full-stack school management application built with React, Express, and SQLite.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+> A full-stack school management platform built with React, Express, and Supabase — designed for schools in Myanmar with multi-language support.
 
-- **Student Management** — Register, view, and manage student records
-- **Teacher Management** — Teacher profiles and assignments
-- **Attendance Tracking** — Daily attendance with present/absent/late/leave status
-- **Timetable** — Class scheduling and timetable view
-- **Courses & Curriculum** — Course management with subject mapping
-- **Assignments & Quizzes** — Create, submit, and grade assessments
-- **Gradebook** — GPA tracking and final grade computation
-- **Reports** — School overview stats and individual student report cards
-- **Announcements** — School-wide announcements with comments
-- **Chat Assistant** — AI-powered help widget
-- **Multi-language** — English and Myanmar language support
+![Homepage](screenshots/01-homepage.png)
 
-## Tech Stack
+## ✨ Features
+
+| Module | Description |
+|--------|-------------|
+| 📚 **Student Management** | Register, view, and manage student records with profile photos |
+| 👩‍🏫 **Teacher Management** | Teacher profiles, workload tracking, and class assignments |
+| 📋 **Attendance** | Daily attendance tracking with present/absent/late/leave status |
+| 📅 **Timetable** | Weekly class scheduling with AI-powered auto-generation |
+| 📖 **Courses & Curriculum** | Course management with grade-level subject mapping |
+| 📝 **Assignments & Quizzes** | Create, submit, and grade assessments |
+| 📊 **Gradebook** | GPA tracking and final grade computation |
+| 📈 **Reports** | School overview stats and individual student report cards |
+| 📢 **Announcements** | School-wide announcements with grade/class filtering |
+| 💬 **AI Chat Assistant** | Built-in chat widget for instant help |
+| 🌍 **Multi-language** | English and Myanmar (မြန်မာ) language support |
+| 🔐 **Role-based Access** | Admin, Teacher, Student, and Parent roles |
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React + Vite + Tailwind CSS |
-| Backend | Express.js + better-sqlite3 |
-| Auth | JWT with role-based access (admin, teacher, student) |
+| Frontend | React 18 + Vite + Tailwind CSS |
+| Backend | Express.js + Supabase (PostgreSQL) |
+| Auth | JWT with role-based access control |
+| AI Features | OpenAI integration for chat & schedule generation |
 | Deployment | Vercel (serverless) |
+| PWA | Service worker for offline support |
 
-## Screenshots
+## 📸 Screenshots
 
-### Homepage
-![Homepage](screenshots/01-homepage.png)
+| Homepage | Login | Dashboard |
+|----------|-------|-----------|
+| ![Homepage](screenshots/01-homepage.png) | ![Login](screenshots/02-login.png) | ![Dashboard](screenshots/07-dashboard.png) |
 
-### Login
-![Login](screenshots/02-login.png)
+| Announcements | Classes | Contact |
+|---------------|---------|---------|
+| ![Announcements](screenshots/04-announcements.png) | ![Classes](screenshots/05-classes.png) | ![Contact](screenshots/06-contact.png) |
 
-### Register
-![Register](screenshots/03-register.png)
-
-### Announcements
-![Announcements](screenshots/04-announcements.png)
-
-### Classes
-![Classes](screenshots/05-classes.png)
-
-### Contact
-![Contact](screenshots/06-contact.png)
-
-### Dashboard
-![Dashboard](screenshots/07-dashboard.png)
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
-- npm
+- npm or yarn
+- Supabase account (for database)
 
 ### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/myoaung/School-Information-System.git
+cd School-Information-System
+
 # Install dependencies
 npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Supabase credentials
 
 # Start development servers
 npm run dev
 ```
 
-This starts both the client (port 5173) and server (port 5000).
+The app starts at:
+- **Client:** http://localhost:5173
+- **Server:** http://localhost:5000
 
 ### Default Login
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@school.com | admin123 |
-| Teacher | teacher@school.com | teacher123 |
-| Student | student@school.com | student123 |
+| 🔑 Admin | admin@school.com | admin123 |
+| 👩‍🏫 Teacher | teacher@school.com | teacher123 |
+| 🎓 Student | student@school.com | student123 |
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-├── client/          # React frontend
-│   └── src/
-│       ├── components/
-│       ├── context/
-│       ├── pages/
-│       └── services/
-├── server/          # Express backend
-│   ├── routes/
-│   ├── middleware/
-│   └── db.js
-├── screenshots/     # App screenshots
-└── vercel.json      # Deployment config
+School-Information-System/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── context/        # React context (Auth, Language)
+│   │   ├── pages/          # Page components (28 pages)
+│   │   └── services/       # API service layer
+│   └── index.html
+├── server/                 # Express backend
+│   ├── routes/             # API route handlers
+│   ├── middleware/          # Auth & role middleware
+│   ├── utils/              # Error handling utilities
+│   └── db.js               # Database connection
+├── screenshots/            # App screenshots
+├── docs/                   # Project documentation
+└── vercel.json             # Deployment configuration
 ```
 
-## License
+## 🌐 API Endpoints
 
-MIT
-# redeploy
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | User login |
+| POST | `/api/auth/register` | User registration |
+| GET | `/api/students` | List students |
+| GET | `/api/teachers` | List teachers |
+| GET | `/api/classes` | List classes |
+| GET | `/api/announcements` | List announcements |
+| GET | `/api/timetable` | Get timetable |
+| POST | `/api/ai/chat` | AI chat assistant |
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Built with ❤️ for schools in Myanmar**
