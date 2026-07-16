@@ -41,9 +41,9 @@
 
 - **Resolution used:** 1280×800 desktop
 
-![screenshot 1 — Homepage](https://raw.githubusercontent.com/myoaung/School-Information-System/main/screenshots/01-homepage.png)
-![screenshot 2 — Dashboard](https://raw.githubusercontent.com/myoaung/School-Information-System/main/screenshots/07-dashboard.png)
-![screenshot 3 — Announcements](https://raw.githubusercontent.com/myoaung/School-Information-System/main/screenshots/04-announcements.png)
+![screenshot 1 — Homepage](https://raw.githubusercontent.com/myoaung/School-Information-System/main/ch-6/myoaung/screenshots/01-homepage.png)
+![screenshot 2 — Dashboard](https://raw.githubusercontent.com/myoaung/School-Information-System/main/ch-6/myoaung/screenshots/07-dashboard.png)
+![screenshot 3 — Announcements](https://raw.githubusercontent.com/myoaung/School-Information-System/main/ch-6/myoaung/screenshots/04-announcements.png)
 
 ## Gallery Card (this project goes public)
 
