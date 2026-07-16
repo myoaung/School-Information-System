@@ -9,7 +9,8 @@ const { auditLog } = require('../middleware/audit');
 // ── Fee Structures ──
 
 // List fee structures
-router.get('/fees', authMiddleware, async (req, res) => {
+// SECURITY: Restrict to admin/accountant — fee structures contain sensitive pricing data
+router.get('/fees', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { grade_id, academic_year_id } = req.query;
     let sql = `
@@ -103,7 +104,8 @@ router.delete(
 // ── Invoices ──
 
 // List invoices
-router.get('/invoices', authMiddleware, async (req, res) => {
+// SECURITY: Restrict to admin/accountant — students/parents use /student/:id/summary instead
+router.get('/invoices', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
   try {
     const { student_id, status } = req.query;
     let sql = `
@@ -114,11 +116,7 @@ router.get('/invoices', authMiddleware, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
-    // Students/parents see only their own
-    if (req.user.role === 'student') {
-      sql += ' AND inv.student_id = ?';
-      params.push(req.user.id);
-    } else if (student_id) {
+    if (student_id) {
       sql += ' AND inv.student_id = ?';
       params.push(student_id);
     }

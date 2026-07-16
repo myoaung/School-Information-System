@@ -1,5 +1,5 @@
 const Anthropic = require('@anthropic-ai/sdk');
-const { getDb } = require('./db');
+const { db } = require('./data');
 const { getToolDefinitions, executeTool } = require('./query-tools');
 
 // ─── Client Initialization ───────────────────────────────────────────────────
@@ -61,34 +61,37 @@ function setCachedResponse(message, userRole, reply) {
 function sanitizeInput(text) {
   if (typeof text !== 'string') return '';
   // Truncate and strip control characters (except newlines/tabs)
-  return text
-    .slice(0, CONFIG.maxInputLength)
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  return text.slice(0, CONFIG.maxInputLength).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 }
 
 // ─── System Prompt Builder ───────────────────────────────────────────────────
 
-function buildSystemPrompt(userName, userRole) {
-  const db = getDb();
+async function buildSystemPrompt(userName, userRole) {
+  const announcementRow = await db.get('SELECT COUNT(*) as c FROM announcements');
+  const classRow = await db.get('SELECT COUNT(*) as c FROM classes');
+  const studentRow = await db.get('SELECT COUNT(*) as c FROM students');
+  const teacherRow = await db.get('SELECT COUNT(*) as c FROM teachers');
 
-  const announcementCount = db.prepare('SELECT COUNT(*) as c FROM announcements').get().c;
-  const classCount = db.prepare('SELECT COUNT(*) as c FROM classes').get().c;
-  const studentCount = db.prepare('SELECT COUNT(*) as c FROM students').get().c;
-  const teacherCount = db.prepare('SELECT COUNT(*) as c FROM teachers').get().c;
+  const announcementCount = announcementRow?.c || 0;
+  const classCount = classRow?.c || 0;
+  const studentCount = studentRow?.c || 0;
+  const teacherCount = teacherRow?.c || 0;
 
-  const recentAnnouncements = db.prepare(`
+  const recentAnnouncements = await db.all(`
     SELECT title, content, created_at FROM announcements
     ORDER BY created_at DESC LIMIT 3
-  `).all();
+  `);
 
-  const classes = db.prepare(`
+  const classes = await db.all(`
     SELECT c.name, c.schedule, c.room, u.name as teacher
     FROM classes c LEFT JOIN users u ON c.teacher_id = u.id
     ORDER BY c.name
-  `).all();
+  `);
 
   // Sanitize user name to prevent prompt injection
-  const safeName = String(userName || 'User').replace(/[<>{}[\]\\]/g, '').slice(0, 50);
+  const safeName = String(userName || 'User')
+    .replace(/[<>{}[\]\\]/g, '')
+    .slice(0, 50);
   const safeRole = String(userRole || 'student').replace(/[^a-z]/g, '');
 
   return `You are SchoolHub AI, the intelligent assistant for a school management system.
@@ -113,7 +116,7 @@ function buildSystemPrompt(userName, userRole) {
 ${recentAnnouncements.map((a, i) => `${i + 1}. ${a.title} — ${a.content.substring(0, 80)}...`).join('\n')}
 
 ## Available Classes
-${classes.map(c => `- ${c.name} | ${c.schedule || 'TBA'} | Room: ${c.room || 'TBA'} | Teacher: ${c.teacher || 'TBA'}`).join('\n')}
+${classes.map((c) => `- ${c.name} | ${c.schedule || 'TBA'} | Room: ${c.room || 'TBA'} | Teacher: ${c.teacher || 'TBA'}`).join('\n')}
 
 ## Available Query Tools
 You have access to these database query tools. USE THEM when users ask about data:
@@ -141,14 +144,16 @@ You have access to these database query tools. USE THEM when users ask about dat
 
 // ─── Conversation History ────────────────────────────────────────────────────
 
-function getConversationHistory(userId) {
-  const db = getDb();
-  const rows = db.prepare(`
+async function getConversationHistory(userId) {
+  const rows = await db.all(
+    `
     SELECT message, reply FROM chat_messages
     WHERE user_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `).all(userId, CONFIG.maxHistoryMessages);
+  `,
+    [userId, CONFIG.maxHistoryMessages]
+  );
 
   return rows.reverse();
 }
@@ -169,7 +174,7 @@ async function getAIReply(message, userName, userRole, userId) {
   }
 
   // Build messages with history
-  const history = getConversationHistory(userId);
+  const history = await getConversationHistory(userId);
   const messages = [];
 
   for (const row of history) {
@@ -182,7 +187,7 @@ async function getAIReply(message, userName, userRole, userId) {
   const tools = getToolDefinitions();
   const userContext = { id: userId, name: userName, role: userRole };
   const anthropic = getClient();
-  const systemPrompt = buildSystemPrompt(userName, userRole);
+  const systemPrompt = await buildSystemPrompt(userName, userRole);
 
   let response;
   try {
@@ -244,7 +249,7 @@ async function getAIReply(message, userName, userRole, userId) {
   }
 
   // Extract response
-  const textBlock = response.content.find(b => b.type === 'text');
+  const textBlock = response.content.find((b) => b.type === 'text');
   const reply = textBlock ? textBlock.text : 'I could not generate a response. Please try again.';
 
   // Cache if no tools used

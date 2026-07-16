@@ -159,7 +159,10 @@ const db = {
         .all(...params);
     }
 
-    // Supabase — interpolate params into SQL for RPC
+    // Supabase — safely escape params into SQL for RPC
+    // SECURITY: Properly escape all special characters to prevent SQL injection
+    // NOTE: For maximum security, consider converting to Supabase query builder
+    // (e.g., supabase.from('table').select()) instead of raw SQL interpolation
     let finalSql = sql;
     for (const param of params) {
       let replacement;
@@ -167,9 +170,15 @@ const db = {
         replacement = 'NULL';
       } else if (typeof param === 'number') {
         replacement = String(param);
+      } else if (typeof param === 'boolean') {
+        replacement = param ? 'TRUE' : 'FALSE';
       } else {
-        // Escape single quotes for string parameters
-        const escaped = String(param).replace(/'/g, "''");
+        // Escape backslashes first, then single quotes, then null bytes
+        const str = String(param);
+        const escaped = str
+          .replace(/\\/g, '\\\\') // Escape backslashes
+          .replace(/\0/g, '\\0') // Escape null bytes
+          .replace(/'/g, "''"); // Escape single quotes
         replacement = `'${escaped}'`;
       }
       finalSql = finalSql.replace('?', replacement);

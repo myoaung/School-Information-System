@@ -78,26 +78,26 @@ router.post('/login', loginRules, async (req, res) => {
     }
 
     // Check account lockout
-    if (isLockedOut(email)) {
+    if (await isLockedOut(email)) {
       return res.status(429).json({ error: 'Account temporarily locked. Try again later.' });
     }
 
     // Find user
     const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) {
-      trackFailedAttempt(email);
+      await trackFailedAttempt(email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      trackFailedAttempt(email);
+      await trackFailedAttempt(email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Clear failed attempts on successful login
-    clearFailedAttempts(email);
+    await clearFailedAttempts(email);
 
     // Generate token
     const token = jwt.sign(

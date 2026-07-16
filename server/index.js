@@ -235,26 +235,22 @@ app.use('/api/accounting', accountingRoutes);
 app.use('/api/class-subjects', classSubjectsRoutes);
 
 // ── Health Check ──
+// SECURITY: Only expose minimal info — no deployment architecture details
 app.get('/api/health', async (req, res) => {
   const healthcheck = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: NODE_ENV,
     version: require('./package.json').version || '1.0.0',
-    database: isSupabaseConfigured ? 'supabase' : 'sqlite',
-    supabase_url: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
-    supabase_anon: process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
-    supabase_service: process.env.SUPABASE_SERVICE_KEY ? 'SET' : 'NOT SET',
   };
 
   // Check database connectivity
   try {
     await db.get('SELECT 1 as ok');
-    healthcheck.database_status = 'connected';
+    healthcheck.database = 'connected';
   } catch (err) {
     healthcheck.status = 'degraded';
-    healthcheck.database_status = 'disconnected';
+    healthcheck.database = 'disconnected';
   }
 
   const statusCode = healthcheck.status === 'ok' ? 200 : 503;

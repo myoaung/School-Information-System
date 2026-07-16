@@ -255,6 +255,13 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
       allergies,
     } = req.body;
 
+    // Validate status if provided
+    if (status && !ALL_STATUSES.includes(status)) {
+      return res
+        .status(400)
+        .json({ error: `Invalid status. Must be one of: ${ALL_STATUSES.join(', ')}` });
+    }
+
     const user = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [userId, 'student']);
     if (!user) return res.status(404).json({ error: 'Student not found' });
 
