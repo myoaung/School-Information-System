@@ -1,3 +1,4 @@
+-- dialect: postgres
 CREATE TABLE IF NOT EXISTS audit_logs (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),

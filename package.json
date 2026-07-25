@@ -34,6 +34,7 @@
   },
   "homepage": "https://github.com/myoaung/School-Information-System#readme",
   "dependencies": {
+    "@anthropic-ai/claude-code": "^2.1.218",
     "axios": "^1.18.1",
     "codebase-memory-mcp": "^0.8.1",
     "concurrently": "^10.0.3",
@@ -47,5 +48,8 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.9.5",
     "tailwindcss": "^4.3.1"
+  },
+  "allowScripts": {
+    "@anthropic-ai/claude-code@2.1.218": true
   }
 }

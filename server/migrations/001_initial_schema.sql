@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Supabase Migration: Initial Schema
 -- Converted from SQLite to PostgreSQL
 
@@ -496,6 +497,95 @@ CREATE POLICY "Teachers can view assigned classes" ON classes
 
 -- Admin full access (use service key to bypass RLS)
 -- For now, service key will bypass all RLS policies
+
+-- ─── Per-Table RLS Policies ───────────────────────────────────
+
+-- Teachers: read own profile
+CREATE POLICY "Teachers can view own profile" ON teachers
+  FOR SELECT USING (user_id::text = auth.uid()::text);
+
+-- Attendance: students see own, teachers see assigned
+CREATE POLICY "Students can view own attendance" ON attendance
+  FOR SELECT USING (user_id::text = auth.uid()::text);
+CREATE POLICY "Teachers can view attendance" ON attendance
+  FOR SELECT USING (true);
+
+-- Timetable: all authenticated users can view
+CREATE POLICY "Authenticated users can view timetable" ON timetable
+  FOR SELECT USING (true);
+
+-- Announcements: all authenticated users can view
+CREATE POLICY "Authenticated users can view announcements" ON announcements
+  FOR SELECT USING (true);
+
+-- Enrollments: students see own, teachers/admins see all
+CREATE POLICY "Students can view own enrollments" ON enrollments
+  FOR SELECT USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Staff can view enrollments" ON enrollments
+  FOR SELECT USING (true);
+
+-- Courses: all authenticated users can view
+CREATE POLICY "Authenticated users can view courses" ON courses
+  FOR SELECT USING (true);
+
+-- Assignments: teachers can manage own, students can view
+CREATE POLICY "Teachers can manage assignments" ON assignments
+  FOR ALL USING (teacher_id::text = auth.uid()::text);
+CREATE POLICY "Students can view assignments" ON assignments
+  FOR SELECT USING (true);
+
+-- Submissions: students see own, teachers see assigned
+CREATE POLICY "Students can manage own submissions" ON submissions
+  FOR ALL USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Teachers can view submissions" ON submissions
+  FOR SELECT USING (true);
+
+-- Quizzes: teachers can manage own, students can view
+CREATE POLICY "Teachers can manage quizzes" ON quizzes
+  FOR ALL USING (teacher_id::text = auth.uid()::text);
+CREATE POLICY "Students can view quizzes" ON quizzes
+  FOR SELECT USING (true);
+
+-- Gradebook: students see own, teachers see assigned
+CREATE POLICY "Students can view own grades" ON gradebook
+  FOR SELECT USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Teachers can view gradebook" ON gradebook
+  FOR SELECT USING (true);
+
+-- Messages: participants only
+CREATE POLICY "Users can view own messages" ON messages
+  FOR SELECT USING (
+    sender_id::text = auth.uid()::text OR
+    receiver_id::text = auth.uid()::text
+  );
+CREATE POLICY "Users can send messages" ON messages
+  FOR INSERT WITH CHECK (sender_id::text = auth.uid()::text);
+
+-- Notifications: own only
+CREATE POLICY "Users can view own notifications" ON notifications
+  FOR SELECT USING (user_id::text = auth.uid()::text);
+
+-- Chat messages: own only
+CREATE POLICY "Users can manage own chat messages" ON chat_messages
+  FOR ALL USING (sender_id::text = auth.uid()::text);
+
+-- AI reports: students see own, teachers/admins see all
+CREATE POLICY "Students can view own AI reports" ON ai_reports
+  FOR SELECT USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Staff can view AI reports" ON ai_reports
+  FOR SELECT USING (true);
+
+-- AI alerts: students see own, teachers/admins see all
+CREATE POLICY "Students can view own AI alerts" ON ai_alerts
+  FOR SELECT USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Staff can view AI alerts" ON ai_alerts
+  FOR SELECT USING (true);
+
+-- AI interventions: students see own, teachers/admins see all
+CREATE POLICY "Students can view own AI interventions" ON ai_interventions
+  FOR SELECT USING (student_id::text = auth.uid()::text);
+CREATE POLICY "Staff can view AI interventions" ON ai_interventions
+  FOR SELECT USING (true);
 
 COMMENT ON TABLE users IS 'Core user accounts with roles';
 COMMENT ON TABLE students IS 'Student profiles linked to users';

@@ -1,3 +1,4 @@
+-- dialect: sqlite
 -- Notification preferences per user
 CREATE TABLE IF NOT EXISTS notification_preferences (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

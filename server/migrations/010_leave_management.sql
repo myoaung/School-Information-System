@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS leave_requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL REFERENCES users(id),

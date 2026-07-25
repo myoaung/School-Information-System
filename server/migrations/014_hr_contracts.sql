@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Staff contracts table for HR management
 CREATE TABLE IF NOT EXISTS staff_contracts (
   id SERIAL PRIMARY KEY,

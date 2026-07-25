@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Accounts Receivable: write-off tracking
 
 CREATE TABLE IF NOT EXISTS ar_writeoffs (

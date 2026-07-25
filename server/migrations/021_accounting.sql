@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Accounting Integration tables
 
 -- Chart of Accounts

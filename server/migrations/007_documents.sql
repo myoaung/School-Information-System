@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS documents (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,

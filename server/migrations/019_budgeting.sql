@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Budgeting tables
 
 CREATE TABLE IF NOT EXISTS budgets (

@@ -1,36 +1,17 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const { db } = require('../data');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
+const storage = require('../storage');
 
 const router = express.Router();
 
-// ─── File Upload Config ────────────────────────────────────────
-const uploadDir = process.env.VERCEL
-  ? '/tmp/uploads/documents'
-  : path.join(__dirname, '..', 'uploads', 'documents');
-
-fs.mkdirSync(uploadDir, { recursive: true });
-
-let storage;
-try {
-  storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-    },
-  });
-} catch {
-  storage = multer.memoryStorage();
-}
-
+// ─── File Upload Config (memory storage — no disk side effects) ──
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|pdf|doc|docx|txt|xls|xlsx|ppt|pptx|webp/;
@@ -161,20 +142,24 @@ router.post(
         return res.status(400).json({ error: `Invalid subcategory for ${category}` });
       }
 
-      const filePath = req.file ? `/uploads/documents/${req.file.filename}` : null;
+      // Store file via abstraction layer (Supabase Storage or local disk)
+      let fileMeta = { file_path: null, file_name: null, file_size: null, mime_type: null };
+      if (req.file) {
+        fileMeta = await storage.store(req.file.buffer, req.file.originalname, req.file.mimetype);
+      }
 
       const result = await db.run(
         `INSERT INTO documents (title, category, subcategory, entity_id, file_path, file_name, file_size, mime_type, description, uploaded_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           title,
           category,
           subcategory || null,
           entity_id || null,
-          filePath,
-          req.file?.originalname || null,
-          req.file?.size || null,
-          req.file?.mimetype || null,
+          fileMeta.file_path,
+          fileMeta.file_name,
+          fileMeta.file_size,
+          fileMeta.mime_type,
           description || null,
           req.user.id,
         ]
@@ -220,20 +205,25 @@ router.post(
       );
       const newVersion = (latest?.max_version || parent.version) + 1;
 
-      const filePath = `/uploads/documents/${req.file.filename}`;
+      // Store file via abstraction layer
+      const fileMeta = await storage.store(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
 
       const result = await db.run(
         `INSERT INTO documents (title, category, subcategory, entity_id, file_path, file_name, file_size, mime_type, description, uploaded_by, version, parent_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           parent.title,
           parent.category,
           parent.subcategory,
           parent.entity_id,
-          filePath,
-          req.file.originalname,
-          req.file.size,
-          req.file.mimetype,
+          fileMeta.file_path,
+          fileMeta.file_name,
+          fileMeta.file_size,
+          fileMeta.mime_type,
           req.body.description || parent.description,
           req.user.id,
           newVersion,
@@ -300,13 +290,9 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     const doc = await db.get('SELECT * FROM documents WHERE id = ?', [id]);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-    // Delete file from disk
+    // Delete file via abstraction layer
     if (doc.file_path) {
-      const fullPath = path.join(__dirname, '..', doc.file_path);
-      const uploadsRoot = path.join(__dirname, '..', 'uploads');
-      if (fullPath.startsWith(uploadsRoot + path.sep) && fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-      }
+      await storage.remove(doc.file_path);
     }
 
     // Delete versioned copies
@@ -316,11 +302,7 @@ router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     ]);
     for (const v of versions) {
       if (v.file_path) {
-        const fullPath = path.join(__dirname, '..', v.file_path);
-        const uploadsRoot = path.join(__dirname, '..', 'uploads');
-        if (fullPath.startsWith(uploadsRoot + path.sep) && fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
+        await storage.remove(v.file_path);
       }
     }
 
@@ -346,14 +328,22 @@ router.get('/:id/download', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'No file attached' });
     }
 
-    const fullPath = path.join(__dirname, '..', doc.file_path);
-    const uploadsRoot = path.join(__dirname, '..', 'uploads');
+    // Supabase Storage — get signed URL and redirect
+    if (storage.isSupabasePath(doc.file_path)) {
+      const url = await storage.getUrl(doc.file_path);
+      if (!url) {
+        return res.status(500).json({ error: 'Failed to generate download URL' });
+      }
+      return res.redirect(url);
+    }
 
-    if (!fullPath.startsWith(uploadsRoot + path.sep) || !fs.existsSync(fullPath)) {
+    // Local filesystem — serve directly
+    const localPath = storage.getLocalPath(doc.file_path);
+    if (!localPath) {
       return res.status(404).json({ error: 'File not found on disk' });
     }
 
-    res.download(fullPath, doc.file_name || path.basename(fullPath));
+    res.download(localPath, doc.file_name || path.basename(localPath));
   } catch (err) {
     sendError(res, err, 'Failed to download document');
   }

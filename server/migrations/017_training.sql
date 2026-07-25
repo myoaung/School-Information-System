@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Training & Development tables
 
 CREATE TABLE IF NOT EXISTS training_programs (

@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS class_sessions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   timetable_id INTEGER REFERENCES timetable(id),

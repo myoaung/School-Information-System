@@ -11,6 +11,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { supabaseAdmin, isSupabaseConfigured } = require('./supabase');
+const { ensureBucket } = require('./storage');
 
 async function runMigrations() {
   if (!isSupabaseConfigured) {
@@ -21,23 +22,51 @@ async function runMigrations() {
 
   console.log('🚀 Running Supabase migrations...\n');
 
+  // Ensure Storage bucket exists
+  const bucketReady = await ensureBucket();
+  if (bucketReady) {
+    console.log('📁 Storage bucket "documents" ready\n');
+  }
+
   const migrationsDir = path.join(__dirname, 'migrations');
-  const files = fs.readdirSync(migrationsDir)
-    .filter(f => f.endsWith('.sql'))
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith('.sql'))
     .sort();
 
+  // Determine active dialect (Supabase = postgres, otherwise sqlite)
+  const activeDialect = isSupabaseConfigured ? 'postgres' : 'sqlite';
+
   for (const file of files) {
-    console.log(`📄 Running: ${file}`);
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+    const firstLine = sql.trim().split('\n')[0] || '';
+
+    // Parse dialect header: "-- dialect: postgres | sqlite | both"
+    const dialectMatch = firstLine.match(/^--\s*dialect:\s*(.+)/i);
+    const dialects = dialectMatch
+      ? dialectMatch[1]
+          .toLowerCase()
+          .split(/\s*\|\s*/)
+          .map((d) => d.trim())
+      : ['both'];
+
+    if (!dialects.includes(activeDialect) && !dialects.includes('both')) {
+      console.log(
+        `⏭️  Skipping: ${file} (requires ${dialects.join('|')}, active is ${activeDialect})`
+      );
+      continue;
+    }
+
+    console.log(`📄 Running: ${file}`);
 
     try {
       // Split by semicolons and execute each statement
-      const statements = sql.split(';').filter(s => s.trim());
+      const statements = sql.split(';').filter((s) => s.trim());
 
       for (const stmt of statements) {
         if (stmt.trim()) {
           const { error } = await supabaseAdmin.rpc('execute_sql', {
-            query: stmt.trim()
+            query: stmt.trim(),
           });
 
           if (error) {
@@ -69,9 +98,7 @@ async function seedData() {
   console.log('🌱 Seeding Supabase database...\n');
 
   // Check if data exists
-  const { count } = await supabaseAdmin
-    .from('users')
-    .select('*', { count: 'exact', head: true });
+  const { count } = await supabaseAdmin.from('users').select('*', { count: 'exact', head: true });
 
   if (count > 0) {
     console.log(`   ℹ️  Database already has ${count} users. Skipping seed.`);
@@ -84,14 +111,38 @@ async function seedData() {
 
   // Extract seed data from SQLite and insert into Supabase
   const tables = [
-    'education_levels', 'grades', 'subjects', 'grade_subjects',
-    'users', 'students', 'teachers', 'classes', 'enrollments',
-    'announcements', 'academic_years', 'semesters', 'holidays',
-    'courses', 'lessons', 'resources', 'assignments', 'submissions',
-    'quizzes', 'quiz_questions', 'quiz_attempts', 'gradebook',
-    'attendance', 'timetable', 'chat_messages', 'contacts',
-    'parent_students', 'fee_structures', 'invoices', 'payments',
-    'teacher_attendance', 'notifications'
+    'education_levels',
+    'grades',
+    'subjects',
+    'grade_subjects',
+    'users',
+    'students',
+    'teachers',
+    'classes',
+    'enrollments',
+    'announcements',
+    'academic_years',
+    'semesters',
+    'holidays',
+    'courses',
+    'lessons',
+    'resources',
+    'assignments',
+    'submissions',
+    'quizzes',
+    'quiz_questions',
+    'quiz_attempts',
+    'gradebook',
+    'attendance',
+    'timetable',
+    'chat_messages',
+    'contacts',
+    'parent_students',
+    'fee_structures',
+    'invoices',
+    'payments',
+    'teacher_attendance',
+    'notifications',
   ];
 
   for (const table of tables) {
@@ -104,9 +155,7 @@ async function seedData() {
       // Insert in batches of 100
       for (let i = 0; i < rows.length; i += 100) {
         const batch = rows.slice(i, i + 100);
-        const { error } = await supabaseAdmin
-          .from(table)
-          .insert(batch);
+        const { error } = await supabaseAdmin.from(table).insert(batch);
 
         if (error) {
           console.error(`      ⚠️  Error: ${error.message}`);
@@ -130,22 +179,47 @@ async function resetDatabase() {
   console.log('⚠️  Resetting Supabase database...\n');
 
   const tables = [
-    'notifications', 'messages', 'chat_messages', 'contacts',
-    'payments', 'invoices', 'fee_structures', 'certificates',
-    'ai_interventions', 'ai_alerts', 'ai_reports',
-    'quiz_attempts', 'quiz_questions', 'quizzes',
-    'submissions', 'assignments', 'lessons', 'resources', 'courses',
-    'enrollments', 'classes', 'teachers', 'students', 'users',
-    'gradebook', 'grade_subjects', 'subjects', 'grades', 'education_levels',
-    'parent_students', 'teacher_attendance', 'attendance', 'timetable',
-    'semesters', 'holidays', 'academic_years', 'announcements'
+    'notifications',
+    'messages',
+    'chat_messages',
+    'contacts',
+    'payments',
+    'invoices',
+    'fee_structures',
+    'certificates',
+    'ai_interventions',
+    'ai_alerts',
+    'ai_reports',
+    'quiz_attempts',
+    'quiz_questions',
+    'quizzes',
+    'submissions',
+    'assignments',
+    'lessons',
+    'resources',
+    'courses',
+    'enrollments',
+    'classes',
+    'teachers',
+    'students',
+    'users',
+    'gradebook',
+    'grade_subjects',
+    'subjects',
+    'grades',
+    'education_levels',
+    'parent_students',
+    'teacher_attendance',
+    'attendance',
+    'timetable',
+    'semesters',
+    'holidays',
+    'academic_years',
+    'announcements',
   ];
 
   for (const table of tables) {
-    const { error } = await supabaseAdmin
-      .from(table)
-      .delete()
-      .neq('id', 0); // Delete all rows
+    const { error } = await supabaseAdmin.from(table).delete().neq('id', 0); // Delete all rows
 
     if (error) {
       console.error(`   ⚠️  ${table}: ${error.message}`);

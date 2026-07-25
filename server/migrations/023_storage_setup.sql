@@ -1,0 +1,9 @@
+-- dialect: postgres
+-- Supabase Storage: Create "documents" bucket
+-- Bucket creation is handled by server/migrate.js via the Storage API.
+-- This file exists as a marker so the migration sequence accounts for it.
+--
+-- To create the bucket manually via SQL (requires storage extension):
+--   select storage.create_bucket('documents', jsonb_build_object('public', false, 'file_size_limit', 20971520));
+--
+-- The migrate.js script calls storage.ensureBucket() before SQL migrations.

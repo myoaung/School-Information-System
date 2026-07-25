@@ -3,9 +3,9 @@ const path = require('path');
 const { seedDatabase, seedChartOfAccounts, seedCurriculum } = require('./seed');
 
 // Use /tmp for Vercel serverless (writable, but ephemeral)
-const DB_PATH = process.env.VERCEL
-  ? path.join('/tmp', 'school.db')
-  : path.join(__dirname, 'school.db');
+const DB_PATH =
+  process.env.DB_PATH ||
+  (process.env.VERCEL ? path.join('/tmp', 'school.db') : path.join(__dirname, 'school.db'));
 
 let db;
 

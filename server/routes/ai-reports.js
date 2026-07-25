@@ -18,47 +18,47 @@ const {
 const router = express.Router();
 
 // POST /api/ai/report/:studentId — Generate AI report for a student
-router.post('/report/:studentId', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const studentUserId = parseInt(req.params.studentId);
+router.post(
+  '/report/:studentId',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const studentUserId = parseInt(req.params.studentId);
 
-    // Verify student exists
-    const data = aggregateStudentData(studentUserId);
-    if (!data) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
+      // Verify student exists
+      const data = await aggregateStudentData(studentUserId);
+      if (!data) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
 
-    // Generate report
-    const result = await generateReportNarrative(studentUserId);
+      // Generate report
+      const result = await generateReportNarrative(studentUserId);
 
-    // Save to database
-    const reportId = saveReport(
-      studentUserId,
-      req.user.id,
-      result.narrative,
-      result.source
-    );
+      // Save to database
+      const reportId = saveReport(studentUserId, req.user.id, result.narrative, result.source);
 
-    res.json({
-      report: {
-        id: reportId,
-        student: data.student,
-        narrative: result.narrative,
-        source: result.source,
-        status: 'draft',
-        data: {
-          gpa: data.academics.overallGpa,
-          attendanceRate: data.attendance.rate,
-          avgAssignmentScore: data.assignments.avgScore,
-          avgQuizScore: data.quizzes.avgScore,
+      res.json({
+        report: {
+          id: reportId,
+          student: data.student,
+          narrative: result.narrative,
+          source: result.source,
+          status: 'draft',
+          data: {
+            gpa: data.academics.overallGpa,
+            attendanceRate: data.attendance.rate,
+            avgAssignmentScore: data.assignments.avgScore,
+            avgQuizScore: data.quizzes.avgScore,
+          },
         },
-      },
-    });
-  } catch (err) {
-    console.error('AI report generation error:', err);
-    res.status(500).json({ error: 'Failed to generate report' });
+      });
+    } catch (err) {
+      console.error('AI report generation error:', err);
+      res.status(500).json({ error: 'Failed to generate report' });
+    }
   }
-});
+);
 
 // GET /api/ai/report/:studentId — Get reports for a student
 router.get('/report/:studentId', authMiddleware, async (req, res) => {
@@ -90,38 +90,48 @@ router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), async
 });
 
 // PUT /api/ai/report/:reportId/approve — Approve a report
-router.put('/report/:reportId/approve', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const reportId = parseInt(req.params.reportId);
-    const result = updateReportStatus(reportId, 'approved', req.user.id);
+router.put(
+  '/report/:reportId/approve',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const reportId = parseInt(req.params.reportId);
+      const result = updateReportStatus(reportId, 'approved', req.user.id);
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Report not found' });
+      if (result.changes === 0) {
+        return res.status(404).json({ error: 'Report not found' });
+      }
+
+      res.json({ message: 'Report approved', status: 'approved' });
+    } catch (err) {
+      console.error('Approve report error:', err);
+      res.status(500).json({ error: 'Failed to approve report' });
     }
-
-    res.json({ message: 'Report approved', status: 'approved' });
-  } catch (err) {
-    console.error('Approve report error:', err);
-    res.status(500).json({ error: 'Failed to approve report' });
   }
-});
+);
 
 // PUT /api/ai/report/:reportId/reject — Reject a report (back to draft)
-router.put('/report/:reportId/reject', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const reportId = parseInt(req.params.reportId);
-    const result = updateReportStatus(reportId, 'draft', req.user.id);
+router.put(
+  '/report/:reportId/reject',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const reportId = parseInt(req.params.reportId);
+      const result = updateReportStatus(reportId, 'draft', req.user.id);
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Report not found' });
+      if (result.changes === 0) {
+        return res.status(404).json({ error: 'Report not found' });
+      }
+
+      res.json({ message: 'Report rejected', status: 'draft' });
+    } catch (err) {
+      console.error('Reject report error:', err);
+      res.status(500).json({ error: 'Failed to reject report' });
     }
-
-    res.json({ message: 'Report rejected', status: 'draft' });
-  } catch (err) {
-    console.error('Reject report error:', err);
-    res.status(500).json({ error: 'Failed to reject report' });
   }
-});
+);
 
 // PUT /api/ai/report/:reportId/send — Mark report as sent
 router.put('/report/:reportId/send', authMiddleware, roleMiddleware('admin'), async (req, res) => {
@@ -157,12 +167,15 @@ router.get('/report/:reportId/html', authMiddleware, async (req, res) => {
       )
     `);
 
-    const report = await db.get(`
+    const report = await db.get(
+      `
       SELECT r.*, u.name as student_name
       FROM ai_reports r
       JOIN users u ON r.student_id = u.id
       WHERE r.id = ?
-    `, [parseInt(req.params.reportId)]);
+    `,
+      [parseInt(req.params.reportId)]
+    );
 
     if (!report) {
       return res.status(404).json({ error: 'Report not found' });
@@ -176,7 +189,12 @@ router.get('/report/:reportId/html', authMiddleware, async (req, res) => {
     const studentData = aggregateStudentData(report.student_id);
 
     // Escape HTML in user-controlled fields
-    const escHtml = (str) => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const escHtml = (str) =>
+      String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 
     const html = `<!DOCTYPE html>
 <html lang="en">

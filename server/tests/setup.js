@@ -16,11 +16,20 @@ clearSupabase();
 
 const TEST_DB_PATH = path.join(__dirname, 'test.db');
 
+// Point the application to our test database (db.js + data.js both check DB_PATH)
+process.env.DB_PATH = TEST_DB_PATH;
+
 // Clean up test DB
 const cleanup = () => {
-  try { fs.unlinkSync(TEST_DB_PATH); } catch {}
-  try { fs.unlinkSync(TEST_DB_PATH + '-wal'); } catch {}
-  try { fs.unlinkSync(TEST_DB_PATH + '-shm'); } catch {}
+  try {
+    fs.unlinkSync(TEST_DB_PATH);
+  } catch {}
+  try {
+    fs.unlinkSync(TEST_DB_PATH + '-wal');
+  } catch {}
+  try {
+    fs.unlinkSync(TEST_DB_PATH + '-shm');
+  } catch {}
 };
 
 // Run cleanup before tests

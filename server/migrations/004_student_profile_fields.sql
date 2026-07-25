@@ -1,3 +1,4 @@
+-- dialect: both
 ALTER TABLE students ADD COLUMN IF NOT EXISTS photo_url TEXT;
 ALTER TABLE students ADD COLUMN IF NOT EXISTS blood_type TEXT;
 ALTER TABLE students ADD COLUMN IF NOT EXISTS allergies TEXT;

@@ -14,9 +14,9 @@ const path = require('path');
 const { supabase, supabaseAdmin, isSupabaseConfigured } = require('./supabase');
 
 // ─── SQLite Setup ───────────────────────────────────────────────
-const DB_PATH = process.env.VERCEL
-  ? path.join('/tmp', 'school.db')
-  : path.join(__dirname, 'school.db');
+const DB_PATH =
+  process.env.DB_PATH ||
+  (process.env.VERCEL ? path.join('/tmp', 'school.db') : path.join(__dirname, 'school.db'));
 
 let sqliteDb;
 

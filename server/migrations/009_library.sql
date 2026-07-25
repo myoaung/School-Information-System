@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS library_books (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,

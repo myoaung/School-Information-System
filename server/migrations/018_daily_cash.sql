@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Daily Cash Control tables
 
 CREATE TABLE IF NOT EXISTS cash_sessions (

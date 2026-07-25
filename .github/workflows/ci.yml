@@ -33,7 +33,6 @@ jobs:
 
       - name: Lint client
         run: cd client && npm run lint
-        continue-on-error: true
 
       - name: Run tests
         run: npm test
@@ -46,16 +45,17 @@ jobs:
 
       - name: Run client tests with coverage
         run: cd client && npx vitest run --coverage
-        continue-on-error: true
 
       - name: Build client
         run: npm run build
 
       - name: Verify server starts
         run: |
-          cd server &
-          sleep 2
-          curl -f http://localhost:5000/api/health || exit 1
+          node server/index.js &
+          SERVER_PID=$!
+          sleep 3
+          curl -f http://localhost:5000/api/health || (kill $SERVER_PID; exit 1)
+          kill $SERVER_PID
         env:
           NODE_ENV: production
           JWT_SECRET: ci-test-secret

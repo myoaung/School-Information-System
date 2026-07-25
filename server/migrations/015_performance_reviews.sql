@@ -1,3 +1,4 @@
+-- dialect: postgres
 CREATE TABLE IF NOT EXISTS performance_reviews (
   id SERIAL PRIMARY KEY,
   staff_id INTEGER NOT NULL REFERENCES users(id),

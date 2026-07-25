@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Class Readiness Rules migration
 
 -- Add new columns to classes table

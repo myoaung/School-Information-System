@@ -52,7 +52,6 @@ describe('Students API', () => {
           name: 'New Student',
           email: `newstudent-${Date.now()}@test.com`,
           password: 'TestPass123',
-          grade_id: 11,
           gender: 'male',
         });
       expect(res.status).toBe(201);

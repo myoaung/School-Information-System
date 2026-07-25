@@ -241,6 +241,7 @@ app.get('/api/health', async (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    environment: NODE_ENV,
     version: require('./package.json').version || '1.0.0',
   };
 

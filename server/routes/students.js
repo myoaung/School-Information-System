@@ -48,6 +48,133 @@ router.get('/lifecycle/summary', authMiddleware, roleMiddleware('admin'), async 
   }
 });
 
+// ─── Student Data Governance (GDPR-style) ─────────────────────
+
+// Export all student data (self-service)
+router.get('/me/export', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({ error: 'Only students can export their own data' });
+    }
+
+    const userId = req.user.id;
+
+    // Profile
+    const profile = await db.get(
+      `SELECT u.id, u.name, u.email, u.created_at,
+        s.student_id, s.grade_id, s.section, s.status,
+        s.date_of_birth, s.gender, s.phone, s.address,
+        s.emergency_contact, s.emergency_phone,
+        s.parent_name, s.parent_phone, s.parent_email,
+        s.photo_url, s.blood_type, s.allergies, s.enrolled_at,
+        g.name as grade_name, el.name as level_name
+      FROM users u
+      LEFT JOIN students s ON s.user_id = u.id
+      LEFT JOIN grades g ON s.grade_id = g.id
+      LEFT JOIN education_levels el ON g.education_level_id = el.id
+      WHERE u.id = ?`,
+      [userId]
+    );
+
+    if (!profile) return res.status(404).json({ error: 'Student profile not found' });
+
+    // Enrollments
+    const enrollments = await db.all(
+      'SELECT c.id, c.name, c.schedule, c.room FROM enrollments e JOIN classes c ON e.class_id = c.id WHERE e.student_id = ?',
+      [userId]
+    );
+
+    // Grades
+    const grades = await db.all(
+      'SELECT gb.*, s.name as subject_name FROM gradebook gb LEFT JOIN subjects s ON gb.subject_id = s.id WHERE gb.student_id = ?',
+      [userId]
+    );
+
+    // Attendance
+    const attendance = await db.all(
+      'SELECT date, status, reason FROM attendance WHERE user_id = ? ORDER BY date DESC LIMIT 500',
+      [userId]
+    );
+
+    // Assignments / Submissions
+    const submissions = await db.all(
+      `SELECT sub.*, a.title as assignment_title, a.due_date
+       FROM submissions sub
+       LEFT JOIN assignments a ON sub.assignment_id = a.id
+       WHERE sub.student_id = ?
+       ORDER BY sub.created_at DESC`,
+      [userId]
+    );
+
+    res.json({
+      exported_at: new Date().toISOString(),
+      profile,
+      enrollments,
+      grades,
+      attendance,
+      submissions,
+    });
+
+    auditLog(req, {
+      action: 'export',
+      entityType: 'student',
+      entityId: userId,
+      newValues: { exported_at: new Date().toISOString() },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to export student data');
+  }
+});
+
+// Anonymize student data (GDPR-style right to erasure)
+router.delete('/me/data', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({ error: 'Only students can request data deletion' });
+    }
+
+    const userId = req.user.id;
+
+    // Anonymize user record (keep for referential integrity)
+    const anonymousId = `deleted-${userId}-${Date.now()}`;
+    await db.run(`UPDATE users SET name = ?, email = ?, password = '[REDACTED]' WHERE id = ?`, [
+      `Deleted User ${userId}`,
+      `${anonymousId}@anon.local`,
+      userId,
+    ]);
+
+    // Anonymize student profile
+    await db.run(
+      `UPDATE students SET
+        date_of_birth = NULL, gender = NULL, phone = NULL,
+        address = NULL, emergency_contact = NULL, emergency_phone = NULL,
+        parent_name = '[REDACTED]', parent_phone = NULL, parent_email = NULL,
+        photo_url = NULL, blood_type = NULL, allergies = NULL,
+        status = 'archived'
+      WHERE user_id = ?`,
+      [userId]
+    );
+
+    // Anonymize submissions
+    await db.run(
+      `UPDATE submissions SET content = '[REDACTED]', file_url = NULL WHERE student_id = ?`,
+      [userId]
+    );
+
+    res.json({
+      message: 'Your data has been anonymized. Account can no longer be used for login.',
+    });
+
+    auditLog(req, {
+      action: 'anonymize',
+      entityType: 'student',
+      entityId: userId,
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to anonymize student data');
+  }
+});
+
 // Get all students (admin/teacher)
 router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
@@ -187,10 +314,14 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
     );
     const userId = userResult.lastInsertRowid;
 
-    // Generate student ID
-    const countRow = await db.get('SELECT COUNT(*) as c FROM students');
-    const count = countRow?.c || 0;
-    const studentId = `STU-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+    // Generate unique student ID (use max existing number + 1)
+    const maxRow = await db.get('SELECT student_id FROM students ORDER BY id DESC LIMIT 1');
+    let nextNum = 1;
+    if (maxRow?.student_id) {
+      const match = maxRow.student_id.match(/(\d+)$/);
+      nextNum = match ? parseInt(match[1], 10) + 1 : 1;
+    }
+    const studentId = `STU-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`;
 
     // Create student profile
     await db.run(

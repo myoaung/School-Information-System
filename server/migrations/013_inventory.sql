@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS inventory_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,

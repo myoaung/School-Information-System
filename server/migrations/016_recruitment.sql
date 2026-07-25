@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Recruitment & Onboarding tables
 
 CREATE TABLE IF NOT EXISTS job_postings (

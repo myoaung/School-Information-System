@@ -1,3 +1,4 @@
+-- dialect: both
 -- Add academic_year_id to grade_subjects for versioning
 -- Same subject can appear in different academic years
 

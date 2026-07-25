@@ -19,9 +19,9 @@ const {
 const router = express.Router();
 
 // GET /api/ai/schedule/constraints — Get all scheduling constraints
-router.get('/constraints', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.get('/constraints', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const constraints = collectConstraints();
+    const constraints = await collectConstraints();
     res.json({ constraints });
   } catch (err) {
     console.error('Constraints error:', err);
@@ -30,14 +30,14 @@ router.get('/constraints', authMiddleware, roleMiddleware('admin'), (req, res) =
 });
 
 // GET /api/ai/schedule/conflicts — Detect scheduling conflicts
-router.get('/conflicts', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/conflicts', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const conflicts = detectConflicts();
+    const conflicts = await detectConflicts();
     res.json({
       conflicts,
       total: conflicts.length,
-      high: conflicts.filter(c => c.severity === 'high').length,
-      medium: conflicts.filter(c => c.severity === 'medium').length,
+      high: conflicts.filter((c) => c.severity === 'high').length,
+      medium: conflicts.filter((c) => c.severity === 'medium').length,
     });
   } catch (err) {
     console.error('Conflicts error:', err);
@@ -46,7 +46,7 @@ router.get('/conflicts', authMiddleware, roleMiddleware('admin', 'teacher'), (re
 });
 
 // POST /api/ai/schedule/generate — Generate optimal schedule for a class
-router.post('/generate', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/generate', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { class_id, respect_existing = true, preferred_days = [0, 1, 2, 3, 4] } = req.body;
 
@@ -54,7 +54,7 @@ router.post('/generate', authMiddleware, roleMiddleware('admin'), (req, res) => 
       return res.status(400).json({ error: 'class_id is required' });
     }
 
-    const result = generateSchedule(class_id, {
+    const result = await generateSchedule(class_id, {
       respectExisting: respect_existing,
       preferredDays: preferred_days,
     });
@@ -101,24 +101,34 @@ router.post('/apply', authMiddleware, roleMiddleware('admin'), (req, res) => {
 });
 
 // GET /api/ai/schedule/suggestions/:classId — AI suggestions for improvement
-router.get('/suggestions/:classId', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const classId = parseInt(req.params.classId);
-    const suggestions = await generateScheduleSuggestions(classId);
-    res.json({ suggestions });
-  } catch (err) {
-    console.error('Suggestions error:', err);
-    res.status(500).json({ error: 'Failed to generate suggestions' });
+router.get(
+  '/suggestions/:classId',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const classId = parseInt(req.params.classId);
+      const suggestions = await generateScheduleSuggestions(classId);
+      res.json({ suggestions });
+    } catch (err) {
+      console.error('Suggestions error:', err);
+      res.status(500).json({ error: 'Failed to generate suggestions' });
+    }
   }
-});
+);
 
 // GET /api/ai/schedule/analyze/:classId — Analyze schedule quality
-router.get('/analyze/:classId', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { db } = require('../data');
-    const classId = parseInt(req.params.classId);
+router.get(
+  '/analyze/:classId',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const { db } = require('../data');
+      const classId = parseInt(req.params.classId);
 
-    const entries = await db.all(`
+      const entries = await db.all(
+        `
       SELECT t.*, s.name as subject_name, s.code as subject_code,
              u.name as teacher_name
       FROM timetable t
@@ -126,85 +136,96 @@ router.get('/analyze/:classId', authMiddleware, roleMiddleware('admin', 'teacher
       LEFT JOIN users u ON t.teacher_id = u.id
       WHERE t.class_id = ?
       ORDER BY t.day_of_week, t.start_time
-    `, [classId]);
+    `,
+        [classId]
+      );
 
-    if (entries.length === 0) {
-      return res.json({
-        analysis: {
-          totalPeriods: 0,
-          daysUsed: 0,
-          subjectsCovered: 0,
-          balanceScore: 0,
-          gaps: 0,
-          message: 'No timetable entries found',
-        },
+      if (entries.length === 0) {
+        return res.json({
+          analysis: {
+            totalPeriods: 0,
+            daysUsed: 0,
+            subjectsCovered: 0,
+            balanceScore: 0,
+            gaps: 0,
+            message: 'No timetable entries found',
+          },
+        });
+      }
+
+      // Analyze distribution
+      const dayCounts = {};
+      const subjectCounts = {};
+      const teacherCounts = {};
+
+      entries.forEach((e) => {
+        dayCounts[e.day_of_week] = (dayCounts[e.day_of_week] || 0) + 1;
+        subjectCounts[e.subject_name] = (subjectCounts[e.subject_name] || 0) + 1;
+        teacherCounts[e.teacher_name] = (teacherCounts[e.teacher_name] || 0) + 1;
       });
-    }
 
-    // Analyze distribution
-    const dayCounts = {};
-    const subjectCounts = {};
-    const teacherCounts = {};
+      const daysUsed = Object.keys(dayCounts).length;
+      const subjectsCovered = Object.keys(subjectCounts).length;
 
-    entries.forEach(e => {
-      dayCounts[e.day_of_week] = (dayCounts[e.day_of_week] || 0) + 1;
-      subjectCounts[e.subject_name] = (subjectCounts[e.subject_name] || 0) + 1;
-      teacherCounts[e.teacher_name] = (teacherCounts[e.teacher_name] || 0) + 1;
-    });
+      // Calculate balance score (0-100)
+      const counts = Object.values(dayCounts);
+      const avgPerDay = counts.reduce((s, c) => s + c, 0) / counts.length;
+      const variance = counts.reduce((s, c) => s + (c - avgPerDay) ** 2, 0) / counts.length;
+      const balanceScore = Math.max(0, Math.round(100 - variance * 10));
 
-    const daysUsed = Object.keys(dayCounts).length;
-    const subjectsCovered = Object.keys(subjectCounts).length;
+      // Count gaps (free periods between lessons on same day)
+      let gaps = 0;
+      const dayNumbers = [...new Set(entries.map((e) => e.day_of_week))];
+      for (const day of dayNumbers) {
+        const dayEntries = entries
+          .filter((e) => e.day_of_week === day)
+          .sort((a, b) => a.start_time.localeCompare(b.start_time));
 
-    // Calculate balance score (0-100)
-    const counts = Object.values(dayCounts);
-    const avgPerDay = counts.reduce((s, c) => s + c, 0) / counts.length;
-    const variance = counts.reduce((s, c) => s + (c - avgPerDay) ** 2, 0) / counts.length;
-    const balanceScore = Math.max(0, Math.round(100 - variance * 10));
-
-    // Count gaps (free periods between lessons on same day)
-    let gaps = 0;
-    const dayNumbers = [...new Set(entries.map(e => e.day_of_week))];
-    for (const day of dayNumbers) {
-      const dayEntries = entries
-        .filter(e => e.day_of_week === day)
-        .sort((a, b) => a.start_time.localeCompare(b.start_time));
-
-      for (let i = 0; i < dayEntries.length - 1; i++) {
-        if (dayEntries[i].end_time < dayEntries[i + 1].start_time) {
-          gaps++;
+        for (let i = 0; i < dayEntries.length - 1; i++) {
+          if (dayEntries[i].end_time < dayEntries[i + 1].start_time) {
+            gaps++;
+          }
         }
       }
-    }
 
-    // Subject distribution
-    const subjectDistribution = Object.entries(subjectCounts)
-      .map(([name, count]) => ({ name, count, percentage: Math.round(count / entries.length * 100) }))
-      .sort((a, b) => b.count - a.count);
-
-    // Teacher workload
-    const teacherWorkload = Object.entries(teacherCounts)
-      .map(([name, count]) => ({ name, count, percentage: Math.round(count / entries.length * 100) }))
-      .sort((a, b) => b.count - a.count);
-
-    res.json({
-      analysis: {
-        totalPeriods: entries.length,
-        daysUsed,
-        subjectsCovered,
-        balanceScore,
-        gaps,
-        dayDistribution: Object.entries(dayCounts).map(([day, count]) => ({
-          day: getDayName(parseInt(day)),
+      // Subject distribution
+      const subjectDistribution = Object.entries(subjectCounts)
+        .map(([name, count]) => ({
+          name,
           count,
-        })),
-        subjectDistribution,
-        teacherWorkload,
-      },
-    });
-  } catch (err) {
-    console.error('Analyze error:', err);
-    res.status(500).json({ error: 'Failed to analyze schedule' });
+          percentage: Math.round((count / entries.length) * 100),
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      // Teacher workload
+      const teacherWorkload = Object.entries(teacherCounts)
+        .map(([name, count]) => ({
+          name,
+          count,
+          percentage: Math.round((count / entries.length) * 100),
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      res.json({
+        analysis: {
+          totalPeriods: entries.length,
+          daysUsed,
+          subjectsCovered,
+          balanceScore,
+          gaps,
+          dayDistribution: Object.entries(dayCounts).map(([day, count]) => ({
+            day: getDayName(parseInt(day)),
+            count,
+          })),
+          subjectDistribution,
+          teacherWorkload,
+        },
+      });
+    } catch (err) {
+      console.error('Analyze error:', err);
+      res.status(500).json({ error: 'Failed to analyze schedule' });
+    }
   }
-});
+);
 
 module.exports = router;

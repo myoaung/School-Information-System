@@ -1,3 +1,4 @@
+-- dialect: postgres
 -- Add execute_select function for parameterized SELECT queries
 CREATE OR REPLACE FUNCTION execute_select(query TEXT)
 RETURNS SETOF JSONB AS $$

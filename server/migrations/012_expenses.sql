@@ -1,3 +1,4 @@
+-- dialect: sqlite
 CREATE TABLE IF NOT EXISTS expenses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category TEXT CHECK(category IN ('salary','supplies','maintenance','utilities','transport','events','other')) NOT NULL,
