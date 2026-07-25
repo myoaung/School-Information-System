@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
       )}
 
       {/* Alerts */}
-      {alerts.length > 0 && (
+      {Array.isArray(alerts) && alerts.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-red-100 dark:bg-red-950/40 rounded-lg flex items-center justify-center">
@@ -180,67 +180,71 @@ export default function AnalyticsPage() {
 
       {/* At-Risk Students List */}
       <div className="space-y-3">
-        {atRisk.map((student) => (
-          <div
-            key={student.userId}
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-5 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg ${
-                    student.riskLevel === 'critical'
-                      ? 'bg-red-500'
-                      : student.riskLevel === 'high'
-                        ? 'bg-orange-500'
-                        : student.riskLevel === 'medium'
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
-                  }`}
-                >
-                  {student.riskScore}
+        {Array.isArray(atRisk) &&
+          atRisk.map((student) => (
+            <div
+              key={student.userId}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-5 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg ${
+                      student.riskLevel === 'critical'
+                        ? 'bg-red-500'
+                        : student.riskLevel === 'high'
+                          ? 'bg-orange-500'
+                          : student.riskLevel === 'medium'
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
+                    }`}
+                  >
+                    {student.riskScore}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-purple-900 dark:text-purple-100">
+                      {student.name}
+                    </h3>
+                    <p className="text-sm text-purple-500 dark:text-purple-400">
+                      {student.grade} • {student.studentCode} •
+                      <span
+                        className={`ml-1 capitalize font-medium ${
+                          student.riskLevel === 'critical'
+                            ? 'text-red-600 dark:text-red-400'
+                            : student.riskLevel === 'high'
+                              ? 'text-orange-600 dark:text-orange-400'
+                              : student.riskLevel === 'medium'
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-green-600 dark:text-green-400'
+                        }`}
+                      >
+                        {student.riskLevel}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-purple-900 dark:text-purple-100">{student.name}</h3>
-                  <p className="text-sm text-purple-500 dark:text-purple-400">
-                    {student.grade} • {student.studentCode} •
-                    <span
-                      className={`ml-1 capitalize font-medium ${
-                        student.riskLevel === 'critical'
-                          ? 'text-red-600 dark:text-red-400'
-                          : student.riskLevel === 'high'
-                            ? 'text-orange-600 dark:text-orange-400'
-                            : student.riskLevel === 'medium'
-                              ? 'text-yellow-600 dark:text-yellow-400'
-                              : 'text-green-600 dark:text-green-400'
-                      }`}
-                    >
-                      {student.riskLevel}
-                    </span>
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="hidden md:flex gap-2">
+                    {Array.isArray(student.factors) &&
+                      student.factors.map((f, i) => (
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full"
+                        >
+                          {f.type}: {f.value}
+                        </span>
+                      ))}
+                  </div>
+                  <Link
+                    to={`/students/${student.userId}`}
+                    className="bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900/70 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    View Details
+                  </Link>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden md:flex gap-2">
-                  {student.factors?.map((f, i) => (
-                    <span
-                      key={i}
-                      className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full"
-                    >
-                      {f.type}: {f.value}
-                    </span>
-                  ))}
-                </div>
-                <Link
-                  to={`/students/${student.userId}`}
-                  className="bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900/70 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                >
-                  View Details
-                </Link>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
         {!atRisk.length && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-8 text-center">
             <div className="w-16 h-16 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mx-auto mb-4">
