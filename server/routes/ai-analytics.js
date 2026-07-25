@@ -19,9 +19,9 @@ const { db } = require('../data');
 const router = express.Router();
 
 // GET /api/ai/analytics/stats — Dashboard overview
-router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const stats = getAnalyticsStats();
+    const stats = await getAnalyticsStats();
     res.json({ stats });
   } catch (err) {
     console.error('Analytics stats error:', err);
@@ -37,35 +37,33 @@ router.get('/at-risk', authMiddleware, roleMiddleware('admin', 'teacher'), async
     // Teachers can only see their own classes
     let filterClassId = classId;
     if (req.user.role === 'teacher' && !classId) {
-      const teacherClasses = await db.all(
-        'SELECT id FROM classes WHERE teacher_id = ?',
-        [req.user.id]
-      );
-      const teacherClassIds = teacherClasses.map(c => c.id);
+      const teacherClasses = await db.all('SELECT id FROM classes WHERE teacher_id = ?', [
+        req.user.id,
+      ]);
+      const teacherClassIds = teacherClasses.map((c) => c.id);
 
       if (teacherClassIds.length > 0) {
         // Get students from all teacher's classes
         const studentIds = new Set();
         for (const cid of teacherClassIds) {
-          const students = await db.all(
-            'SELECT student_id FROM enrollments WHERE class_id = ?',
-            [cid]
-          );
-          students.forEach(s => studentIds.add(s.student_id));
+          const students = await db.all('SELECT student_id FROM enrollments WHERE class_id = ?', [
+            cid,
+          ]);
+          students.forEach((s) => studentIds.add(s.student_id));
         }
 
-        const allAtRisk = getAtRiskStudents({
+        const allAtRisk = await getAtRiskStudents({
           minScore: parseInt(minScore),
           limit: parseInt(limit),
         });
 
         // Filter to teacher's students only
-        const filtered = allAtRisk.filter(s => studentIds.has(s.userId));
+        const filtered = allAtRisk.filter((s) => studentIds.has(s.userId));
         return res.json({ students: filtered, total: filtered.length });
       }
     }
 
-    const students = getAtRiskStudents({
+    const students = await getAtRiskStudents({
       classId: filterClassId ? parseInt(filterClassId) : undefined,
       gradeId: gradeId ? parseInt(gradeId) : undefined,
       minScore: parseInt(minScore),
@@ -80,7 +78,7 @@ router.get('/at-risk', authMiddleware, roleMiddleware('admin', 'teacher'), async
 });
 
 // GET /api/ai/analytics/student/:id — Individual student risk assessment
-router.get('/student/:id', authMiddleware, (req, res) => {
+router.get('/student/:id', authMiddleware, async (req, res) => {
   try {
     const studentUserId = parseInt(req.params.id);
 
@@ -89,8 +87,8 @@ router.get('/student/:id', authMiddleware, (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const risk = calculateRiskScore(studentUserId);
-    const trend = analyzeTrend(studentUserId);
+    const risk = await calculateRiskScore(studentUserId);
+    const trend = await analyzeTrend(studentUserId);
 
     res.json({ risk, trend });
   } catch (err) {
@@ -100,37 +98,45 @@ router.get('/student/:id', authMiddleware, (req, res) => {
 });
 
 // GET /api/ai/analytics/student/:id/interventions — AI intervention suggestions
-router.get('/student/:id/interventions', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const studentUserId = parseInt(req.params.id);
+router.get(
+  '/student/:id/interventions',
+  authMiddleware,
+  roleMiddleware('admin', 'teacher'),
+  async (req, res) => {
+    try {
+      const studentUserId = parseInt(req.params.id);
 
-    const student = await db.get(`
+      const student = await db.get(
+        `
       SELECT u.name FROM users u WHERE u.id = ?
-    `, [studentUserId]);
+    `,
+        [studentUserId]
+      );
 
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+
+      const risk = calculateRiskScore(studentUserId);
+      const studentData = {
+        name: student.name,
+        ...risk,
+      };
+
+      const interventions = await generateInterventions(studentData);
+
+      res.json({ interventions, risk });
+    } catch (err) {
+      console.error('Interventions error:', err);
+      res.status(500).json({ error: 'Failed to generate interventions' });
     }
-
-    const risk = calculateRiskScore(studentUserId);
-    const studentData = {
-      name: student.name,
-      ...risk,
-    };
-
-    const interventions = await generateInterventions(studentData);
-
-    res.json({ interventions, risk });
-  } catch (err) {
-    console.error('Interventions error:', err);
-    res.status(500).json({ error: 'Failed to generate interventions' });
   }
-});
+);
 
 // GET /api/ai/analytics/alerts — Check for new alerts
-router.get('/alerts', authMiddleware, roleMiddleware('admin', 'teacher'), (req, res) => {
+router.get('/alerts', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
   try {
-    const alerts = checkAlerts();
+    const alerts = await checkAlerts();
     res.json({ alerts, count: alerts.length });
   } catch (err) {
     console.error('Alerts error:', err);
@@ -139,7 +145,7 @@ router.get('/alerts', authMiddleware, roleMiddleware('admin', 'teacher'), (req, 
 });
 
 // GET /api/ai/analytics/trend/:id — Trend analysis for a student
-router.get('/trend/:id', authMiddleware, (req, res) => {
+router.get('/trend/:id', authMiddleware, async (req, res) => {
   try {
     const studentUserId = parseInt(req.params.id);
 
@@ -147,7 +153,7 @@ router.get('/trend/:id', authMiddleware, (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const trend = analyzeTrend(studentUserId);
+    const trend = await analyzeTrend(studentUserId);
     res.json({ trend });
   } catch (err) {
     console.error('Trend error:', err);
