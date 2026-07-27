@@ -3,7 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
@@ -102,7 +103,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.post(
   '/',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('curriculum', 'create'),
   upload.single('file'),
   async (req, res) => {
     try {
@@ -146,7 +147,7 @@ router.post(
 router.put(
   '/:id',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('curriculum', 'update'),
   upload.single('file'),
   async (req, res) => {
     try {
@@ -192,25 +193,30 @@ router.put(
 );
 
 // DELETE /api/resources/:id — delete resource (admin/teacher)
-router.delete('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const row = await db.get('SELECT file_path FROM resources WHERE id = ?', [req.params.id]);
-    if (!row) return res.status(404).json({ error: 'Resource not found' });
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermission('curriculum', 'delete'),
+  async (req, res) => {
+    try {
+      const row = await db.get('SELECT file_path FROM resources WHERE id = ?', [req.params.id]);
+      if (!row) return res.status(404).json({ error: 'Resource not found' });
 
-    // Delete file if exists — sanitize path to prevent traversal
-    if (row.file_path) {
-      const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
-      const fullPath = path.resolve(__dirname, '..', row.file_path);
-      if (fullPath.startsWith(uploadsRoot + path.sep) && fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
+      // Delete file if exists — sanitize path to prevent traversal
+      if (row.file_path) {
+        const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
+        const fullPath = path.resolve(__dirname, '..', row.file_path);
+        if (fullPath.startsWith(uploadsRoot + path.sep) && fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
       }
-    }
 
-    await db.run('DELETE FROM resources WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete resource');
+      await db.run('DELETE FROM resources WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Deleted' });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete resource');
+    }
   }
-});
+);
 
 module.exports = router;

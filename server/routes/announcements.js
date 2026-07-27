@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { announcementRules } = require('../middleware/validate');
 const { sendError } = require('../utils/errorHandler');
 
@@ -25,7 +26,8 @@ router.get('/', async (req, res) => {
 
     const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
-    const announcements = await db.all(`
+    const announcements = await db.all(
+      `
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -34,7 +36,9 @@ router.get('/', async (req, res) => {
       LEFT JOIN classes c ON a.class_id = c.id
       ${whereClause}
       ORDER BY a.created_at DESC
-    `, params);
+    `,
+      params
+    );
 
     res.json({ announcements });
   } catch (err) {
@@ -45,7 +49,8 @@ router.get('/', async (req, res) => {
 // Get single announcement (public)
 router.get('/:id', async (req, res) => {
   try {
-    const announcement = await db.get(`
+    const announcement = await db.get(
+      `
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -53,7 +58,9 @@ router.get('/:id', async (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     if (!announcement) {
       return res.status(404).json({ error: 'Announcement not found' });
@@ -66,16 +73,22 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create announcement (teacher/admin only)
-router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcementRules, async (req, res) => {
-  try {
-    const { title, content, grade_id, class_id } = req.body;
+router.post(
+  '/',
+  authMiddleware,
+  requirePermission('announcements', 'create'),
+  announcementRules,
+  async (req, res) => {
+    try {
+      const { title, content, grade_id, class_id } = req.body;
 
-    const result = await db.run(
-      'INSERT INTO announcements (title, content, author_id, grade_id, class_id) VALUES (?, ?, ?, ?, ?)',
-      [title, content, req.user.id, grade_id || null, class_id || null]
-    );
+      const result = await db.run(
+        'INSERT INTO announcements (title, content, author_id, grade_id, class_id) VALUES (?, ?, ?, ?, ?)',
+        [title, content, req.user.id, grade_id || null, class_id || null]
+      );
 
-    const announcement = await db.get(`
+      const announcement = await db.get(
+        `
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -83,13 +96,16 @@ router.post('/', authMiddleware, roleMiddleware('teacher', 'admin'), announcemen
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, [result.lastInsertRowid]);
+    `,
+        [result.lastInsertRowid]
+      );
 
-    res.status(201).json({ message: 'Announcement created', announcement });
-  } catch (err) {
-    sendError(res, err, 'Failed to create announcement');
+      res.status(201).json({ message: 'Announcement created', announcement });
+    } catch (err) {
+      sendError(res, err, 'Failed to create announcement');
+    }
   }
-});
+);
 
 // Update announcement (author or admin only)
 router.put('/:id', authMiddleware, async (req, res) => {
@@ -114,7 +130,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
       [title, content, grade_id || null, class_id || null, req.params.id]
     );
 
-    const announcement = await db.get(`
+    const announcement = await db.get(
+      `
       SELECT a.*, u.name as author_name,
              g.name as grade_name, c.name as class_name
       FROM announcements a
@@ -122,7 +139,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
       LEFT JOIN grades g ON a.grade_id = g.id
       LEFT JOIN classes c ON a.class_id = c.id
       WHERE a.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     res.json({ message: 'Announcement updated', announcement });
   } catch (err) {

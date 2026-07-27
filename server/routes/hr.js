@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -10,7 +11,7 @@ const CONTRACT_TYPES = ['permanent', 'temporary', 'probation', 'contract', 'inte
 const CONTRACT_STATUSES = ['active', 'expired', 'terminated', 'renewed'];
 
 // ─── List Staff with Contract Info ─────────────────────────────
-router.get('/staff', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.get('/staff', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
     const { status, department } = req.query;
 
@@ -48,7 +49,7 @@ router.get('/staff', authMiddleware, roleMiddleware('admin', 'hr'), async (req, 
 });
 
 // ─── Get Single Staff Member ───────────────────────────────────
-router.get('/staff/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.get('/staff/:id', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -83,7 +84,7 @@ router.get('/staff/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (r
 });
 
 // ─── Create Contract ───────────────────────────────────────────
-router.post('/contracts', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.post('/contracts', authMiddleware, requirePermission('hr', 'create'), async (req, res) => {
   try {
     const { staff_id, contract_type, start_date, end_date, salary, position, department, notes } =
       req.body;
@@ -140,55 +141,60 @@ router.post('/contracts', authMiddleware, roleMiddleware('admin', 'hr'), async (
 });
 
 // ─── Update Contract ───────────────────────────────────────────
-router.put('/contracts/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { contract_type, start_date, end_date, salary, position, department, status, notes } =
-      req.body;
+router.put(
+  '/contracts/:id',
+  authMiddleware,
+  requirePermission('hr', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { contract_type, start_date, end_date, salary, position, department, status, notes } =
+        req.body;
 
-    const contract = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [id]);
-    if (!contract) return res.status(404).json({ error: 'Contract not found' });
+      const contract = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [id]);
+      if (!contract) return res.status(404).json({ error: 'Contract not found' });
 
-    if (status && !CONTRACT_STATUSES.includes(status)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid status. Must be: ${CONTRACT_STATUSES.join(', ')}` });
-    }
+      if (status && !CONTRACT_STATUSES.includes(status)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid status. Must be: ${CONTRACT_STATUSES.join(', ')}` });
+      }
 
-    await db.run(
-      `UPDATE staff_contracts SET contract_type = ?, start_date = ?, end_date = ?, salary = ?,
+      await db.run(
+        `UPDATE staff_contracts SET contract_type = ?, start_date = ?, end_date = ?, salary = ?,
        position = ?, department = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [
-        contract_type ?? contract.contract_type,
-        start_date ?? contract.start_date,
-        end_date ?? contract.end_date,
-        salary ?? contract.salary,
-        position ?? contract.position,
-        department ?? contract.department,
-        status ?? contract.status,
-        notes ?? contract.notes,
-        id,
-      ]
-    );
+        [
+          contract_type ?? contract.contract_type,
+          start_date ?? contract.start_date,
+          end_date ?? contract.end_date,
+          salary ?? contract.salary,
+          position ?? contract.position,
+          department ?? contract.department,
+          status ?? contract.status,
+          notes ?? contract.notes,
+          id,
+        ]
+      );
 
-    res.json({ message: 'Contract updated' });
+      res.json({ message: 'Contract updated' });
 
-    auditLog(req, {
-      action: 'update',
-      entityType: 'staff_contract',
-      entityId: id,
-      newValues: { contract_type, status },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to update contract');
+      auditLog(req, {
+        action: 'update',
+        entityType: 'staff_contract',
+        entityId: id,
+        newValues: { contract_type, status },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to update contract');
+    }
   }
-});
+);
 
 // ─── Get Expiring Contracts ────────────────────────────────────
 router.get(
   '/contracts/expiring',
   authMiddleware,
-  roleMiddleware('admin', 'hr'),
+  requirePermission('hr', 'read'),
   async (req, res) => {
     try {
       const { days } = req.query;
@@ -218,7 +224,7 @@ const RATINGS = ['excellent', 'good', 'satisfactory', 'needs_improvement', 'unsa
 const REVIEW_STATUSES = ['draft', 'submitted', 'acknowledged', 'completed'];
 
 // List reviews
-router.get('/reviews', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/reviews', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
     const { staff_id, review_type, status } = req.query;
 
@@ -258,7 +264,7 @@ router.get('/reviews', authMiddleware, roleMiddleware('admin', 'teacher'), async
 });
 
 // Get single review
-router.get('/reviews/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/reviews/:id', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
@@ -281,7 +287,7 @@ router.get('/reviews/:id', authMiddleware, roleMiddleware('admin', 'teacher'), a
 });
 
 // Create review
-router.post('/reviews', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.post('/reviews', authMiddleware, requirePermission('hr', 'create'), async (req, res) => {
   try {
     const {
       staff_id,
@@ -344,7 +350,7 @@ router.post('/reviews', authMiddleware, roleMiddleware('admin', 'hr'), async (re
 });
 
 // Update review
-router.put('/reviews/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.put('/reviews/:id', authMiddleware, requirePermission('hr', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const {
@@ -399,7 +405,7 @@ router.put('/reviews/:id', authMiddleware, roleMiddleware('admin', 'hr'), async 
 router.put(
   '/reviews/:id/submit',
   authMiddleware,
-  roleMiddleware('admin', 'hr'),
+  requirePermission('hr', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -488,7 +494,7 @@ router.get('/reviews/my/list', authMiddleware, async (req, res) => {
 });
 
 // ─── HR Statistics ─────────────────────────────────────────────
-router.get('/stats', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.get('/stats', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
     const totalStaff = await db.get(
       "SELECT COUNT(*) as c FROM users WHERE role IN ('teacher', 'admin')"

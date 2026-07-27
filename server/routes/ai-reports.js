@@ -5,7 +5,8 @@ const { sendError } = require('../utils/errorHandler');
  */
 
 const express = require('express');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { db } = require('../data');
 const {
   aggregateStudentData,
@@ -21,7 +22,7 @@ const router = express.Router();
 router.post(
   '/report/:studentId',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('reports', 'create'),
   async (req, res) => {
     try {
       const studentUserId = parseInt(req.params.studentId);
@@ -79,7 +80,7 @@ router.get('/report/:studentId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/ai/reports — Get all reports (admin/teacher)
-router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/reports', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const reports = getReports(null, req.user.role, req.user.id);
     res.json({ reports });
@@ -93,7 +94,7 @@ router.get('/reports', authMiddleware, roleMiddleware('admin', 'teacher'), async
 router.put(
   '/report/:reportId/approve',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('reports', 'update'),
   async (req, res) => {
     try {
       const reportId = parseInt(req.params.reportId);
@@ -115,7 +116,7 @@ router.put(
 router.put(
   '/report/:reportId/reject',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('reports', 'update'),
   async (req, res) => {
     try {
       const reportId = parseInt(req.params.reportId);
@@ -134,21 +135,26 @@ router.put(
 );
 
 // PUT /api/ai/report/:reportId/send — Mark report as sent
-router.put('/report/:reportId/send', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const reportId = parseInt(req.params.reportId);
-    const result = updateReportStatus(reportId, 'sent', req.user.id);
+router.put(
+  '/report/:reportId/send',
+  authMiddleware,
+  requirePermission('reports', 'update'),
+  async (req, res) => {
+    try {
+      const reportId = parseInt(req.params.reportId);
+      const result = updateReportStatus(reportId, 'sent', req.user.id);
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Report not found' });
+      if (result.changes === 0) {
+        return res.status(404).json({ error: 'Report not found' });
+      }
+
+      res.json({ message: 'Report marked as sent', status: 'sent' });
+    } catch (err) {
+      console.error('Send report error:', err);
+      res.status(500).json({ error: 'Failed to update report' });
     }
-
-    res.json({ message: 'Report marked as sent', status: 'sent' });
-  } catch (err) {
-    console.error('Send report error:', err);
-    res.status(500).json({ error: 'Failed to update report' });
   }
-});
+);
 
 // GET /api/ai/report/:reportId/html — Get report as printable HTML
 router.get('/report/:reportId/html', authMiddleware, async (req, res) => {

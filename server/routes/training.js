@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -45,121 +46,136 @@ router.get('/programs', authMiddleware, async (req, res) => {
 });
 
 // Create program
-router.post('/programs', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
-  try {
-    const { title, description, trainer, start_date, end_date, location, max_participants } =
-      req.body;
+router.post(
+  '/programs',
+  authMiddleware,
+  requirePermission('training', 'create'),
+  async (req, res) => {
+    try {
+      const { title, description, trainer, start_date, end_date, location, max_participants } =
+        req.body;
 
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
-    }
+      if (!title) {
+        return res.status(400).json({ error: 'Title is required' });
+      }
 
-    const result = await db.run(
-      `INSERT INTO training_programs (title, description, trainer, start_date, end_date, location, max_participants, created_by)
+      const result = await db.run(
+        `INSERT INTO training_programs (title, description, trainer, start_date, end_date, location, max_participants, created_by)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        title,
-        description || null,
-        trainer || null,
-        start_date || null,
-        end_date || null,
-        location || null,
-        max_participants || null,
-        req.user.id,
-      ]
-    );
+        [
+          title,
+          description || null,
+          trainer || null,
+          start_date || null,
+          end_date || null,
+          location || null,
+          max_participants || null,
+          req.user.id,
+        ]
+      );
 
-    const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [
-      result.lastInsertRowid,
-    ]);
+      const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [
+        result.lastInsertRowid,
+      ]);
 
-    res.status(201).json({ message: 'Training program created', program });
+      res.status(201).json({ message: 'Training program created', program });
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'training_program',
-      entityId: result.lastInsertRowid,
-      newValues: { title },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to create training program');
+      auditLog(req, {
+        action: 'create',
+        entityType: 'training_program',
+        entityId: result.lastInsertRowid,
+        newValues: { title },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to create training program');
+    }
   }
-});
+);
 
 // Update program
-router.put('/programs/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const {
-      title,
-      description,
-      trainer,
-      start_date,
-      end_date,
-      location,
-      max_participants,
-      status,
-    } = req.body;
+router.put(
+  '/programs/:id',
+  authMiddleware,
+  requirePermission('training', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const {
+        title,
+        description,
+        trainer,
+        start_date,
+        end_date,
+        location,
+        max_participants,
+        status,
+      } = req.body;
 
-    const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [id]);
-    if (!program) return res.status(404).json({ error: 'Training program not found' });
+      const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [id]);
+      if (!program) return res.status(404).json({ error: 'Training program not found' });
 
-    if (status && !PROGRAM_STATUSES.includes(status)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid status. Must be: ${PROGRAM_STATUSES.join(', ')}` });
-    }
+      if (status && !PROGRAM_STATUSES.includes(status)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid status. Must be: ${PROGRAM_STATUSES.join(', ')}` });
+      }
 
-    await db.run(
-      `UPDATE training_programs SET title = ?, description = ?, trainer = ?, start_date = ?,
+      await db.run(
+        `UPDATE training_programs SET title = ?, description = ?, trainer = ?, start_date = ?,
        end_date = ?, location = ?, max_participants = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [
-        title ?? program.title,
-        description ?? program.description,
-        trainer ?? program.trainer,
-        start_date ?? program.start_date,
-        end_date ?? program.end_date,
-        location ?? program.location,
-        max_participants ?? program.max_participants,
-        status ?? program.status,
-        id,
-      ]
-    );
+        [
+          title ?? program.title,
+          description ?? program.description,
+          trainer ?? program.trainer,
+          start_date ?? program.start_date,
+          end_date ?? program.end_date,
+          location ?? program.location,
+          max_participants ?? program.max_participants,
+          status ?? program.status,
+          id,
+        ]
+      );
 
-    res.json({ message: 'Training program updated' });
+      res.json({ message: 'Training program updated' });
 
-    auditLog(req, {
-      action: 'update',
-      entityType: 'training_program',
-      entityId: id,
-      newValues: { title, status },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to update training program');
+      auditLog(req, {
+        action: 'update',
+        entityType: 'training_program',
+        entityId: id,
+        newValues: { title, status },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to update training program');
+    }
   }
-});
+);
 
 // Delete program
-router.delete('/programs/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.delete(
+  '/programs/:id',
+  authMiddleware,
+  requirePermission('training', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [id]);
-    if (!program) return res.status(404).json({ error: 'Training program not found' });
+      const program = await db.get('SELECT * FROM training_programs WHERE id = ?', [id]);
+      if (!program) return res.status(404).json({ error: 'Training program not found' });
 
-    await db.run('DELETE FROM training_programs WHERE id = ?', [id]);
+      await db.run('DELETE FROM training_programs WHERE id = ?', [id]);
 
-    res.json({ message: 'Training program deleted' });
+      res.json({ message: 'Training program deleted' });
 
-    auditLog(req, {
-      action: 'delete',
-      entityType: 'training_program',
-      entityId: id,
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete training program');
+      auditLog(req, {
+        action: 'delete',
+        entityType: 'training_program',
+        entityId: id,
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete training program');
+    }
   }
-});
+);
 
 // ─── Training Assignments ─────────────────────────────────────
 
@@ -167,7 +183,7 @@ router.delete('/programs/:id', authMiddleware, roleMiddleware('admin', 'hr'), as
 router.post(
   '/programs/:id/assign',
   authMiddleware,
-  roleMiddleware('admin', 'hr'),
+  requirePermission('training', 'update'),
   async (req, res) => {
     try {
       const programId = parseInt(req.params.id);
@@ -222,49 +238,54 @@ router.post(
 );
 
 // Update assignment (admin)
-router.put('/assignments/:id', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { status, completion_date, certificate_url, feedback, rating } = req.body;
+router.put(
+  '/assignments/:id',
+  authMiddleware,
+  requirePermission('training', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, completion_date, certificate_url, feedback, rating } = req.body;
 
-    const assignment = await db.get('SELECT * FROM training_assignments WHERE id = ?', [id]);
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
+      const assignment = await db.get('SELECT * FROM training_assignments WHERE id = ?', [id]);
+      if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
-    if (status && !ASSIGNMENT_STATUSES.includes(status)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid status. Must be: ${ASSIGNMENT_STATUSES.join(', ')}` });
-    }
+      if (status && !ASSIGNMENT_STATUSES.includes(status)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid status. Must be: ${ASSIGNMENT_STATUSES.join(', ')}` });
+      }
 
-    if (rating && !RATINGS.includes(rating)) {
-      return res.status(400).json({ error: `Invalid rating. Must be: ${RATINGS.join(', ')}` });
-    }
+      if (rating && !RATINGS.includes(rating)) {
+        return res.status(400).json({ error: `Invalid rating. Must be: ${RATINGS.join(', ')}` });
+      }
 
-    await db.run(
-      `UPDATE training_assignments SET status = ?, completion_date = ?, certificate_url = ?,
+      await db.run(
+        `UPDATE training_assignments SET status = ?, completion_date = ?, certificate_url = ?,
        feedback = ?, rating = ? WHERE id = ?`,
-      [
-        status ?? assignment.status,
-        completion_date ?? assignment.completion_date,
-        certificate_url ?? assignment.certificate_url,
-        feedback ?? assignment.feedback,
-        rating ?? assignment.rating,
-        id,
-      ]
-    );
+        [
+          status ?? assignment.status,
+          completion_date ?? assignment.completion_date,
+          certificate_url ?? assignment.certificate_url,
+          feedback ?? assignment.feedback,
+          rating ?? assignment.rating,
+          id,
+        ]
+      );
 
-    res.json({ message: 'Assignment updated' });
+      res.json({ message: 'Assignment updated' });
 
-    auditLog(req, {
-      action: 'update',
-      entityType: 'training_assignment',
-      entityId: id,
-      newValues: { status, rating },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to update assignment');
+      auditLog(req, {
+        action: 'update',
+        entityType: 'training_assignment',
+        entityId: id,
+        newValues: { status, rating },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to update assignment');
+    }
   }
-});
+);
 
 // My training (teacher self-service)
 router.get('/my', authMiddleware, async (req, res) => {
@@ -286,7 +307,7 @@ router.get('/my', authMiddleware, async (req, res) => {
 });
 
 // Training stats (admin)
-router.get('/stats', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.get('/stats', authMiddleware, requirePermission('training', 'read'), async (req, res) => {
   try {
     const activePrograms = await db.get(
       "SELECT COUNT(*) as c FROM training_programs WHERE status IN ('planned', 'active')"

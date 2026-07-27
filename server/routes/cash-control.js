@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -13,7 +14,7 @@ const TRANSACTION_TYPES = ['income', 'expense', 'refund', 'adjustment'];
 router.get(
   '/session/current',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('cash-control', 'read'),
   async (req, res) => {
     try {
       const session = await db.get(
@@ -69,7 +70,7 @@ router.get(
 router.post(
   '/session/open',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('cash-control', 'create'),
   async (req, res) => {
     try {
       const { opening_balance, notes } = req.body;
@@ -112,7 +113,7 @@ router.post(
 router.post(
   '/session/close',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('cash-control', 'update'),
   async (req, res) => {
     try {
       const { actual_balance, notes } = req.body;
@@ -185,7 +186,7 @@ router.post(
 router.post(
   '/transactions',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('cash-control', 'create'),
   async (req, res) => {
     try {
       const {
@@ -255,42 +256,47 @@ router.post(
 );
 
 // ─── Session History ──────────────────────────────────────────
-router.get('/sessions', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const { status } = req.query;
+router.get(
+  '/sessions',
+  authMiddleware,
+  requirePermission('cash-control', 'read'),
+  async (req, res) => {
+    try {
+      const { status } = req.query;
 
-    let where = [];
-    let params = [];
+      let where = [];
+      let params = [];
 
-    if (status) {
-      where.push('cs.status = ?');
-      params.push(status);
-    }
+      if (status) {
+        where.push('cs.status = ?');
+        params.push(status);
+      }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const sessions = await db.all(
-      `SELECT cs.*, o.name as opened_by_name, c.name as closed_by_name,
+      const sessions = await db.all(
+        `SELECT cs.*, o.name as opened_by_name, c.name as closed_by_name,
               (SELECT COUNT(*) FROM cash_transactions ct WHERE ct.cash_session_id = cs.id) as transaction_count
        FROM cash_sessions cs
        LEFT JOIN users o ON cs.opened_by = o.id
        LEFT JOIN users c ON cs.closed_by = c.id
        ${whereClause}
        ORDER BY cs.session_date DESC`,
-      params
-    );
+        params
+      );
 
-    res.json({ sessions });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch sessions');
+      res.json({ sessions });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch sessions');
+    }
   }
-});
+);
 
 // ─── Daily Report ─────────────────────────────────────────────
 router.get(
   '/report/:sessionId',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('cash-control', 'read'),
   async (req, res) => {
     try {
       const sessionId = parseInt(req.params.sessionId);

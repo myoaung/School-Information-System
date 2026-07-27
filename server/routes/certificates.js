@@ -2,14 +2,17 @@ const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const router = express.Router();
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { certificateRules } = require('../middleware/validate');
 
 // Generate serial number
 function generateSerial(type) {
   const prefix = type.charAt(0).toUpperCase();
   const year = new Date().getFullYear();
-  const rand = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const rand = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, '0');
   return `${prefix}-${year}-${rand}`;
 }
 
@@ -20,7 +23,7 @@ function generateCertificateHTML(cert, student, issuedBy) {
     completion: 'Certificate of Completion',
     achievement: 'Certificate of Achievement',
     transcript: 'Official Transcript',
-    graduation: 'Graduation Certificate'
+    graduation: 'Graduation Certificate',
   };
 
   return `<!DOCTYPE html>
@@ -101,11 +104,16 @@ router.get('/', authMiddleware, async (req, res) => {
     `;
     const params = [];
     if (req.user.role === 'student') {
-      sql += ' AND c.student_id = ?'; params.push(req.user.id);
+      sql += ' AND c.student_id = ?';
+      params.push(req.user.id);
     } else if (student_id) {
-      sql += ' AND c.student_id = ?'; params.push(student_id);
+      sql += ' AND c.student_id = ?';
+      params.push(student_id);
     }
-    if (type) { sql += ' AND c.type = ?'; params.push(type); }
+    if (type) {
+      sql += ' AND c.type = ?';
+      params.push(type);
+    }
     sql += ' ORDER BY c.issued_at DESC';
     res.json(await db.all(sql, params));
   } catch (err) {
@@ -116,7 +124,8 @@ router.get('/', authMiddleware, async (req, res) => {
 // Get single certificate
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const cert = await db.get(`
+    const cert = await db.get(
+      `
       SELECT c.*, u.name as student_name, s.student_id as student_code,
              issuer.name as issued_by_name
       FROM certificates c
@@ -124,7 +133,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
       LEFT JOIN students s ON s.user_id = u.id
       LEFT JOIN users issuer ON issuer.id = c.issued_by
       WHERE c.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     if (!cert) return res.status(404).json({ error: 'Certificate not found' });
     if (req.user.role === 'student' && cert.student_id !== req.user.id) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -136,34 +147,52 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Generate certificate
-router.post('/generate', authMiddleware, roleMiddleware('admin', 'teacher'), certificateRules, async (req, res) => {
-  try {
-    const { student_id, type, data } = req.body;
-    if (!student_id || !type) return res.status(400).json({ error: 'student_id and type required' });
+router.post(
+  '/generate',
+  authMiddleware,
+  requirePermission('students', 'create'),
+  certificateRules,
+  async (req, res) => {
+    try {
+      const { student_id, type, data } = req.body;
+      if (!student_id || !type)
+        return res.status(400).json({ error: 'student_id and type required' });
 
-    const student = await db.get('SELECT * FROM users WHERE id = ?', [student_id]);
-    if (!student) return res.status(404).json({ error: 'Student not found' });
+      const student = await db.get('SELECT * FROM users WHERE id = ?', [student_id]);
+      if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    const serial = generateSerial(type);
-    const result = await db.run('INSERT INTO certificates (student_id, type, data, issued_by, serial_number) VALUES (?, ?, ?, ?, ?)',
-      [student_id, type, data ? JSON.stringify(data) : null, req.user.id, serial]);
+      const serial = generateSerial(type);
+      const result = await db.run(
+        'INSERT INTO certificates (student_id, type, data, issued_by, serial_number) VALUES (?, ?, ?, ?, ?)',
+        [student_id, type, data ? JSON.stringify(data) : null, req.user.id, serial]
+      );
 
-    res.status(201).json({ id: result.lastInsertRowid, serial_number: serial, message: 'Certificate generated' });
-  } catch (err) {
-    sendError(res, err);
+      res
+        .status(201)
+        .json({
+          id: result.lastInsertRowid,
+          serial_number: serial,
+          message: 'Certificate generated',
+        });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // Get certificate as printable HTML
 router.get('/:id/html', authMiddleware, async (req, res) => {
   try {
-    const cert = await db.get(`
+    const cert = await db.get(
+      `
       SELECT c.*, u.name as student_name, issuer.name as issued_by_name
       FROM certificates c
       JOIN users u ON u.id = c.student_id
       LEFT JOIN users issuer ON issuer.id = c.issued_by
       WHERE c.id = ?
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     if (!cert) return res.status(404).json({ error: 'Certificate not found' });
     if (req.user.role === 'student' && cert.student_id !== req.user.id) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -178,7 +207,7 @@ router.get('/:id/html', authMiddleware, async (req, res) => {
 });
 
 // Delete certificate
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, requirePermission('students', 'delete'), async (req, res) => {
   try {
     await db.run('DELETE FROM certificates WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });

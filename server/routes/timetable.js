@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -71,7 +72,7 @@ router.get('/teacher', authMiddleware, async (req, res) => {
 });
 
 // Create timetable entry (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/', authMiddleware, requirePermission('timetable', 'create'), async (req, res) => {
   try {
     const { class_id, subject_id, teacher_id, day_of_week, start_time, end_time, room } = req.body;
 
@@ -129,7 +130,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // Update timetable entry (admin only)
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('timetable', 'update'), async (req, res) => {
   try {
     const { subject_id, teacher_id, day_of_week, start_time, end_time, room } = req.body;
 
@@ -167,18 +168,27 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 });
 
 // Delete timetable entry (admin only)
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const existing = await db.get('SELECT * FROM timetable WHERE id = ?', [req.params.id]);
-    if (!existing) return res.status(404).json({ error: 'Timetable entry not found' });
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermission('timetable', 'delete'),
+  async (req, res) => {
+    try {
+      const existing = await db.get('SELECT * FROM timetable WHERE id = ?', [req.params.id]);
+      if (!existing) return res.status(404).json({ error: 'Timetable entry not found' });
 
-    await db.run('DELETE FROM timetable WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Timetable entry deleted' });
+      await db.run('DELETE FROM timetable WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Timetable entry deleted' });
 
-    auditLog(req, { action: 'delete', entityType: 'timetable', entityId: parseInt(req.params.id) });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete timetable entry');
+      auditLog(req, {
+        action: 'delete',
+        entityType: 'timetable',
+        entityId: parseInt(req.params.id),
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete timetable entry');
+    }
   }
-});
+);
 
 module.exports = router;

@@ -5,7 +5,8 @@ const { sendError } = require('../utils/errorHandler');
  */
 
 const express = require('express');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const {
   calculateRiskScore,
   getAtRiskStudents,
@@ -19,7 +20,7 @@ const { db } = require('../data');
 const router = express.Router();
 
 // GET /api/ai/analytics/stats — Dashboard overview
-router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/stats', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const stats = await getAnalyticsStats();
     res.json({ stats });
@@ -30,7 +31,7 @@ router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), async (
 });
 
 // GET /api/ai/analytics/at-risk — List at-risk students
-router.get('/at-risk', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/at-risk', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const { classId, gradeId, minScore = 30, limit = 50 } = req.query;
 
@@ -101,7 +102,7 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
 router.get(
   '/student/:id/interventions',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('reports', 'read'),
   async (req, res) => {
     try {
       const studentUserId = parseInt(req.params.id);
@@ -134,7 +135,7 @@ router.get(
 );
 
 // GET /api/ai/analytics/alerts — Check for new alerts
-router.get('/alerts', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/alerts', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const alerts = await checkAlerts();
     res.json({ alerts, count: alerts.length });

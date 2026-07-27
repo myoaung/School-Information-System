@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { contactRules } = require('../middleware/validate');
 const { sendError } = require('../utils/errorHandler');
 
@@ -26,7 +27,7 @@ router.post('/', contactRules, async (req, res) => {
 });
 
 // Get all contacts — admin only
-router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/', authMiddleware, requirePermission('students', 'read'), async (req, res) => {
   try {
     const contacts = await db.all('SELECT * FROM contacts ORDER BY created_at DESC');
 
@@ -37,7 +38,7 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // Delete a contact submission — admin only
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, requirePermission('students', 'delete'), async (req, res) => {
   try {
     await db.run('DELETE FROM contacts WHERE id = ?', [req.params.id]);
     res.json({ message: 'Deleted' });

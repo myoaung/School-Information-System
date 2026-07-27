@@ -1,7 +1,8 @@
 const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { gradeRules } = require('../middleware/validate');
 const { auditLog } = require('../middleware/audit');
 
@@ -51,7 +52,7 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post(
   '/',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('reports', 'create'),
   gradeRules,
   async (req, res) => {
     try {
@@ -137,7 +138,7 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
 });
 
 // Export grades as CSV (admin/teacher)
-router.get('/export', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/export', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const { course_id } = req.query;
 

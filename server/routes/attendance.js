@@ -1,7 +1,8 @@
 const { sendError } = require('../utils/errorHandler');
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { markAttendanceRules } = require('../middleware/validate');
 
 const router = express.Router();
@@ -16,25 +17,33 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 
     // Get students in the class
-    const students = await db.all(`
+    const students = await db.all(
+      `
       SELECT u.id, u.name, s.student_id
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
       LEFT JOIN students s ON s.user_id = u.id
       WHERE e.class_id = ?
       ORDER BY u.name
-    `, [class_id]);
+    `,
+      [class_id]
+    );
 
     // Get attendance records for this date
-    const records = await db.all(`
+    const records = await db.all(
+      `
       SELECT user_id, status, note FROM attendance
       WHERE class_id = ? AND date = ?
-    `, [class_id, date]);
+    `,
+      [class_id, date]
+    );
 
     const recordMap = {};
-    records.forEach(r => { recordMap[r.user_id] = r; });
+    records.forEach((r) => {
+      recordMap[r.user_id] = r;
+    });
 
-    const attendance = students.map(s => ({
+    const attendance = students.map((s) => ({
       user_id: s.id,
       name: s.name,
       student_id: s.student_id,
@@ -50,35 +59,54 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Mark attendance for multiple students (admin/teacher)
-router.post('/', authMiddleware, roleMiddleware('admin', 'teacher'), markAttendanceRules, async (req, res) => {
-  try {
-    const { class_id, date, records } = req.body;
-
-    if (!class_id || !date || !records || !Array.isArray(records)) {
-      return res.status(400).json({ error: 'class_id, date, and records array are required' });
-    }
-
-    await db.run(`BEGIN TRANSACTION`);
+router.post(
+  '/',
+  authMiddleware,
+  requirePermission('attendance', 'create'),
+  markAttendanceRules,
+  async (req, res) => {
     try {
-      for (const r of records) {
-        await db.run(`
+      const { class_id, date, records } = req.body;
+
+      if (!class_id || !date || !records || !Array.isArray(records)) {
+        return res.status(400).json({ error: 'class_id, date, and records array are required' });
+      }
+
+      await db.run(`BEGIN TRANSACTION`);
+      try {
+        for (const r of records) {
+          await db.run(
+            `
           INSERT INTO attendance (user_id, class_id, date, status, note, marked_by)
           VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(user_id, class_id, date) DO UPDATE SET status = ?, note = ?, marked_by = ?
-        `, [r.user_id, class_id, date, r.status, r.note || null, req.user.id, r.status, r.note || null, req.user.id]);
+        `,
+            [
+              r.user_id,
+              class_id,
+              date,
+              r.status,
+              r.note || null,
+              req.user.id,
+              r.status,
+              r.note || null,
+              req.user.id,
+            ]
+          );
+        }
+        await db.run(`COMMIT`);
+      } catch (txErr) {
+        await db.run(`ROLLBACK`);
+        throw txErr;
       }
-      await db.run(`COMMIT`);
-    } catch (txErr) {
-      await db.run(`ROLLBACK`);
-      throw txErr;
-    }
 
-    res.json({ message: 'Attendance marked', count: records.length });
-  } catch (err) {
-    console.error('Error marking attendance:', err);
-    res.status(500).json({ error: 'Failed to mark attendance' });
+      res.json({ message: 'Attendance marked', count: records.length });
+    } catch (err) {
+      console.error('Error marking attendance:', err);
+      res.status(500).json({ error: 'Failed to mark attendance' });
+    }
   }
-});
+);
 
 // Get attendance summary for a student
 router.get('/summary', authMiddleware, async (req, res) => {
@@ -100,21 +128,27 @@ router.get('/summary', authMiddleware, async (req, res) => {
       params.push(class_id);
     }
 
-    const summary = await db.all(`
+    const summary = await db.all(
+      `
       SELECT a.status, COUNT(*) as count
       FROM attendance a
       WHERE ${where.join(' AND ')}
       GROUP BY a.status
-    `, params);
+    `,
+      params
+    );
 
-    const recent = await db.all(`
+    const recent = await db.all(
+      `
       SELECT a.date, a.status, c.name as class_name
       FROM attendance a
       JOIN classes c ON a.class_id = c.id
       WHERE ${where.join(' AND ')}
       ORDER BY a.date DESC
       LIMIT 10
-    `, params);
+    `,
+      params
+    );
 
     res.json({ summary, recent });
   } catch (err) {
@@ -126,12 +160,16 @@ router.get('/summary', authMiddleware, async (req, res) => {
 // ── Teacher Attendance ──
 
 // Get teacher attendance for a date
-router.get('/teacher', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const { date } = req.query;
-    const targetDate = date || new Date().toISOString().split('T')[0];
+router.get(
+  '/teacher',
+  authMiddleware,
+  requirePermission('attendance', 'read'),
+  async (req, res) => {
+    try {
+      const { date } = req.query;
+      const targetDate = date || new Date().toISOString().split('T')[0];
 
-    const teachers = await db.all(`
+      const teachers = await db.all(`
       SELECT u.id, u.name, t.teacher_id as teacher_code, t.specialization
       FROM users u
       JOIN teachers t ON t.user_id = u.id
@@ -139,72 +177,100 @@ router.get('/teacher', authMiddleware, roleMiddleware('admin'), async (req, res)
       ORDER BY u.name
     `);
 
-    const records = await db.all('SELECT * FROM teacher_attendance WHERE date = ?', [targetDate]);
-    const recordMap = {};
-    records.forEach(r => { recordMap[r.teacher_id] = r; });
+      const records = await db.all('SELECT * FROM teacher_attendance WHERE date = ?', [targetDate]);
+      const recordMap = {};
+      records.forEach((r) => {
+        recordMap[r.teacher_id] = r;
+      });
 
-    const attendance = teachers.map(t => ({
-      teacher_id: t.id,
-      name: t.name,
-      teacher_code: t.teacher_code,
-      specialization: t.specialization,
-      status: recordMap[t.id]?.status || null,
-      check_in: recordMap[t.id]?.check_in || null,
-      check_out: recordMap[t.id]?.check_out || null,
-      note: recordMap[t.id]?.note || null
-    }));
+      const attendance = teachers.map((t) => ({
+        teacher_id: t.id,
+        name: t.name,
+        teacher_code: t.teacher_code,
+        specialization: t.specialization,
+        status: recordMap[t.id]?.status || null,
+        check_in: recordMap[t.id]?.check_in || null,
+        check_out: recordMap[t.id]?.check_out || null,
+        note: recordMap[t.id]?.note || null,
+      }));
 
-    res.json({ attendance, date: targetDate });
-  } catch (err) {
-    sendError(res, err);
+      res.json({ attendance, date: targetDate });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // Mark teacher attendance (check-in)
-router.post('/teacher/check-in', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { teacher_id, status, note } = req.body;
-    const targetId = teacher_id || req.user.id;
+router.post(
+  '/teacher/check-in',
+  authMiddleware,
+  requirePermission('attendance', 'create'),
+  async (req, res) => {
+    try {
+      const { teacher_id, status, note } = req.body;
+      const targetId = teacher_id || req.user.id;
 
-    // Teachers can only check themselves in
-    if (req.user.role === 'teacher' && targetId !== req.user.id) {
-      return res.status(403).json({ error: 'Can only check yourself in' });
-    }
+      // Teachers can only check themselves in
+      if (req.user.role === 'teacher' && targetId !== req.user.id) {
+        return res.status(403).json({ error: 'Can only check yourself in' });
+      }
 
-    const date = new Date().toISOString().split('T')[0];
-    const checkIn = new Date().toTimeString().slice(0, 5);
+      const date = new Date().toISOString().split('T')[0];
+      const checkIn = new Date().toTimeString().slice(0, 5);
 
-    await db.run(`
+      await db.run(
+        `
       INSERT INTO teacher_attendance (teacher_id, date, check_in, status, note)
       VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(teacher_id, date) DO UPDATE SET check_in = ?, status = ?, note = ?
-    `, [targetId, date, checkIn, status || 'present', note || null, checkIn, status || 'present', note || null]);
+    `,
+        [
+          targetId,
+          date,
+          checkIn,
+          status || 'present',
+          note || null,
+          checkIn,
+          status || 'present',
+          note || null,
+        ]
+      );
 
-    res.json({ message: 'Checked in', check_in: checkIn });
-  } catch (err) {
-    sendError(res, err);
+      res.json({ message: 'Checked in', check_in: checkIn });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // Teacher check-out
-router.post('/teacher/check-out', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { teacher_id } = req.body;
-    const targetId = teacher_id || req.user.id;
+router.post(
+  '/teacher/check-out',
+  authMiddleware,
+  requirePermission('attendance', 'create'),
+  async (req, res) => {
+    try {
+      const { teacher_id } = req.body;
+      const targetId = teacher_id || req.user.id;
 
-    if (req.user.role === 'teacher' && targetId !== req.user.id) {
-      return res.status(403).json({ error: 'Can only check yourself out' });
+      if (req.user.role === 'teacher' && targetId !== req.user.id) {
+        return res.status(403).json({ error: 'Can only check yourself out' });
+      }
+
+      const date = new Date().toISOString().split('T')[0];
+      const checkOut = new Date().toTimeString().slice(0, 5);
+
+      await db.run(
+        'UPDATE teacher_attendance SET check_out = ? WHERE teacher_id = ? AND date = ?',
+        [checkOut, targetId, date]
+      );
+      res.json({ message: 'Checked out', check_out: checkOut });
+    } catch (err) {
+      sendError(res, err);
     }
-
-    const date = new Date().toISOString().split('T')[0];
-    const checkOut = new Date().toTimeString().slice(0, 5);
-
-    await db.run('UPDATE teacher_attendance SET check_out = ? WHERE teacher_id = ? AND date = ?', [checkOut, targetId, date]);
-    res.json({ message: 'Checked out', check_out: checkOut });
-  } catch (err) {
-    sendError(res, err);
   }
-});
+);
 
 // Get teacher attendance summary
 router.get('/teacher/summary', authMiddleware, async (req, res) => {
@@ -216,15 +282,21 @@ router.get('/teacher/summary', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const summary = await db.all(`
+    const summary = await db.all(
+      `
       SELECT status, COUNT(*) as count FROM teacher_attendance
       WHERE teacher_id = ? GROUP BY status
-    `, [targetId]);
+    `,
+      [targetId]
+    );
 
-    const recent = await db.all(`
+    const recent = await db.all(
+      `
       SELECT * FROM teacher_attendance WHERE teacher_id = ?
       ORDER BY date DESC LIMIT 10
-    `, [targetId]);
+    `,
+      [targetId]
+    );
 
     res.json({ summary, recent });
   } catch (err) {

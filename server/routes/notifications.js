@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { createAndSend, sendToRole, getStats } = require('../services/notificationService');
 
@@ -178,61 +179,71 @@ router.put('/preferences', authMiddleware, async (req, res) => {
 });
 
 // ─── Send Notification (admin only) ────────────────────────────
-router.post('/send', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const { title, message, type, target_role, target_user_ids, channels, link } = req.body;
+router.post(
+  '/send',
+  authMiddleware,
+  requirePermission('notifications', 'create'),
+  async (req, res) => {
+    try {
+      const { title, message, type, target_role, target_user_ids, channels, link } = req.body;
 
-    if (!title || !message) {
-      return res.status(400).json({ error: 'title and message are required' });
-    }
+      if (!title || !message) {
+        return res.status(400).json({ error: 'title and message are required' });
+      }
 
-    let results = [];
+      let results = [];
 
-    if (target_role) {
-      // Send to all users with this role
-      results = await sendToRole(target_role, {
-        title,
-        message,
-        type: type || 'general',
-        link,
-        channels: channels || ['in_app'],
-      });
-    } else if (target_user_ids && target_user_ids.length > 0) {
-      // Send to specific users
-      for (const userId of target_user_ids) {
-        const result = await createAndSend({
-          userId,
+      if (target_role) {
+        // Send to all users with this role
+        results = await sendToRole(target_role, {
           title,
           message,
           type: type || 'general',
           link,
           channels: channels || ['in_app'],
         });
-        results.push({ userId, ...result });
+      } else if (target_user_ids && target_user_ids.length > 0) {
+        // Send to specific users
+        for (const userId of target_user_ids) {
+          const result = await createAndSend({
+            userId,
+            title,
+            message,
+            type: type || 'general',
+            link,
+            channels: channels || ['in_app'],
+          });
+          results.push({ userId, ...result });
+        }
+      } else {
+        return res.status(400).json({ error: 'target_role or target_user_ids required' });
       }
-    } else {
-      return res.status(400).json({ error: 'target_role or target_user_ids required' });
+
+      const successCount = results.filter((r) => r.in_app?.success).length;
+
+      res.json({
+        message: `Notification sent to ${successCount} users`,
+        results,
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to send notification');
     }
-
-    const successCount = results.filter((r) => r.in_app?.success).length;
-
-    res.json({
-      message: `Notification sent to ${successCount} users`,
-      results,
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to send notification');
   }
-});
+);
 
 // ─── Notification Stats (admin only) ───────────────────────────
-router.get('/stats', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const stats = await getStats();
-    res.json({ stats });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch stats');
+router.get(
+  '/stats',
+  authMiddleware,
+  requirePermission('notifications', 'read'),
+  async (req, res) => {
+    try {
+      const stats = await getStats();
+      res.json({ stats });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch stats');
+    }
   }
-});
+);
 
 module.exports = router;

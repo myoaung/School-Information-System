@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -124,7 +125,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // ─── Approve Leave Request (admin/HR only) ────────────────────────
-router.put('/:id/approve', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.put('/:id/approve', authMiddleware, requirePermission('hr', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { admin_notes } = req.body;
@@ -172,7 +173,7 @@ router.put('/:id/approve', authMiddleware, roleMiddleware('admin', 'hr'), async 
 });
 
 // ─── Reject Leave Request (admin/HR only) ─────────────────────────
-router.put('/:id/reject', authMiddleware, roleMiddleware('admin', 'hr'), async (req, res) => {
+router.put('/:id/reject', authMiddleware, requirePermission('hr', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { admin_notes } = req.body;
@@ -221,41 +222,36 @@ router.get('/my/requests', authMiddleware, async (req, res) => {
 });
 
 // ─── Leave Statistics ──────────────────────────────────────────
-router.get(
-  '/stats/summary',
-  authMiddleware,
-  roleMiddleware('admin', 'teacher'),
-  async (req, res) => {
-    try {
-      const total = await db.get('SELECT COUNT(*) as c FROM leave_requests');
-      const pending = await db.get(
-        "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"
-      );
-      const approved = await db.get(
-        "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'approved'"
-      );
-      const rejected = await db.get(
-        "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'rejected'"
-      );
+router.get('/stats/summary', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
+  try {
+    const total = await db.get('SELECT COUNT(*) as c FROM leave_requests');
+    const pending = await db.get(
+      "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"
+    );
+    const approved = await db.get(
+      "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'approved'"
+    );
+    const rejected = await db.get(
+      "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'rejected'"
+    );
 
-      // By type
-      const byType = await db.all(
-        `SELECT leave_type, COUNT(*) as count FROM leave_requests GROUP BY leave_type`
-      );
+    // By type
+    const byType = await db.all(
+      `SELECT leave_type, COUNT(*) as count FROM leave_requests GROUP BY leave_type`
+    );
 
-      res.json({
-        stats: {
-          total: total?.c || 0,
-          pending: pending?.c || 0,
-          approved: approved?.c || 0,
-          rejected: rejected?.c || 0,
-          byType: byType || [],
-        },
-      });
-    } catch (err) {
-      sendError(res, err, 'Failed to fetch leave stats');
-    }
+    res.json({
+      stats: {
+        total: total?.c || 0,
+        pending: pending?.c || 0,
+        approved: approved?.c || 0,
+        rejected: rejected?.c || 0,
+        byType: byType || [],
+      },
+    });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch leave stats');
   }
-);
+});
 
 module.exports = router;

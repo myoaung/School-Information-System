@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -61,7 +62,7 @@ router.get('/books/:id', authMiddleware, async (req, res) => {
 });
 
 // ─── Add Book (admin only) ────────────────────────────────────
-router.post('/books', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/books', authMiddleware, requirePermission('library', 'create'), async (req, res) => {
   try {
     const { title, author, isbn, category, total_copies, description, cover_url } = req.body;
 
@@ -100,75 +101,85 @@ router.post('/books', authMiddleware, roleMiddleware('admin'), async (req, res) 
 });
 
 // ─── Update Book (admin only) ──────────────────────────────────
-router.put('/books/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { title, author, isbn, category, total_copies, description, cover_url } = req.body;
+router.put(
+  '/books/:id',
+  authMiddleware,
+  requirePermission('library', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { title, author, isbn, category, total_copies, description, cover_url } = req.body;
 
-    const book = await db.get('SELECT * FROM library_books WHERE id = ?', [id]);
-    if (!book) return res.status(404).json({ error: 'Book not found' });
+      const book = await db.get('SELECT * FROM library_books WHERE id = ?', [id]);
+      if (!book) return res.status(404).json({ error: 'Book not found' });
 
-    const newTotal = parseInt(total_copies) ?? book.total_copies;
-    const borrowed = book.total_copies - book.available_copies;
-    const newAvailable = Math.max(0, newTotal - borrowed);
+      const newTotal = parseInt(total_copies) ?? book.total_copies;
+      const borrowed = book.total_copies - book.available_copies;
+      const newAvailable = Math.max(0, newTotal - borrowed);
 
-    await db.run(
-      `UPDATE library_books SET title = ?, author = ?, isbn = ?, category = ?, total_copies = ?, available_copies = ?, description = ?, cover_url = ? WHERE id = ?`,
-      [
-        title ?? book.title,
-        author ?? book.author,
-        isbn ?? book.isbn,
-        category ?? book.category,
-        newTotal,
-        newAvailable,
-        description ?? book.description,
-        cover_url ?? book.cover_url,
-        id,
-      ]
-    );
+      await db.run(
+        `UPDATE library_books SET title = ?, author = ?, isbn = ?, category = ?, total_copies = ?, available_copies = ?, description = ?, cover_url = ? WHERE id = ?`,
+        [
+          title ?? book.title,
+          author ?? book.author,
+          isbn ?? book.isbn,
+          category ?? book.category,
+          newTotal,
+          newAvailable,
+          description ?? book.description,
+          cover_url ?? book.cover_url,
+          id,
+        ]
+      );
 
-    res.json({ message: 'Book updated' });
+      res.json({ message: 'Book updated' });
 
-    auditLog(req, {
-      action: 'update',
-      entityType: 'library_book',
-      entityId: id,
-      newValues: { title, category },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to update book');
+      auditLog(req, {
+        action: 'update',
+        entityType: 'library_book',
+        entityId: id,
+        newValues: { title, category },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to update book');
+    }
   }
-});
+);
 
 // ─── Delete Book (admin only) ──────────────────────────────────
-router.delete('/books/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.delete(
+  '/books/:id',
+  authMiddleware,
+  requirePermission('library', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const book = await db.get('SELECT * FROM library_books WHERE id = ?', [id]);
-    if (!book) return res.status(404).json({ error: 'Book not found' });
+      const book = await db.get('SELECT * FROM library_books WHERE id = ?', [id]);
+      if (!book) return res.status(404).json({ error: 'Book not found' });
 
-    // Check for active borrows
-    const active = await db.get(
-      "SELECT COUNT(*) as c FROM library_borrows WHERE book_id = ? AND status = 'borrowed'",
-      [id]
-    );
-    if (active.c > 0) {
-      return res.status(400).json({ error: 'Cannot delete book with active borrows' });
+      // Check for active borrows
+      const active = await db.get(
+        "SELECT COUNT(*) as c FROM library_borrows WHERE book_id = ? AND status = 'borrowed'",
+        [id]
+      );
+      if (active.c > 0) {
+        return res.status(400).json({ error: 'Cannot delete book with active borrows' });
+      }
+
+      await db.run('DELETE FROM library_books WHERE id = ?', [id]);
+
+      res.json({ message: 'Book deleted' });
+
+      auditLog(req, { action: 'delete', entityType: 'library_book', entityId: id });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete book');
     }
-
-    await db.run('DELETE FROM library_books WHERE id = ?', [id]);
-
-    res.json({ message: 'Book deleted' });
-
-    auditLog(req, { action: 'delete', entityType: 'library_book', entityId: id });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete book');
   }
-});
+);
 
 // ─── Borrow Book ───────────────────────────────────────────────
-router.post('/borrow', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.post('/borrow', authMiddleware, requirePermission('library', 'create'), async (req, res) => {
   try {
     const { book_id, user_id, due_date, notes } = req.body;
 
@@ -229,7 +240,7 @@ router.post('/borrow', authMiddleware, roleMiddleware('admin', 'teacher'), async
 router.post(
   '/return/:borrowId',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('library', 'update'),
   async (req, res) => {
     try {
       const borrowId = parseInt(req.params.borrowId);
@@ -283,7 +294,7 @@ router.post(
 );
 
 // ─── List Borrows ──────────────────────────────────────────────
-router.get('/borrows', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/borrows', authMiddleware, requirePermission('library', 'read'), async (req, res) => {
   try {
     const { status, user_id } = req.query;
 
@@ -339,7 +350,7 @@ router.get('/borrows/my', authMiddleware, async (req, res) => {
 });
 
 // ─── Library Stats ─────────────────────────────────────────────
-router.get('/stats', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/stats', authMiddleware, requirePermission('library', 'read'), async (req, res) => {
   try {
     const totalBooks = await db.get(
       'SELECT COALESCE(SUM(total_copies), 0) as c FROM library_books'

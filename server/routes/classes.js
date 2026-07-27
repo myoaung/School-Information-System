@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { classRules } = require('../middleware/validate');
 const { sendError } = require('../utils/errorHandler');
 
@@ -87,50 +88,58 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create class (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), classRules, async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      teacher_id,
-      academic_year_id,
-      grade_id,
-      section,
-      capacity,
-      schedule,
-      room,
-    } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: 'Class name is required' });
-    }
-
-    const result = await db.run(
-      `INSERT INTO classes (name, description, teacher_id, academic_year_id, grade_id, section, capacity, schedule, room)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
+router.post(
+  '/',
+  authMiddleware,
+  requirePermission('classes', 'create'),
+  classRules,
+  async (req, res) => {
+    try {
+      const {
         name,
-        description || null,
-        teacher_id || null,
-        academic_year_id || null,
-        grade_id || null,
-        section || 'A',
-        capacity || 40,
-        schedule || null,
-        room || null,
-      ]
-    );
+        description,
+        teacher_id,
+        academic_year_id,
+        grade_id,
+        section,
+        capacity,
+        schedule,
+        room,
+      } = req.body;
 
-    const classData = await db.get('SELECT * FROM classes WHERE id = ?', [result.lastInsertRowid]);
+      if (!name) {
+        return res.status(400).json({ error: 'Class name is required' });
+      }
 
-    res.status(201).json({ message: 'Class created', class: classData });
-  } catch (err) {
-    sendError(res, err, 'Failed to create class');
+      const result = await db.run(
+        `INSERT INTO classes (name, description, teacher_id, academic_year_id, grade_id, section, capacity, schedule, room)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          name,
+          description || null,
+          teacher_id || null,
+          academic_year_id || null,
+          grade_id || null,
+          section || 'A',
+          capacity || 40,
+          schedule || null,
+          room || null,
+        ]
+      );
+
+      const classData = await db.get('SELECT * FROM classes WHERE id = ?', [
+        result.lastInsertRowid,
+      ]);
+
+      res.status(201).json({ message: 'Class created', class: classData });
+    } catch (err) {
+      sendError(res, err, 'Failed to create class');
+    }
   }
-});
+);
 
 // Update class (admin only)
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('classes', 'update'), async (req, res) => {
   try {
     const {
       name,
@@ -179,46 +188,80 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
   }
 });
 
-// Enroll student (admin or teacher)
-router.post('/:id/enroll', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+// Delete class (admin only)
+router.delete('/:id', authMiddleware, requirePermission('classes', 'delete'), async (req, res) => {
   try {
-    const { student_id } = req.body;
-
-    if (!student_id) {
-      return res.status(400).json({ error: 'Student ID is required' });
-    }
-
     const classData = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [
-      student_id,
-      'student',
-    ]);
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
-
-    const existing = await db.get(
-      'SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?',
-      [req.params.id, student_id]
+    // Check for enrolled students
+    const enrollmentCount = await db.get(
+      'SELECT COUNT(*) as count FROM enrollments WHERE class_id = ?',
+      [req.params.id]
     );
-    if (existing) {
-      return res.status(409).json({ error: 'Student already enrolled' });
+    if (enrollmentCount.count > 0) {
+      return res.status(400).json({
+        error: 'Cannot delete class with enrolled students. Remove students first.',
+      });
     }
 
-    await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', [
-      req.params.id,
-      student_id,
-    ]);
+    // Remove subject-teacher assignments first
+    await db.run('DELETE FROM class_subject_teachers WHERE class_id = ?', [req.params.id]);
+    await db.run('DELETE FROM classes WHERE id = ?', [req.params.id]);
 
-    res.json({ message: 'Student enrolled successfully' });
+    res.json({ message: 'Class deleted' });
   } catch (err) {
-    sendError(res, err, 'Failed to enroll student');
+    sendError(res, err, 'Failed to delete class');
   }
 });
+
+// Enroll student (admin or teacher)
+router.post(
+  '/:id/enroll',
+  authMiddleware,
+  requirePermission('classes', 'update'),
+  async (req, res) => {
+    try {
+      const { student_id } = req.body;
+
+      if (!student_id) {
+        return res.status(400).json({ error: 'Student ID is required' });
+      }
+
+      const classData = await db.get('SELECT * FROM classes WHERE id = ?', [req.params.id]);
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+
+      const student = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [
+        student_id,
+        'student',
+      ]);
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+
+      const existing = await db.get(
+        'SELECT * FROM enrollments WHERE class_id = ? AND student_id = ?',
+        [req.params.id, student_id]
+      );
+      if (existing) {
+        return res.status(409).json({ error: 'Student already enrolled' });
+      }
+
+      await db.run('INSERT INTO enrollments (class_id, student_id) VALUES (?, ?)', [
+        req.params.id,
+        student_id,
+      ]);
+
+      res.json({ message: 'Student enrolled successfully' });
+    } catch (err) {
+      sendError(res, err, 'Failed to enroll student');
+    }
+  }
+);
 
 // Get class schedule
 router.get('/:id/schedule', async (req, res) => {

@@ -1,7 +1,8 @@
 const express = require('express');
 const crypto = require('crypto');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -14,76 +15,81 @@ function generateQRToken() {
 }
 
 // ─── Create Session + Generate QR ──────────────────────────────
-router.post('/sessions', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { class_id, timetable_id, date } = req.body;
+router.post(
+  '/sessions',
+  authMiddleware,
+  requirePermission('attendance', 'create'),
+  async (req, res) => {
+    try {
+      const { class_id, timetable_id, date } = req.body;
 
-    if (!class_id) {
-      return res.status(400).json({ error: 'class_id is required' });
-    }
-
-    const sessionDate = date || new Date().toISOString().split('T')[0];
-
-    // Get timetable info if provided
-    let subject_id = null;
-    let teacher_id = req.user.id;
-    let start_time = null;
-    let end_time = null;
-    let room = null;
-
-    if (timetable_id) {
-      const tt = await db.get('SELECT * FROM timetable WHERE id = ?', [timetable_id]);
-      if (tt) {
-        subject_id = tt.subject_id;
-        teacher_id = tt.teacher_id || req.user.id;
-        start_time = tt.start_time;
-        end_time = tt.end_time;
-        room = tt.room;
+      if (!class_id) {
+        return res.status(400).json({ error: 'class_id is required' });
       }
-    }
 
-    // Deactivate any existing active sessions for this class today
-    await db.run(
-      'UPDATE class_sessions SET is_active = 0 WHERE class_id = ? AND date = ? AND is_active = 1',
-      [class_id, sessionDate]
-    );
+      const sessionDate = date || new Date().toISOString().split('T')[0];
 
-    const qr_code = generateQRToken();
-    const expires_at = new Date(Date.now() + QR_EXPIRY_MINUTES * 60 * 1000).toISOString();
+      // Get timetable info if provided
+      let subject_id = null;
+      let teacher_id = req.user.id;
+      let start_time = null;
+      let end_time = null;
+      let room = null;
 
-    const result = await db.run(
-      `INSERT INTO class_sessions (timetable_id, class_id, subject_id, teacher_id, date, start_time, end_time, room, qr_code, qr_expires_at)
+      if (timetable_id) {
+        const tt = await db.get('SELECT * FROM timetable WHERE id = ?', [timetable_id]);
+        if (tt) {
+          subject_id = tt.subject_id;
+          teacher_id = tt.teacher_id || req.user.id;
+          start_time = tt.start_time;
+          end_time = tt.end_time;
+          room = tt.room;
+        }
+      }
+
+      // Deactivate any existing active sessions for this class today
+      await db.run(
+        'UPDATE class_sessions SET is_active = 0 WHERE class_id = ? AND date = ? AND is_active = 1',
+        [class_id, sessionDate]
+      );
+
+      const qr_code = generateQRToken();
+      const expires_at = new Date(Date.now() + QR_EXPIRY_MINUTES * 60 * 1000).toISOString();
+
+      const result = await db.run(
+        `INSERT INTO class_sessions (timetable_id, class_id, subject_id, teacher_id, date, start_time, end_time, room, qr_code, qr_expires_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        timetable_id || null,
-        class_id,
-        subject_id,
-        teacher_id,
-        sessionDate,
-        start_time,
-        end_time,
-        room,
-        qr_code,
-        expires_at,
-      ]
-    );
+        [
+          timetable_id || null,
+          class_id,
+          subject_id,
+          teacher_id,
+          sessionDate,
+          start_time,
+          end_time,
+          room,
+          qr_code,
+          expires_at,
+        ]
+      );
 
-    const session = await db.get('SELECT * FROM class_sessions WHERE id = ?', [
-      result.lastInsertRowid,
-    ]);
+      const session = await db.get('SELECT * FROM class_sessions WHERE id = ?', [
+        result.lastInsertRowid,
+      ]);
 
-    res.status(201).json({ message: 'Session created', session });
+      res.status(201).json({ message: 'Session created', session });
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'class_session',
-      entityId: result.lastInsertRowid,
-      newValues: { class_id, date: sessionDate },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to create session');
+      auditLog(req, {
+        action: 'create',
+        entityType: 'class_session',
+        entityId: result.lastInsertRowid,
+        newValues: { class_id, date: sessionDate },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to create session');
+    }
   }
-});
+);
 
 // ─── Get Session with QR + Check-in Count ──────────────────────
 router.get('/sessions/:id', authMiddleware, async (req, res) => {
@@ -119,7 +125,7 @@ router.get('/sessions/:id', authMiddleware, async (req, res) => {
 router.post(
   '/sessions/:id/deactivate',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('attendance', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -137,26 +143,30 @@ router.post(
 );
 
 // ─── List Sessions ─────────────────────────────────────────────
-router.get('/sessions', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { class_id, date } = req.query;
+router.get(
+  '/sessions',
+  authMiddleware,
+  requirePermission('attendance', 'read'),
+  async (req, res) => {
+    try {
+      const { class_id, date } = req.query;
 
-    let where = [];
-    let params = [];
+      let where = [];
+      let params = [];
 
-    if (class_id) {
-      where.push('cs.class_id = ?');
-      params.push(class_id);
-    }
-    if (date) {
-      where.push('cs.date = ?');
-      params.push(date);
-    }
+      if (class_id) {
+        where.push('cs.class_id = ?');
+        params.push(class_id);
+      }
+      if (date) {
+        where.push('cs.date = ?');
+        params.push(date);
+      }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const sessions = await db.all(
-      `SELECT cs.*, c.name as class_name, s.name as subject_name,
+      const sessions = await db.all(
+        `SELECT cs.*, c.name as class_name, s.name as subject_name,
               (SELECT COUNT(*) FROM attendance WHERE session_id = cs.id AND status = 'present') as checked_in_count,
               (SELECT COUNT(*) FROM enrollments WHERE class_id = cs.class_id) as total_students
        FROM class_sessions cs
@@ -164,14 +174,15 @@ router.get('/sessions', authMiddleware, roleMiddleware('admin', 'teacher'), asyn
        LEFT JOIN subjects s ON cs.subject_id = s.id
        ${whereClause}
        ORDER BY cs.created_at DESC`,
-      params
-    );
+        params
+      );
 
-    res.json({ sessions });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch sessions');
+      res.json({ sessions });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch sessions');
+    }
   }
-});
+);
 
 // ─── Student Scan QR Token ─────────────────────────────────────
 router.post('/scan', authMiddleware, async (req, res) => {

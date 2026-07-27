@@ -50,9 +50,26 @@ function seedRBAC(db) {
     ['students', 'Student records, enrollment, lifecycle'],
     ['teachers', 'Teacher profiles, qualifications'],
     ['classes', 'Class management, scheduling'],
-    ['finance', 'Fee structures, invoices, payments, accounting'],
+    ['finance', 'Fee structures, invoices, payments'],
     ['attendance', 'Student and teacher attendance tracking'],
     ['reports', 'Academic reports, analytics, exports'],
+    ['academic', 'Academic years, semesters, holidays'],
+    ['curriculum', 'Curriculum and subject setup'],
+    ['timetable', 'Timetable scheduling'],
+    ['announcements', 'School announcements'],
+    ['documents', 'Document management'],
+    ['courses', 'Course catalog, lessons, assignments, quizzes'],
+    ['chat', 'Chat logs and AI chatbot'],
+    ['hr', 'HR staff management, leaves, contracts'],
+    ['recruitment', 'Job postings and applications'],
+    ['training', 'Training programs'],
+    ['inventory', 'School inventory and supplies'],
+    ['library', 'Library books and borrows'],
+    ['notifications', 'Notification system'],
+    ['accounting', 'Double-entry accounting, ledger, reconciliation'],
+    ['cash-control', 'Daily cash sessions'],
+    ['budgeting', 'Budget management'],
+    ['expenses', 'Expense tracking and procurement'],
   ];
   const areaIds = {};
   for (const [name, desc] of areas) {
@@ -67,42 +84,76 @@ function seedRBAC(db) {
     VALUES (?, ?, ?, ?, ?, ?)
   `);
 
+  const P = (role, area, c, r, u, d) => [role, area, c, r, u, d];
+  const CRUD = [1, 1, 1, 1];
+  const R___ = [0, 1, 0, 0];
+  const _CR_U = [1, 1, 1, 0];
+  const _____ = [0, 0, 0, 0];
+
   const permissions = [
-    // admin — full CRUD on everything
-    ['admin', 'students', 1, 1, 1, 1],
-    ['admin', 'teachers', 1, 1, 1, 1],
-    ['admin', 'classes', 1, 1, 1, 1],
-    ['admin', 'finance', 1, 1, 1, 1],
-    ['admin', 'attendance', 1, 1, 1, 1],
-    ['admin', 'reports', 1, 1, 1, 1],
+    // ── admin — full CRUD on everything ──
+    ...areas.map(([name]) => P('admin', name, ...CRUD)),
 
-    // teacher — read students, read/update classes, read/update attendance, read reports
-    ['teacher', 'students', 0, 1, 0, 0],
-    ['teacher', 'teachers', 0, 1, 0, 0],
-    ['teacher', 'classes', 0, 1, 1, 0],
-    ['teacher', 'attendance', 0, 1, 1, 0],
-    ['teacher', 'reports', 0, 1, 0, 0],
+    // ── teacher ──
+    P('teacher', 'students', ...R___),
+    P('teacher', 'teachers', ...R___),
+    P('teacher', 'classes', ..._CR_U),
+    P('teacher', 'attendance', ..._CR_U),
+    P('teacher', 'reports', ...R___),
+    P('teacher', 'academic', ...R___),
+    P('teacher', 'curriculum', ...R___),
+    P('teacher', 'timetable', ...R___),
+    P('teacher', 'announcements', ...[1, 1, 1, 0]),
+    P('teacher', 'documents', ...[1, 1, 1, 0]),
+    P('teacher', 'courses', ...[1, 1, 1, 0]),
+    P('teacher', 'training', ...R___),
+    P('teacher', 'inventory', ...R___),
+    P('teacher', 'library', ...[1, 1, 1, 0]),
+    P('teacher', 'expenses', ...R___),
 
-    // student — read-only on students (own), teachers, classes
-    ['student', 'students', 0, 1, 0, 0],
-    ['student', 'teachers', 0, 1, 0, 0],
-    ['student', 'classes', 0, 1, 0, 0],
+    // ── student ──
+    P('student', 'students', ...R___),
+    P('student', 'teachers', ...R___),
+    P('student', 'classes', ...R___),
+    P('student', 'academic', ...R___),
+    P('student', 'curriculum', ...R___),
+    P('student', 'announcements', ...R___),
+    P('student', 'documents', ...R___),
+    P('student', 'courses', ...R___),
+    P('student', 'training', ...R___),
+    P('student', 'inventory', ...R___),
+    P('student', 'library', ...R___),
 
-    // parent — read-only on students (children), teachers, classes
-    ['parent', 'students', 0, 1, 0, 0],
-    ['parent', 'teachers', 0, 1, 0, 0],
-    ['parent', 'classes', 0, 1, 0, 0],
+    // ── parent ──
+    P('parent', 'students', ...R___),
+    P('parent', 'teachers', ...R___),
+    P('parent', 'classes', ...R___),
+    P('parent', 'academic', ...R___),
+    P('parent', 'curriculum', ...R___),
+    P('parent', 'announcements', ...R___),
+    P('parent', 'documents', ...R___),
+    P('parent', 'courses', ...R___),
+    P('parent', 'library', ...R___),
 
-    // accountant — full CRUD on finance, read students/reports
-    ['accountant', 'students', 0, 1, 0, 0],
-    ['accountant', 'finance', 1, 1, 1, 1],
-    ['accountant', 'reports', 0, 1, 0, 0],
+    // ── accountant ──
+    P('accountant', 'students', ...R___),
+    P('accountant', 'finance', ...CRUD),
+    P('accountant', 'reports', ...R___),
+    P('accountant', 'accounting', ...CRUD),
+    P('accountant', 'cash-control', ...CRUD),
+    P('accountant', 'budgeting', ...CRUD),
+    P('accountant', 'expenses', ...CRUD),
+    P('accountant', 'notifications', ...R___),
 
-    // staff — read-only on most areas
-    ['staff', 'students', 0, 1, 0, 0],
-    ['staff', 'teachers', 0, 1, 0, 0],
-    ['staff', 'classes', 0, 1, 0, 0],
-    ['staff', 'attendance', 0, 1, 0, 0],
+    // ── staff ──
+    P('staff', 'students', ...R___),
+    P('staff', 'teachers', ...R___),
+    P('staff', 'classes', ...R___),
+    P('staff', 'attendance', ...R___),
+    P('staff', 'announcements', ...R___),
+    P('staff', 'documents', ...R___),
+    P('staff', 'inventory', ...R___),
+    P('staff', 'library', ...R___),
   ];
 
   const insertAll = db.transaction(() => {
@@ -112,7 +163,9 @@ function seedRBAC(db) {
   });
 
   insertAll();
-  console.log('RBAC: seeded 6 roles, 6 areas, default permissions');
+  console.log(
+    `RBAC: seeded ${roles.length} roles, ${areas.length} areas, ${permissions.length} permissions`
+  );
 }
 
 function initDatabase() {

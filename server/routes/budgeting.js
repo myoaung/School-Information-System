@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -9,7 +10,7 @@ const router = express.Router();
 const BUDGET_PERIODS = ['annual', 'quarterly', 'monthly'];
 
 // ─── List Budgets ─────────────────────────────────────────────
-router.get('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.get('/', authMiddleware, requirePermission('budgeting', 'read'), async (req, res) => {
   try {
     const { academic_year_id, category } = req.query;
 
@@ -76,7 +77,7 @@ router.get('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (re
 });
 
 // ─── Create Budget ────────────────────────────────────────────
-router.post('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.post('/', authMiddleware, requirePermission('budgeting', 'create'), async (req, res) => {
   try {
     const {
       academic_year_id,
@@ -129,7 +130,7 @@ router.post('/', authMiddleware, roleMiddleware('admin', 'accountant'), async (r
 });
 
 // ─── Update Budget ────────────────────────────────────────────
-router.put('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('budgeting', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { category, description, allocated_amount, period, period_start, period_end } = req.body;
@@ -165,29 +166,34 @@ router.put('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async 
 });
 
 // ─── Delete Budget ────────────────────────────────────────────
-router.delete('/:id', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermission('budgeting', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const budget = await db.get('SELECT * FROM budgets WHERE id = ?', [id]);
-    if (!budget) return res.status(404).json({ error: 'Budget not found' });
+      const budget = await db.get('SELECT * FROM budgets WHERE id = ?', [id]);
+      if (!budget) return res.status(404).json({ error: 'Budget not found' });
 
-    await db.run('DELETE FROM budgets WHERE id = ?', [id]);
+      await db.run('DELETE FROM budgets WHERE id = ?', [id]);
 
-    res.json({ message: 'Budget deleted' });
+      res.json({ message: 'Budget deleted' });
 
-    auditLog(req, {
-      action: 'delete',
-      entityType: 'budget',
-      entityId: id,
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete budget');
+      auditLog(req, {
+        action: 'delete',
+        entityType: 'budget',
+        entityId: id,
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete budget');
+    }
   }
-});
+);
 
 // ─── Budget Summary (Overview) ────────────────────────────────
-router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.get('/summary', authMiddleware, requirePermission('budgeting', 'read'), async (req, res) => {
   try {
     const { academic_year_id } = req.query;
 
@@ -249,7 +255,7 @@ router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), as
 router.get(
   '/categories',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('budgeting', 'read'),
   async (req, res) => {
     try {
       // Return expense categories that are actually used, plus budget-specific ones

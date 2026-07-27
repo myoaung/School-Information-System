@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -85,7 +86,7 @@ router.get('/:classId', authMiddleware, async (req, res) => {
 router.post(
   '/:classId/apply-curriculum',
   authMiddleware,
-  roleMiddleware('admin'),
+  requirePermission('classes', 'update'),
   async (req, res) => {
     try {
       const classId = parseInt(req.params.classId);
@@ -157,84 +158,90 @@ router.post(
 );
 
 // ─── Assign Teacher to Subject ─────────────────────────────────
-router.post('/:classId/assign', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const classId = parseInt(req.params.classId);
-    const { subject_id, teacher_id } = req.body;
+router.post(
+  '/:classId/assign',
+  authMiddleware,
+  requirePermission('classes', 'update'),
+  async (req, res) => {
+    try {
+      const classId = parseInt(req.params.classId);
+      const { subject_id, teacher_id } = req.body;
 
-    if (!subject_id) {
-      return res.status(400).json({ error: 'subject_id is required' });
-    }
+      if (!subject_id) {
+        return res.status(400).json({ error: 'subject_id is required' });
+      }
 
-    // Get the assignment
-    const assignment = await db.get(
-      'SELECT * FROM class_subject_teachers WHERE class_id = ? AND subject_id = ?',
-      [classId, subject_id]
-    );
-
-    if (!assignment) {
-      return res.status(404).json({ error: 'Subject not found in this class curriculum' });
-    }
-
-    // Check teacher workload (optional warning)
-    if (teacher_id) {
-      const existingClasses = await db.get(
-        `SELECT COUNT(DISTINCT class_id) as count
-         FROM class_subject_teachers
-         WHERE teacher_id = ? AND academic_year_id = ?`,
-        [teacher_id, assignment.academic_year_id]
+      // Get the assignment
+      const assignment = await db.get(
+        'SELECT * FROM class_subject_teachers WHERE class_id = ? AND subject_id = ?',
+        [classId, subject_id]
       );
 
-      if (existingClasses?.count >= 5) {
-        // Warning but not blocking
+      if (!assignment) {
+        return res.status(404).json({ error: 'Subject not found in this class curriculum' });
       }
-    }
 
-    // Update assignment
-    await db.run('UPDATE class_subject_teachers SET teacher_id = ? WHERE id = ?', [
-      teacher_id || null,
-      assignment.id,
-    ]);
+      // Check teacher workload (optional warning)
+      if (teacher_id) {
+        const existingClasses = await db.get(
+          `SELECT COUNT(DISTINCT class_id) as count
+         FROM class_subject_teachers
+         WHERE teacher_id = ? AND academic_year_id = ?`,
+          [teacher_id, assignment.academic_year_id]
+        );
 
-    // Check if class is now ready (filter in JS for SQLite/PostgreSQL compat)
-    const classData = await db.get('SELECT * FROM classes WHERE id = ?', [classId]);
-    const allAssignments = await db.all('SELECT * FROM class_subject_teachers WHERE class_id = ?', [
-      classId,
-    ]);
-    const missingCount = allAssignments.filter((a) => a.is_required && !a.teacher_id).length;
+        if (existingClasses?.count >= 5) {
+          // Warning but not blocking
+        }
+      }
 
-    let newStatus = classData.status;
-    if (missingCount === 0 && allAssignments.length > 0) {
-      newStatus = 'ready';
-    } else if (classData.status === 'draft') {
-      newStatus = 'incomplete';
-    }
-
-    if (newStatus !== classData.status) {
-      await db.run('UPDATE classes SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
-        newStatus,
-        classId,
+      // Update assignment
+      await db.run('UPDATE class_subject_teachers SET teacher_id = ? WHERE id = ?', [
+        teacher_id || null,
+        assignment.id,
       ]);
+
+      // Check if class is now ready (filter in JS for SQLite/PostgreSQL compat)
+      const classData = await db.get('SELECT * FROM classes WHERE id = ?', [classId]);
+      const allAssignments = await db.all(
+        'SELECT * FROM class_subject_teachers WHERE class_id = ?',
+        [classId]
+      );
+      const missingCount = allAssignments.filter((a) => a.is_required && !a.teacher_id).length;
+
+      let newStatus = classData.status;
+      if (missingCount === 0 && allAssignments.length > 0) {
+        newStatus = 'ready';
+      } else if (classData.status === 'draft') {
+        newStatus = 'incomplete';
+      }
+
+      if (newStatus !== classData.status) {
+        await db.run('UPDATE classes SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
+          newStatus,
+          classId,
+        ]);
+      }
+
+      res.json({ message: 'Teacher assigned', new_status: newStatus });
+
+      auditLog(req, {
+        action: 'assign_teacher',
+        entityType: 'class_subject',
+        entityId: assignment.id,
+        newValues: { teacher_id, subject_id },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to assign teacher');
     }
-
-    res.json({ message: 'Teacher assigned', new_status: newStatus });
-
-    auditLog(req, {
-      action: 'assign_teacher',
-      entityType: 'class_subject',
-      entityId: assignment.id,
-      newValues: { teacher_id, subject_id },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to assign teacher');
   }
-});
+);
 
 // ─── Remove Teacher Assignment ─────────────────────────────────
 router.delete(
   '/:classId/assign/:subjectId',
   authMiddleware,
-  roleMiddleware('admin'),
+  requirePermission('classes', 'delete'),
   async (req, res) => {
     try {
       const classId = parseInt(req.params.classId);
@@ -259,49 +266,55 @@ router.delete(
 );
 
 // ─── Activate Class ────────────────────────────────────────────
-router.post('/:classId/activate', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const classId = parseInt(req.params.classId);
+router.post(
+  '/:classId/activate',
+  authMiddleware,
+  requirePermission('classes', 'update'),
+  async (req, res) => {
+    try {
+      const classId = parseInt(req.params.classId);
 
-    // Verify all required subjects have teachers (filter in JS for SQLite/PostgreSQL compat)
-    const allAssignments = await db.all('SELECT * FROM class_subject_teachers WHERE class_id = ?', [
-      classId,
-    ]);
-    const missingAssignments = allAssignments.filter((a) => a.is_required && !a.teacher_id);
+      // Verify all required subjects have teachers (filter in JS for SQLite/PostgreSQL compat)
+      const allAssignments = await db.all(
+        'SELECT * FROM class_subject_teachers WHERE class_id = ?',
+        [classId]
+      );
+      const missingAssignments = allAssignments.filter((a) => a.is_required && !a.teacher_id);
 
-    if (missingAssignments.length > 0) {
-      return res.status(400).json({
-        error: `Cannot activate: ${missingAssignments.length} required subjects have no teacher`,
+      if (missingAssignments.length > 0) {
+        return res.status(400).json({
+          error: `Cannot activate: ${missingAssignments.length} required subjects have no teacher`,
+        });
+      }
+
+      // Check if any assignments exist
+      const assignments = await db.get(
+        'SELECT COUNT(*) as count FROM class_subject_teachers WHERE class_id = ?',
+        [classId]
+      );
+
+      if (assignments.count === 0) {
+        return res.status(400).json({ error: 'Cannot activate: no curriculum applied' });
+      }
+
+      // Activate
+      await db.run(
+        "UPDATE classes SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [classId]
+      );
+
+      res.json({ message: 'Class activated' });
+
+      auditLog(req, {
+        action: 'activate',
+        entityType: 'class',
+        entityId: classId,
+        newValues: { status: 'active' },
       });
+    } catch (err) {
+      sendError(res, err, 'Failed to activate class');
     }
-
-    // Check if any assignments exist
-    const assignments = await db.get(
-      'SELECT COUNT(*) as count FROM class_subject_teachers WHERE class_id = ?',
-      [classId]
-    );
-
-    if (assignments.count === 0) {
-      return res.status(400).json({ error: 'Cannot activate: no curriculum applied' });
-    }
-
-    // Activate
-    await db.run(
-      "UPDATE classes SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [classId]
-    );
-
-    res.json({ message: 'Class activated' });
-
-    auditLog(req, {
-      action: 'activate',
-      entityType: 'class',
-      entityId: classId,
-      newValues: { status: 'active' },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to activate class');
   }
-});
+);
 
 module.exports = router;

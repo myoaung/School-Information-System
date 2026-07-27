@@ -5,7 +5,8 @@ const { sendError } = require('../utils/errorHandler');
  */
 
 const express = require('express');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const {
   collectConstraints,
   detectConflicts,
@@ -19,62 +20,77 @@ const {
 const router = express.Router();
 
 // GET /api/ai/schedule/constraints — Get all scheduling constraints
-router.get('/constraints', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const constraints = await collectConstraints();
-    res.json({ constraints });
-  } catch (err) {
-    console.error('Constraints error:', err);
-    res.status(500).json({ error: 'Failed to collect constraints' });
+router.get(
+  '/constraints',
+  authMiddleware,
+  requirePermission('timetable', 'read'),
+  async (req, res) => {
+    try {
+      const constraints = await collectConstraints();
+      res.json({ constraints });
+    } catch (err) {
+      console.error('Constraints error:', err);
+      res.status(500).json({ error: 'Failed to collect constraints' });
+    }
   }
-});
+);
 
 // GET /api/ai/schedule/conflicts — Detect scheduling conflicts
-router.get('/conflicts', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const conflicts = await detectConflicts();
-    res.json({
-      conflicts,
-      total: conflicts.length,
-      high: conflicts.filter((c) => c.severity === 'high').length,
-      medium: conflicts.filter((c) => c.severity === 'medium').length,
-    });
-  } catch (err) {
-    console.error('Conflicts error:', err);
-    res.status(500).json({ error: 'Failed to detect conflicts' });
+router.get(
+  '/conflicts',
+  authMiddleware,
+  requirePermission('timetable', 'read'),
+  async (req, res) => {
+    try {
+      const conflicts = await detectConflicts();
+      res.json({
+        conflicts,
+        total: conflicts.length,
+        high: conflicts.filter((c) => c.severity === 'high').length,
+        medium: conflicts.filter((c) => c.severity === 'medium').length,
+      });
+    } catch (err) {
+      console.error('Conflicts error:', err);
+      res.status(500).json({ error: 'Failed to detect conflicts' });
+    }
   }
-});
+);
 
 // POST /api/ai/schedule/generate — Generate optimal schedule for a class
-router.post('/generate', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const { class_id, respect_existing = true, preferred_days = [0, 1, 2, 3, 4] } = req.body;
+router.post(
+  '/generate',
+  authMiddleware,
+  requirePermission('timetable', 'create'),
+  async (req, res) => {
+    try {
+      const { class_id, respect_existing = true, preferred_days = [0, 1, 2, 3, 4] } = req.body;
 
-    if (!class_id) {
-      return res.status(400).json({ error: 'class_id is required' });
+      if (!class_id) {
+        return res.status(400).json({ error: 'class_id is required' });
+      }
+
+      const result = await generateSchedule(class_id, {
+        respectExisting: respect_existing,
+        preferredDays: preferred_days,
+      });
+
+      if (result.error) {
+        return res.status(404).json({ error: result.error });
+      }
+
+      res.json({
+        schedule: result,
+        message: `Generated ${result.new_periods} new periods for ${result.class.name}`,
+      });
+    } catch (err) {
+      console.error('Schedule generation error:', err);
+      res.status(500).json({ error: 'Failed to generate schedule' });
     }
-
-    const result = await generateSchedule(class_id, {
-      respectExisting: respect_existing,
-      preferredDays: preferred_days,
-    });
-
-    if (result.error) {
-      return res.status(404).json({ error: result.error });
-    }
-
-    res.json({
-      schedule: result,
-      message: `Generated ${result.new_periods} new periods for ${result.class.name}`,
-    });
-  } catch (err) {
-    console.error('Schedule generation error:', err);
-    res.status(500).json({ error: 'Failed to generate schedule' });
   }
-});
+);
 
 // POST /api/ai/schedule/apply — Apply generated schedule to database
-router.post('/apply', authMiddleware, roleMiddleware('admin'), (req, res) => {
+router.post('/apply', authMiddleware, requirePermission('timetable', 'update'), (req, res) => {
   try {
     const { class_id, entries, clear_existing = false } = req.body;
 
@@ -104,7 +120,7 @@ router.post('/apply', authMiddleware, roleMiddleware('admin'), (req, res) => {
 router.get(
   '/suggestions/:classId',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('timetable', 'read'),
   async (req, res) => {
     try {
       const classId = parseInt(req.params.classId);
@@ -121,7 +137,7 @@ router.get(
 router.get(
   '/analyze/:classId',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('timetable', 'read'),
   async (req, res) => {
     try {
       const { db } = require('../data');

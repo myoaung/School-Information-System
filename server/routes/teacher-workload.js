@@ -1,12 +1,13 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
 // GET /api/teachers/workload -- all teachers overview (admin only)
-router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/', authMiddleware, requirePermission('teachers', 'read'), async (req, res) => {
   try {
     const workload = await db.all(`
       SELECT
@@ -39,7 +40,7 @@ router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // GET /api/teachers/workload/:id -- single teacher detail
-router.get('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/:id', authMiddleware, requirePermission('teachers', 'read'), async (req, res) => {
   try {
     const { id } = req.params;
 

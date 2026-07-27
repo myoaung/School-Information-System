@@ -1,14 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
 // Get all teachers (admin)
-router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/', authMiddleware, requirePermission('teachers', 'read'), async (req, res) => {
   try {
     const { search } = req.query;
 
@@ -77,7 +78,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Create teacher (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/', authMiddleware, requirePermission('teachers', 'create'), async (req, res) => {
   try {
     const { name, email, password, phone, qualification, specialization, hire_date } = req.body;
 
@@ -115,12 +116,10 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
       ]
     );
 
-    res
-      .status(201)
-      .json({
-        message: 'Teacher created',
-        teacher: { id: userId, name, email, teacher_id: teacherId },
-      });
+    res.status(201).json({
+      message: 'Teacher created',
+      teacher: { id: userId, name, email, teacher_id: teacherId },
+    });
 
     auditLog(req, {
       action: 'create',
@@ -134,7 +133,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // Update teacher (admin only)
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('teachers', 'update'), async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const { name, phone, qualification, specialization, status } = req.body;
@@ -175,7 +174,7 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 });
 
 // Delete teacher (admin only)
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, requirePermission('teachers', 'delete'), async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 

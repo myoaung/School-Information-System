@@ -118,9 +118,9 @@ describe('RBAC — Role-Based Access Control', () => {
       );
     });
 
-    it('has 6 areas', async () => {
+    it('has 23 areas', async () => {
       const areas = await db.all('SELECT * FROM areas ORDER BY id');
-      expect(areas.length).toBe(6);
+      expect(areas.length).toBe(23);
       expect(areas.map((a) => a.name)).toEqual(
         expect.arrayContaining([
           'students',
@@ -129,6 +129,23 @@ describe('RBAC — Role-Based Access Control', () => {
           'finance',
           'attendance',
           'reports',
+          'academic',
+          'curriculum',
+          'timetable',
+          'announcements',
+          'documents',
+          'courses',
+          'chat',
+          'hr',
+          'recruitment',
+          'training',
+          'inventory',
+          'library',
+          'notifications',
+          'accounting',
+          'cash-control',
+          'budgeting',
+          'expenses',
         ])
       );
     });
@@ -295,7 +312,7 @@ describe('RBAC — Role-Based Access Control', () => {
         .get('/api/rbac/areas')
         .set('Authorization', `Bearer ${tokens.admin}`);
       expect(res.status).toBe(200);
-      expect(res.body.areas.length).toBe(6);
+      expect(res.body.areas.length).toBe(23);
     });
 
     it('admin can list all permissions', async () => {

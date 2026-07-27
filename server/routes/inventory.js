@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -79,7 +80,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // ─── Add Item (admin only) ────────────────────────────────────
-router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/', authMiddleware, requirePermission('inventory', 'create'), async (req, res) => {
   try {
     const {
       name,
@@ -137,7 +138,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // ─── Update Item (admin only) ──────────────────────────────────
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('inventory', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const {
@@ -188,78 +189,91 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 });
 
 // ─── Delete Item (admin only) ──────────────────────────────────
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermission('inventory', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const item = await db.get('SELECT * FROM inventory_items WHERE id = ?', [id]);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+      const item = await db.get('SELECT * FROM inventory_items WHERE id = ?', [id]);
+      if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    // Check for active transactions
-    const active = await db.get(
-      "SELECT COUNT(*) as c FROM inventory_transactions WHERE item_id = ? AND status = 'issued'",
-      [id]
-    );
-    if (active.c > 0) {
-      return res.status(400).json({ error: 'Cannot delete item with active transactions' });
+      // Check for active transactions
+      const active = await db.get(
+        "SELECT COUNT(*) as c FROM inventory_transactions WHERE item_id = ? AND status = 'issued'",
+        [id]
+      );
+      if (active.c > 0) {
+        return res.status(400).json({ error: 'Cannot delete item with active transactions' });
+      }
+
+      await db.run('DELETE FROM inventory_items WHERE id = ?', [id]);
+
+      res.json({ message: 'Item deleted' });
+
+      auditLog(req, { action: 'delete', entityType: 'inventory_item', entityId: id });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete item');
     }
-
-    await db.run('DELETE FROM inventory_items WHERE id = ?', [id]);
-
-    res.json({ message: 'Item deleted' });
-
-    auditLog(req, { action: 'delete', entityType: 'inventory_item', entityId: id });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete item');
   }
-});
+);
 
 // ─── Issue Item ────────────────────────────────────────────────
-router.post('/issue', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
-  try {
-    const { item_id, user_id, quantity, due_date, notes } = req.body;
+router.post(
+  '/issue',
+  authMiddleware,
+  requirePermission('inventory', 'update'),
+  async (req, res) => {
+    try {
+      const { item_id, user_id, quantity, due_date, notes } = req.body;
 
-    if (!item_id || !user_id) {
-      return res.status(400).json({ error: 'item_id and user_id are required' });
-    }
+      if (!item_id || !user_id) {
+        return res.status(400).json({ error: 'item_id and user_id are required' });
+      }
 
-    const item = await db.get('SELECT * FROM inventory_items WHERE id = ?', [item_id]);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+      const item = await db.get('SELECT * FROM inventory_items WHERE id = ?', [item_id]);
+      if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    const qty = parseInt(quantity) || 1;
-    if (item.quantity < qty) {
-      return res.status(400).json({ error: `Insufficient stock. Available: ${item.quantity}` });
-    }
+      const qty = parseInt(quantity) || 1;
+      if (item.quantity < qty) {
+        return res.status(400).json({ error: `Insufficient stock. Available: ${item.quantity}` });
+      }
 
-    const issueDate = new Date().toISOString().split('T')[0];
+      const issueDate = new Date().toISOString().split('T')[0];
 
-    const result = await db.run(
-      `INSERT INTO inventory_transactions (item_id, user_id, quantity, type, issue_date, due_date, notes, created_by)
+      const result = await db.run(
+        `INSERT INTO inventory_transactions (item_id, user_id, quantity, type, issue_date, due_date, notes, created_by)
        VALUES (?, ?, ?, 'issue', ?, ?, ?, ?)`,
-      [item_id, user_id, qty, issueDate, due_date || null, notes || null, req.user.id]
-    );
+        [item_id, user_id, qty, issueDate, due_date || null, notes || null, req.user.id]
+      );
 
-    // Decrease quantity
-    await db.run('UPDATE inventory_items SET quantity = quantity - ? WHERE id = ?', [qty, item_id]);
+      // Decrease quantity
+      await db.run('UPDATE inventory_items SET quantity = quantity - ? WHERE id = ?', [
+        qty,
+        item_id,
+      ]);
 
-    res.status(201).json({ message: 'Item issued', transaction_id: result.lastInsertRowid });
+      res.status(201).json({ message: 'Item issued', transaction_id: result.lastInsertRowid });
 
-    auditLog(req, {
-      action: 'issue',
-      entityType: 'inventory_transaction',
-      entityId: result.lastInsertRowid,
-      newValues: { item_id, user_id, quantity: qty },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to issue item');
+      auditLog(req, {
+        action: 'issue',
+        entityType: 'inventory_transaction',
+        entityId: result.lastInsertRowid,
+        newValues: { item_id, user_id, quantity: qty },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to issue item');
+    }
   }
-});
+);
 
 // ─── Return Item ───────────────────────────────────────────────
 router.post(
   '/return/:transactionId',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('inventory', 'update'),
   async (req, res) => {
     try {
       const transactionId = parseInt(req.params.transactionId);
@@ -304,7 +318,7 @@ router.post(
 router.get(
   '/transactions/list',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('inventory', 'read'),
   async (req, res) => {
     try {
       const { status, user_id } = req.query;
@@ -341,65 +355,70 @@ router.get(
 );
 
 // ─── Add Maintenance Record ────────────────────────────────────
-router.post('/maintenance', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const {
-      item_id,
-      maintenance_type,
-      description,
-      cost,
-      performed_by,
-      maintenance_date,
-      next_service_date,
-      notes,
-    } = req.body;
-
-    if (!item_id || !maintenance_type || !maintenance_date) {
-      return res
-        .status(400)
-        .json({ error: 'item_id, maintenance_type, and maintenance_date are required' });
-    }
-
-    if (!MAINTENANCE_TYPES.includes(maintenance_type)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid type. Must be: ${MAINTENANCE_TYPES.join(', ')}` });
-    }
-
-    const result = await db.run(
-      `INSERT INTO inventory_maintenance (item_id, maintenance_type, description, cost, performed_by, maintenance_date, next_service_date, notes, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
+router.post(
+  '/maintenance',
+  authMiddleware,
+  requirePermission('inventory', 'create'),
+  async (req, res) => {
+    try {
+      const {
         item_id,
         maintenance_type,
-        description || null,
-        cost || null,
-        performed_by || null,
+        description,
+        cost,
+        performed_by,
         maintenance_date,
-        next_service_date || null,
-        notes || null,
-        req.user.id,
-      ]
-    );
+        next_service_date,
+        notes,
+      } = req.body;
 
-    res.status(201).json({ message: 'Maintenance record added', id: result.lastInsertRowid });
+      if (!item_id || !maintenance_type || !maintenance_date) {
+        return res
+          .status(400)
+          .json({ error: 'item_id, maintenance_type, and maintenance_date are required' });
+      }
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'inventory_maintenance',
-      entityId: result.lastInsertRowid,
-      newValues: { item_id, maintenance_type },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to add maintenance record');
+      if (!MAINTENANCE_TYPES.includes(maintenance_type)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid type. Must be: ${MAINTENANCE_TYPES.join(', ')}` });
+      }
+
+      const result = await db.run(
+        `INSERT INTO inventory_maintenance (item_id, maintenance_type, description, cost, performed_by, maintenance_date, next_service_date, notes, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          item_id,
+          maintenance_type,
+          description || null,
+          cost || null,
+          performed_by || null,
+          maintenance_date,
+          next_service_date || null,
+          notes || null,
+          req.user.id,
+        ]
+      );
+
+      res.status(201).json({ message: 'Maintenance record added', id: result.lastInsertRowid });
+
+      auditLog(req, {
+        action: 'create',
+        entityType: 'inventory_maintenance',
+        entityId: result.lastInsertRowid,
+        newValues: { item_id, maintenance_type },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to add maintenance record');
+    }
   }
-});
+);
 
 // ─── List Maintenance Records ──────────────────────────────────
 router.get(
   '/maintenance/list',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('inventory', 'read'),
   async (req, res) => {
     try {
       const { item_id } = req.query;
@@ -435,7 +454,7 @@ router.get(
 router.get(
   '/stats/summary',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('inventory', 'read'),
   async (req, res) => {
     try {
       const totalItems = await db.get(

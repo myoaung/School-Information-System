@@ -2,7 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 const storage = require('../storage');
@@ -118,7 +119,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.post(
   '/',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('documents', 'create'),
   upload.single('file'),
   async (req, res) => {
     try {
@@ -185,7 +186,7 @@ router.post(
 router.post(
   '/:id/version',
   authMiddleware,
-  roleMiddleware('admin', 'teacher'),
+  requirePermission('documents', 'create'),
   upload.single('file'),
   async (req, res) => {
     try {
@@ -248,7 +249,7 @@ router.post(
 );
 
 // ─── Update Document Metadata ──────────────────────────────────
-router.put('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('documents', 'update'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { title, category, subcategory, entity_id, description } = req.body;
@@ -283,38 +284,43 @@ router.put('/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (re
 });
 
 // ─── Delete Document ───────────────────────────────────────────
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermission('documents', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
 
-    const doc = await db.get('SELECT * FROM documents WHERE id = ?', [id]);
-    if (!doc) return res.status(404).json({ error: 'Document not found' });
+      const doc = await db.get('SELECT * FROM documents WHERE id = ?', [id]);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-    // Delete file via abstraction layer
-    if (doc.file_path) {
-      await storage.remove(doc.file_path);
-    }
-
-    // Delete versioned copies
-    const versions = await db.all('SELECT file_path FROM documents WHERE parent_id = ? OR id = ?', [
-      id,
-      id,
-    ]);
-    for (const v of versions) {
-      if (v.file_path) {
-        await storage.remove(v.file_path);
+      // Delete file via abstraction layer
+      if (doc.file_path) {
+        await storage.remove(doc.file_path);
       }
+
+      // Delete versioned copies
+      const versions = await db.all(
+        'SELECT file_path FROM documents WHERE parent_id = ? OR id = ?',
+        [id, id]
+      );
+      for (const v of versions) {
+        if (v.file_path) {
+          await storage.remove(v.file_path);
+        }
+      }
+
+      await db.run('DELETE FROM documents WHERE id = ? OR parent_id = ?', [id, id]);
+
+      res.json({ message: 'Document deleted' });
+
+      auditLog(req, { action: 'delete', entityType: 'document', entityId: id });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete document');
     }
-
-    await db.run('DELETE FROM documents WHERE id = ? OR parent_id = ?', [id, id]);
-
-    res.json({ message: 'Document deleted' });
-
-    auditLog(req, { action: 'delete', entityType: 'document', entityId: id });
-  } catch (err) {
-    sendError(res, err, 'Failed to delete document');
   }
-});
+);
 
 // ─── Download Document ─────────────────────────────────────────
 router.get('/:id/download', authMiddleware, async (req, res) => {

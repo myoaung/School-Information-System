@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
@@ -20,13 +21,16 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
     if (role === 'student') {
       // Student-specific stats
-      const attendance = await db.get(`
+      const attendance = await db.get(
+        `
         SELECT COUNT(*) as total,
           SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
         FROM attendance WHERE user_id = ?
-      `, [id]);
-      const attendanceRate = attendance.total > 0
-        ? Math.round((attendance.present / attendance.total) * 100) : 0;
+      `,
+        [id]
+      );
+      const attendanceRate =
+        attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
       const overallGpaRow = await db.get(
         'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
@@ -34,18 +38,24 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       );
       const overallGpa = overallGpaRow.avg || 0;
 
-      const pendingAssignmentsRow = await db.get(`
+      const pendingAssignmentsRow = await db.get(
+        `
         SELECT COUNT(*) as count FROM assignments a
         WHERE a.due_date >= date('now')
         AND a.id NOT IN (SELECT assignment_id FROM submissions WHERE student_id = ?)
-      `, [id]);
+      `,
+        [id]
+      );
       const pendingAssignments = pendingAssignmentsRow.count;
 
-      const upcomingQuizzesRow = await db.get(`
+      const upcomingQuizzesRow = await db.get(
+        `
         SELECT COUNT(*) as count FROM quizzes q
         WHERE q.due_date >= date('now')
         AND q.id NOT IN (SELECT quiz_id FROM quiz_attempts WHERE student_id = ?)
-      `, [id]);
+      `,
+        [id]
+      );
       const upcomingQuizzes = upcomingQuizzesRow.count;
 
       return res.json({
@@ -54,15 +64,21 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
           overallGpa,
           pendingAssignments,
           upcomingQuizzes,
-          recentAnnouncements
-        }
+          recentAnnouncements,
+        },
       });
     }
 
     // Admin/Teacher stats
-    const totalStudentsRow = await db.get('SELECT COUNT(*) as count FROM students WHERE status = ?', ['active']);
+    const totalStudentsRow = await db.get(
+      'SELECT COUNT(*) as count FROM students WHERE status = ?',
+      ['active']
+    );
     const totalStudents = totalStudentsRow.count;
-    const totalTeachersRow = await db.get('SELECT COUNT(*) as count FROM teachers WHERE status = ?', ['active']);
+    const totalTeachersRow = await db.get(
+      'SELECT COUNT(*) as count FROM teachers WHERE status = ?',
+      ['active']
+    );
     const totalTeachers = totalTeachersRow.count;
     const totalClassesRow = await db.get('SELECT COUNT(*) as count FROM classes');
     const totalClasses = totalClassesRow.count;
@@ -74,8 +90,10 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
     `);
-    const attendanceRate = attendanceStats.total > 0
-      ? Math.round((attendanceStats.present / attendanceStats.total) * 100) : 0;
+    const attendanceRate =
+      attendanceStats.total > 0
+        ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
+        : 0;
 
     const pendingSubmissionsRow = await db.get(
       "SELECT COUNT(*) as count FROM submissions WHERE status = 'submitted'"
@@ -90,8 +108,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         totalCourses,
         attendanceRate,
         pendingSubmissions,
-        recentAnnouncements
-      }
+        recentAnnouncements,
+      },
     });
   } catch (err) {
     sendError(res, err, 'Failed to generate dashboard data');
@@ -109,35 +127,45 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
     }
 
     // Teacher info
-    const teacher = await db.get(`
+    const teacher = await db.get(
+      `
       SELECT t.*, u.name, u.email
       FROM teachers t
       JOIN users u ON t.user_id = u.id
       WHERE t.user_id = ?
-    `, [teacherId]);
+    `,
+      [teacherId]
+    );
 
     if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
 
     // Classes taught
-    const classes = await db.all(`
+    const classes = await db.all(
+      `
       SELECT c.*, COUNT(e.student_id) as student_count
       FROM classes c
       LEFT JOIN enrollments e ON e.class_id = c.id
       WHERE c.teacher_id = ?
       GROUP BY c.id
-    `, [teacherId]);
+    `,
+      [teacherId]
+    );
 
     // Courses taught
-    const courses = await db.all(`
+    const courses = await db.all(
+      `
       SELECT co.*, sub.code as subject_code, sub.name as subject_name, cl.name as class_name
       FROM courses co
       JOIN subjects sub ON co.subject_id = sub.id
       JOIN classes cl ON co.class_id = cl.id
       WHERE cl.teacher_id = ?
-    `, [teacherId]);
+    `,
+      [teacherId]
+    );
 
     // Average student GPA per course
-    const courseStats = await db.all(`
+    const courseStats = await db.all(
+      `
       SELECT co.title as course_title, sub.code as subject_code,
         COUNT(g.id) as graded_students,
         ROUND(AVG(g.gpa), 2) as avg_gpa,
@@ -150,15 +178,20 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
       LEFT JOIN gradebook g ON g.course_id = co.id
       WHERE cl.teacher_id = ?
       GROUP BY co.id
-    `, [teacherId]);
+    `,
+      [teacherId]
+    );
 
     // Total unique students
-    const totalStudentsRow = await db.get(`
+    const totalStudentsRow = await db.get(
+      `
       SELECT COUNT(DISTINCT e.student_id) as count
       FROM enrollments e
       JOIN classes c ON e.class_id = c.id
       WHERE c.teacher_id = ?
-    `, [teacherId]);
+    `,
+      [teacherId]
+    );
     const totalStudents = totalStudentsRow.count;
 
     res.json({
@@ -168,13 +201,13 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
           email: teacher.email,
           teacherId: teacher.teacher_id,
           qualification: teacher.qualification,
-          specialization: teacher.specialization
+          specialization: teacher.specialization,
         },
         classes,
         courses,
         courseStats,
-        totalStudents
-      }
+        totalStudents,
+      },
     });
   } catch (err) {
     sendError(res, err, 'Failed to generate teacher report');
@@ -182,11 +215,17 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/reports/overview — school-wide stats (admin/teacher)
-router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/overview', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
-    const totalStudentsRow = await db.get('SELECT COUNT(*) as count FROM students WHERE status = ?', ['active']);
+    const totalStudentsRow = await db.get(
+      'SELECT COUNT(*) as count FROM students WHERE status = ?',
+      ['active']
+    );
     const totalStudents = totalStudentsRow.count;
-    const totalTeachersRow = await db.get('SELECT COUNT(*) as count FROM teachers WHERE status = ?', ['active']);
+    const totalTeachersRow = await db.get(
+      'SELECT COUNT(*) as count FROM teachers WHERE status = ?',
+      ['active']
+    );
     const totalTeachers = totalTeachersRow.count;
     const totalClassesRow = await db.get('SELECT COUNT(*) as count FROM classes');
     const totalClasses = totalClassesRow.count;
@@ -194,7 +233,9 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), asyn
     const totalCourses = totalCoursesRow.count;
 
     // Average GPA
-    const avgGpaRow = await db.get('SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE gpa IS NOT NULL');
+    const avgGpaRow = await db.get(
+      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE gpa IS NOT NULL'
+    );
     const avgGpa = avgGpaRow.avg || 0;
 
     // Attendance rate
@@ -204,9 +245,10 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), asyn
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
     `);
-    const attendanceRate = attendanceStats.total > 0
-      ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
-      : 0;
+    const attendanceRate =
+      attendanceStats.total > 0
+        ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
+        : 0;
 
     // Submission stats
     const submissionStats = await db.get(`
@@ -254,8 +296,8 @@ router.get('/overview', authMiddleware, roleMiddleware('admin', 'teacher'), asyn
         submissions: submissionStats,
         quizAttempts: quizStats,
         gradeDistribution,
-        topStudents
-      }
+        topStudents,
+      },
     });
   } catch (err) {
     sendError(res, err, 'Failed to generate overview report');
@@ -273,27 +315,34 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
     }
 
     // Student info
-    const student = await db.get(`
+    const student = await db.get(
+      `
       SELECT s.*, u.name, u.email
       FROM students s
       JOIN users u ON s.user_id = u.id
       WHERE s.user_id = ?
-    `, [studentId]);
+    `,
+      [studentId]
+    );
 
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     // Grades per course
-    const grades = await db.all(`
+    const grades = await db.all(
+      `
       SELECT g.*, c.title as course_title, sub.code as subject_code, sub.name as subject_name
       FROM gradebook g
       JOIN courses c ON g.course_id = c.id
       JOIN subjects sub ON c.subject_id = sub.id
       WHERE g.student_id = ?
       ORDER BY sub.code
-    `, [studentId]);
+    `,
+      [studentId]
+    );
 
     // Assignment submissions
-    const assignments = await db.all(`
+    const assignments = await db.all(
+      `
       SELECT a.title as assignment_title, c.title as course_title,
              s.score, a.max_score, s.status, s.submitted_at
       FROM submissions s
@@ -301,10 +350,13 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       JOIN courses c ON a.course_id = c.id
       WHERE s.student_id = ?
       ORDER BY s.submitted_at DESC
-    `, [studentId]);
+    `,
+      [studentId]
+    );
 
     // Quiz attempts
-    const quizzes = await db.all(`
+    const quizzes = await db.all(
+      `
       SELECT q.title as quiz_title, c.title as course_title,
              qa.score, q.max_score, qa.completed_at
       FROM quiz_attempts qa
@@ -312,10 +364,13 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       JOIN courses c ON q.course_id = c.id
       WHERE qa.student_id = ?
       ORDER BY qa.completed_at DESC
-    `, [studentId]);
+    `,
+      [studentId]
+    );
 
     // Attendance summary
-    const attendance = await db.get(`
+    const attendance = await db.get(
+      `
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -324,11 +379,12 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
         SUM(CASE WHEN status = 'leave' THEN 1 ELSE 0 END) as leave
       FROM attendance
       WHERE user_id = ?
-    `, [studentId]);
+    `,
+      [studentId]
+    );
 
-    const attendanceRate = attendance.total > 0
-      ? Math.round((attendance.present / attendance.total) * 100)
-      : 0;
+    const attendanceRate =
+      attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
     // Overall GPA
     const overallGpaRow = await db.get(
@@ -344,14 +400,14 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
           email: student.email,
           studentId: student.student_id,
           grade: student.grade_id,
-          section: student.section
+          section: student.section,
         },
         grades,
         assignments,
         quizzes,
         attendance: { ...attendance, rate: attendanceRate },
-        overallGpa
-      }
+        overallGpa,
+      },
     });
   } catch (err) {
     sendError(res, err, 'Failed to generate student report');
@@ -359,17 +415,20 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
 });
 
 // GET /api/reports/class/:id — class performance summary
-router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+router.get('/class/:id', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const classId = parseInt(req.params.id);
 
     // Class info
-    const classInfo = await db.get(`
+    const classInfo = await db.get(
+      `
       SELECT c.*, u.name as teacher_name
       FROM classes c
       JOIN users u ON c.teacher_id = u.id
       WHERE c.id = ?
-    `, [classId]);
+    `,
+      [classId]
+    );
 
     if (!classInfo) return res.status(404).json({ error: 'Class not found' });
 
@@ -381,25 +440,32 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), asy
     const enrollmentCount = enrollmentCountRow.count;
 
     // Students enrolled
-    const students = await db.all(`
+    const students = await db.all(
+      `
       SELECT u.id, u.name, s.student_id as student_code
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
       JOIN students s ON s.user_id = u.id
       WHERE e.class_id = ?
       ORDER BY u.name
-    `, [classId]);
+    `,
+      [classId]
+    );
 
     // Courses in this class
-    const courses = await db.all(`
+    const courses = await db.all(
+      `
       SELECT c.*, sub.code as subject_code, sub.name as subject_name
       FROM courses c
       JOIN subjects sub ON c.subject_id = sub.id
       WHERE c.class_id = ?
-    `, [classId]);
+    `,
+      [classId]
+    );
 
     // Grade stats per course
-    const courseStats = await db.all(`
+    const courseStats = await db.all(
+      `
       SELECT
         c.title as course_title,
         sub.code as subject_code,
@@ -413,22 +479,29 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), asy
       LEFT JOIN gradebook g ON g.course_id = c.id
       WHERE c.class_id = ?
       GROUP BY c.id
-    `, [classId]);
+    `,
+      [classId]
+    );
 
     // Attendance rate for this class
-    const attendanceStats = await db.get(`
+    const attendanceStats = await db.get(
+      `
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
       FROM attendance
       WHERE class_id = ?
-    `, [classId]);
-    const attendanceRate = attendanceStats.total > 0
-      ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
-      : 0;
+    `,
+      [classId]
+    );
+    const attendanceRate =
+      attendanceStats.total > 0
+        ? Math.round((attendanceStats.present / attendanceStats.total) * 100)
+        : 0;
 
     // Student ranking by average GPA in this class
-    const rankings = await db.all(`
+    const rankings = await db.all(
+      `
       SELECT u.name, u.id, ROUND(AVG(g.gpa), 2) as avg_gpa
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
@@ -437,7 +510,9 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), asy
       GROUP BY u.id
       HAVING avg_gpa IS NOT NULL
       ORDER BY avg_gpa DESC
-    `, [classId]);
+    `,
+      [classId]
+    );
 
     res.json({
       report: {
@@ -446,15 +521,15 @@ router.get('/class/:id', authMiddleware, roleMiddleware('admin', 'teacher'), asy
           description: classInfo.description,
           teacher: classInfo.teacher_name,
           schedule: classInfo.schedule,
-          room: classInfo.room
+          room: classInfo.room,
         },
         enrollmentCount,
         students,
         courses,
         courseStats,
         attendanceRate,
-        rankings
-      }
+        rankings,
+      },
     });
   } catch (err) {
     sendError(res, err, 'Failed to generate class report');

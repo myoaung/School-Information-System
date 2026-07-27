@@ -1,12 +1,13 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
 // GET /api/audit — admin-only, with filters
-router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.get('/', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
   try {
     const { user_id, entity_type, action, limit = 50, offset = 0 } = req.query;
 

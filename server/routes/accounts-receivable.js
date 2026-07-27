@@ -1,13 +1,14 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
 // ─── AR Aging Report ──────────────────────────────────────────
-router.get('/aging', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.get('/aging', authMiddleware, requirePermission('finance', 'read'), async (req, res) => {
   try {
     // Get all unpaid invoices with aging buckets
     const invoices = await db.all(
@@ -152,7 +153,7 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
 });
 
 // ─── AR Summary Dashboard ─────────────────────────────────────
-router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
+router.get('/summary', authMiddleware, requirePermission('finance', 'read'), async (req, res) => {
   try {
     const totalOutstanding = await db.get(
       `SELECT COALESCE(SUM(amount), 0) as total
@@ -203,14 +204,10 @@ router.get('/summary', authMiddleware, roleMiddleware('admin', 'accountant'), as
 });
 
 // ─── Bulk Reminders (list students needing reminders) ─────────
-router.get(
-  '/reminders',
-  authMiddleware,
-  roleMiddleware('admin', 'accountant'),
-  async (req, res) => {
-    try {
-      const students = await db.all(
-        `SELECT u.id, u.name, u.email, u.phone,
+router.get('/reminders', authMiddleware, requirePermission('finance', 'read'), async (req, res) => {
+  try {
+    const students = await db.all(
+      `SELECT u.id, u.name, u.email, u.phone,
               COUNT(i.id) as overdue_count,
               SUM(i.amount) as total_overdue,
               MIN(i.due_date) as oldest_due
@@ -220,20 +217,19 @@ router.get(
        GROUP BY u.id
        HAVING SUM(i.amount) > 0
        ORDER BY total_overdue DESC`
-      );
+    );
 
-      res.json({ students });
-    } catch (err) {
-      sendError(res, err, 'Failed to fetch reminders list');
-    }
+    res.json({ students });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch reminders list');
   }
-);
+});
 
 // ─── Write Off Invoice ────────────────────────────────────────
 router.post(
   '/write-off',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('finance', 'create'),
   async (req, res) => {
     try {
       const { invoice_id, amount, reason } = req.body;

@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -9,26 +10,30 @@ const router = express.Router();
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'revenue', 'expense'];
 
 // ─── List Accounts ─────────────────────────────────────────────
-router.get('/accounts', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const { type, active } = req.query;
+router.get(
+  '/accounts',
+  authMiddleware,
+  requirePermission('accounting', 'read'),
+  async (req, res) => {
+    try {
+      const { type, active } = req.query;
 
-    let where = [];
-    let params = [];
+      let where = [];
+      let params = [];
 
-    if (type) {
-      where.push('a.type = ?');
-      params.push(type);
-    }
-    if (active !== undefined) {
-      where.push('a.is_active = ?');
-      params.push(active === 'true' ? 1 : 0);
-    }
+      if (type) {
+        where.push('a.type = ?');
+        params.push(type);
+      }
+      if (active !== undefined) {
+        where.push('a.is_active = ?');
+        params.push(active === 'true' ? 1 : 0);
+      }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const accounts = await db.all(
-      `SELECT a.*,
+      const accounts = await db.all(
+        `SELECT a.*,
               COALESCE(SUM(jl.debit), 0) as total_debit,
               COALESCE(SUM(jl.credit), 0) as total_credit
        FROM accounts a
@@ -37,31 +42,32 @@ router.get('/accounts', authMiddleware, roleMiddleware('admin', 'accountant'), a
        ${whereClause}
        GROUP BY a.id
        ORDER BY a.code`,
-      params
-    );
+        params
+      );
 
-    // Calculate balance based on account type
-    const result = accounts.map((a) => {
-      let balance = 0;
-      if (a.type === 'asset' || a.type === 'expense') {
-        balance = a.total_debit - a.total_credit; // Normal debit balance
-      } else {
-        balance = a.total_credit - a.total_debit; // Normal credit balance
-      }
-      return { ...a, balance };
-    });
+      // Calculate balance based on account type
+      const result = accounts.map((a) => {
+        let balance = 0;
+        if (a.type === 'asset' || a.type === 'expense') {
+          balance = a.total_debit - a.total_credit; // Normal debit balance
+        } else {
+          balance = a.total_credit - a.total_debit; // Normal credit balance
+        }
+        return { ...a, balance };
+      });
 
-    res.json({ accounts: result });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch accounts');
+      res.json({ accounts: result });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch accounts');
+    }
   }
-});
+);
 
 // ─── Create Account ────────────────────────────────────────────
 router.post(
   '/accounts',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'create'),
   async (req, res) => {
     try {
       const { code, name, type, parent_id, description } = req.body;
@@ -108,7 +114,7 @@ router.post(
 router.put(
   '/accounts/:id',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -151,163 +157,175 @@ router.put(
 );
 
 // ─── List Journal Entries ──────────────────────────────────────
-router.get('/journal', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const { status, start_date, end_date, source_type } = req.query;
+router.get(
+  '/journal',
+  authMiddleware,
+  requirePermission('accounting', 'read'),
+  async (req, res) => {
+    try {
+      const { status, start_date, end_date, source_type } = req.query;
 
-    let where = [];
-    let params = [];
+      let where = [];
+      let params = [];
 
-    if (status) {
-      where.push('je.status = ?');
-      params.push(status);
-    }
-    if (start_date) {
-      where.push('je.entry_date >= ?');
-      params.push(start_date);
-    }
-    if (end_date) {
-      where.push('je.entry_date <= ?');
-      params.push(end_date);
-    }
-    if (source_type) {
-      where.push('je.source_type = ?');
-      params.push(source_type);
-    }
+      if (status) {
+        where.push('je.status = ?');
+        params.push(status);
+      }
+      if (start_date) {
+        where.push('je.entry_date >= ?');
+        params.push(start_date);
+      }
+      if (end_date) {
+        where.push('je.entry_date <= ?');
+        params.push(end_date);
+      }
+      if (source_type) {
+        where.push('je.source_type = ?');
+        params.push(source_type);
+      }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const entries = await db.all(
-      `SELECT je.*, u.name as created_by_name, p.name as posted_by_name
+      const entries = await db.all(
+        `SELECT je.*, u.name as created_by_name, p.name as posted_by_name
        FROM journal_entries je
        LEFT JOIN users u ON je.created_by = u.id
        LEFT JOIN users p ON je.posted_by = p.id
        ${whereClause}
        ORDER BY je.entry_date DESC, je.id DESC`,
-      params
-    );
+        params
+      );
 
-    // Fetch lines for each entry
-    const result = [];
-    for (const entry of entries) {
-      const lines = await db.all(
-        `SELECT jl.*, a.code as account_code, a.name as account_name
+      // Fetch lines for each entry
+      const result = [];
+      for (const entry of entries) {
+        const lines = await db.all(
+          `SELECT jl.*, a.code as account_code, a.name as account_name
          FROM journal_lines jl
          JOIN accounts a ON jl.account_id = a.id
          WHERE jl.journal_entry_id = ?
          ORDER BY jl.debit DESC, jl.credit DESC`,
-        [entry.id]
-      );
+          [entry.id]
+        );
 
-      const totalDebit = lines.reduce((sum, l) => sum + (l.debit || 0), 0);
-      const totalCredit = lines.reduce((sum, l) => sum + (l.credit || 0), 0);
+        const totalDebit = lines.reduce((sum, l) => sum + (l.debit || 0), 0);
+        const totalCredit = lines.reduce((sum, l) => sum + (l.credit || 0), 0);
 
-      result.push({ ...entry, lines, total_debit: totalDebit, total_credit: totalCredit });
+        result.push({ ...entry, lines, total_debit: totalDebit, total_credit: totalCredit });
+      }
+
+      res.json({ entries: result });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch journal entries');
     }
-
-    res.json({ entries: result });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch journal entries');
   }
-});
+);
 
 // ─── Create Journal Entry ──────────────────────────────────────
-router.post('/journal', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const { entry_date, reference, description, lines, source_type, source_id } = req.body;
+router.post(
+  '/journal',
+  authMiddleware,
+  requirePermission('accounting', 'create'),
+  async (req, res) => {
+    try {
+      const { entry_date, reference, description, lines, source_type, source_id } = req.body;
 
-    if (!entry_date || !description || !lines || !Array.isArray(lines) || lines.length < 2) {
-      return res
-        .status(400)
-        .json({ error: 'entry_date, description, and at least 2 lines are required' });
-    }
+      if (!entry_date || !description || !lines || !Array.isArray(lines) || lines.length < 2) {
+        return res
+          .status(400)
+          .json({ error: 'entry_date, description, and at least 2 lines are required' });
+      }
 
-    // Validate debits = credits
-    let totalDebit = 0;
-    let totalCredit = 0;
-    for (const line of lines) {
-      if (!line.account_id) {
-        return res.status(400).json({ error: 'Each line must have an account_id' });
+      // Validate debits = credits
+      let totalDebit = 0;
+      let totalCredit = 0;
+      for (const line of lines) {
+        if (!line.account_id) {
+          return res.status(400).json({ error: 'Each line must have an account_id' });
+        }
+        const debit = parseFloat(line.debit) || 0;
+        const credit = parseFloat(line.credit) || 0;
+        if (debit < 0 || credit < 0) {
+          return res.status(400).json({ error: 'Debit and credit must be non-negative' });
+        }
+        if (debit === 0 && credit === 0) {
+          return res
+            .status(400)
+            .json({ error: 'Each line must have either debit or credit amount' });
+        }
+        if (debit > 0 && credit > 0) {
+          return res.status(400).json({ error: 'A line cannot have both debit and credit' });
+        }
+        totalDebit += debit;
+        totalCredit += credit;
       }
-      const debit = parseFloat(line.debit) || 0;
-      const credit = parseFloat(line.credit) || 0;
-      if (debit < 0 || credit < 0) {
-        return res.status(400).json({ error: 'Debit and credit must be non-negative' });
-      }
-      if (debit === 0 && credit === 0) {
-        return res.status(400).json({ error: 'Each line must have either debit or credit amount' });
-      }
-      if (debit > 0 && credit > 0) {
-        return res.status(400).json({ error: 'A line cannot have both debit and credit' });
-      }
-      totalDebit += debit;
-      totalCredit += credit;
-    }
 
-    if (Math.abs(totalDebit - totalCredit) > 0.01) {
-      return res.status(400).json({
-        error: `Debits (${totalDebit}) must equal credits (${totalCredit})`,
-      });
-    }
+      if (Math.abs(totalDebit - totalCredit) > 0.01) {
+        return res.status(400).json({
+          error: `Debits (${totalDebit}) must equal credits (${totalCredit})`,
+        });
+      }
 
-    // Create entry
-    const entryResult = await db.run(
-      `INSERT INTO journal_entries (entry_date, reference, description, source_type, source_id, created_by)
+      // Create entry
+      const entryResult = await db.run(
+        `INSERT INTO journal_entries (entry_date, reference, description, source_type, source_id, created_by)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        entry_date,
-        reference || null,
-        description,
-        source_type || null,
-        source_id || null,
-        req.user.id,
-      ]
-    );
-
-    const entryId = entryResult.lastInsertRowid;
-
-    // Insert lines
-    for (const line of lines) {
-      await db.run(
-        `INSERT INTO journal_lines (journal_entry_id, account_id, debit, credit, description)
-         VALUES (?, ?, ?, ?, ?)`,
         [
-          entryId,
-          line.account_id,
-          parseFloat(line.debit) || 0,
-          parseFloat(line.credit) || 0,
-          line.description || null,
+          entry_date,
+          reference || null,
+          description,
+          source_type || null,
+          source_id || null,
+          req.user.id,
         ]
       );
-    }
 
-    const entry = await db.get('SELECT * FROM journal_entries WHERE id = ?', [entryId]);
-    const entryLines = await db.all(
-      `SELECT jl.*, a.code as account_code, a.name as account_name
+      const entryId = entryResult.lastInsertRowid;
+
+      // Insert lines
+      for (const line of lines) {
+        await db.run(
+          `INSERT INTO journal_lines (journal_entry_id, account_id, debit, credit, description)
+         VALUES (?, ?, ?, ?, ?)`,
+          [
+            entryId,
+            line.account_id,
+            parseFloat(line.debit) || 0,
+            parseFloat(line.credit) || 0,
+            line.description || null,
+          ]
+        );
+      }
+
+      const entry = await db.get('SELECT * FROM journal_entries WHERE id = ?', [entryId]);
+      const entryLines = await db.all(
+        `SELECT jl.*, a.code as account_code, a.name as account_name
        FROM journal_lines jl
        JOIN accounts a ON jl.account_id = a.id
        WHERE jl.journal_entry_id = ?`,
-      [entryId]
-    );
+        [entryId]
+      );
 
-    res.status(201).json({ message: 'Journal entry created', entry, lines: entryLines });
+      res.status(201).json({ message: 'Journal entry created', entry, lines: entryLines });
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'journal_entry',
-      entityId: entryId,
-      newValues: { description, total_debit: totalDebit, total_credit: totalCredit },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to create journal entry');
+      auditLog(req, {
+        action: 'create',
+        entityType: 'journal_entry',
+        entityId: entryId,
+        newValues: { description, total_debit: totalDebit, total_credit: totalCredit },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to create journal entry');
+    }
   }
-});
+);
 
 // ─── Post Journal Entry ────────────────────────────────────────
 router.put(
   '/journal/:id/post',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -352,7 +370,7 @@ router.put(
 router.put(
   '/journal/:id/reverse',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -433,7 +451,7 @@ router.put(
 router.get(
   '/ledger/:accountId',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'read'),
   async (req, res) => {
     try {
       const accountId = parseInt(req.params.accountId);
@@ -489,7 +507,7 @@ router.get(
 router.get(
   '/trial-balance',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'read'),
   async (req, res) => {
     try {
       const { as_of_date } = req.query;
@@ -563,7 +581,7 @@ router.get(
 router.get(
   '/income-statement',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'read'),
   async (req, res) => {
     try {
       const { start_date, end_date } = req.query;
@@ -640,7 +658,7 @@ router.get(
 router.get(
   '/balance-sheet',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'read'),
   async (req, res) => {
     try {
       const { as_of_date } = req.query;
@@ -714,69 +732,79 @@ router.get(
 );
 
 // ─── List Accounting Periods ───────────────────────────────────
-router.get('/periods', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const periods = await db.all(
-      `SELECT ap.*, u.name as closed_by_name
+router.get(
+  '/periods',
+  authMiddleware,
+  requirePermission('accounting', 'read'),
+  async (req, res) => {
+    try {
+      const periods = await db.all(
+        `SELECT ap.*, u.name as closed_by_name
        FROM accounting_periods ap
        LEFT JOIN users u ON ap.closed_by = u.id
        ORDER BY ap.start_date DESC`
-    );
+      );
 
-    res.json({ periods });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch periods');
+      res.json({ periods });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch periods');
+    }
   }
-});
+);
 
 // ─── Create Accounting Period ──────────────────────────────────
-router.post('/periods', authMiddleware, roleMiddleware('admin', 'accountant'), async (req, res) => {
-  try {
-    const { name, start_date, end_date, academic_year_id } = req.body;
+router.post(
+  '/periods',
+  authMiddleware,
+  requirePermission('accounting', 'create'),
+  async (req, res) => {
+    try {
+      const { name, start_date, end_date, academic_year_id } = req.body;
 
-    if (!name || !start_date || !end_date) {
-      return res.status(400).json({ error: 'name, start_date, and end_date are required' });
-    }
+      if (!name || !start_date || !end_date) {
+        return res.status(400).json({ error: 'name, start_date, and end_date are required' });
+      }
 
-    // Check for overlapping periods
-    const overlap = await db.get(
-      `SELECT id FROM accounting_periods
+      // Check for overlapping periods
+      const overlap = await db.get(
+        `SELECT id FROM accounting_periods
        WHERE status = 'open' AND start_date <= ? AND end_date >= ?`,
-      [end_date, start_date]
-    );
+        [end_date, start_date]
+      );
 
-    if (overlap) {
-      return res.status(400).json({ error: 'Period overlaps with an existing open period' });
-    }
+      if (overlap) {
+        return res.status(400).json({ error: 'Period overlaps with an existing open period' });
+      }
 
-    const result = await db.run(
-      `INSERT INTO accounting_periods (name, start_date, end_date, academic_year_id)
+      const result = await db.run(
+        `INSERT INTO accounting_periods (name, start_date, end_date, academic_year_id)
        VALUES (?, ?, ?, ?)`,
-      [name, start_date, end_date, academic_year_id || null]
-    );
+        [name, start_date, end_date, academic_year_id || null]
+      );
 
-    const period = await db.get('SELECT * FROM accounting_periods WHERE id = ?', [
-      result.lastInsertRowid,
-    ]);
+      const period = await db.get('SELECT * FROM accounting_periods WHERE id = ?', [
+        result.lastInsertRowid,
+      ]);
 
-    res.status(201).json({ message: 'Period created', period });
+      res.status(201).json({ message: 'Period created', period });
 
-    auditLog(req, {
-      action: 'create',
-      entityType: 'accounting_period',
-      entityId: result.lastInsertRowid,
-      newValues: { name, start_date, end_date },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to create period');
+      auditLog(req, {
+        action: 'create',
+        entityType: 'accounting_period',
+        entityId: result.lastInsertRowid,
+        newValues: { name, start_date, end_date },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to create period');
+    }
   }
-});
+);
 
 // ─── Close Accounting Period ───────────────────────────────────
 router.put(
   '/periods/:id/close',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -967,7 +995,7 @@ router.put(
 router.get(
   '/reconciliation',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'read'),
   async (req, res) => {
     try {
       const reconciliations = await db.all(
@@ -989,7 +1017,7 @@ router.get(
 router.post(
   '/reconciliation',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'create'),
   async (req, res) => {
     try {
       const { account_id, statement_date, statement_balance, entry_ids } = req.body;
@@ -1063,7 +1091,7 @@ router.post(
 router.put(
   '/reconciliation/:id',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'update'),
   async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -1114,7 +1142,7 @@ router.put(
 router.post(
   '/auto-journal/:sourceType/:sourceId',
   authMiddleware,
-  roleMiddleware('admin', 'accountant'),
+  requirePermission('accounting', 'create'),
   async (req, res) => {
     try {
       const { sourceType, sourceId } = req.params;
