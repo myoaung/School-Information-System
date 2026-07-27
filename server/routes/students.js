@@ -1,7 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../data');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
 const { sendError } = require('../utils/errorHandler');
 const { auditLog } = require('../middleware/audit');
 
@@ -30,23 +31,28 @@ const VALID_TRANSITIONS = {
 };
 
 // ─── Lifecycle Summary (must be before /:id routes) ─────────────
-router.get('/lifecycle/summary', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const counts = await db.all(`SELECT status, COUNT(*) as count FROM students GROUP BY status`);
+router.get(
+  '/lifecycle/summary',
+  authMiddleware,
+  requirePermission('students', 'read'),
+  async (req, res) => {
+    try {
+      const counts = await db.all(`SELECT status, COUNT(*) as count FROM students GROUP BY status`);
 
-    const summary = {};
-    ALL_STATUSES.forEach((s) => {
-      summary[s] = 0;
-    });
-    counts.forEach((r) => {
-      summary[r.status] = r.count;
-    });
+      const summary = {};
+      ALL_STATUSES.forEach((s) => {
+        summary[s] = 0;
+      });
+      counts.forEach((r) => {
+        summary[r.status] = r.count;
+      });
 
-    res.json({ summary, total: counts.reduce((sum, r) => sum + r.count, 0) });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch lifecycle summary');
+      res.json({ summary, total: counts.reduce((sum, r) => sum + r.count, 0) });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch lifecycle summary');
+    }
   }
-});
+);
 
 // ─── Student Data Governance (GDPR-style) ─────────────────────
 
@@ -175,9 +181,16 @@ router.delete('/me/data', authMiddleware, async (req, res) => {
   }
 });
 
-// Get all students (admin/teacher)
-router.get('/', authMiddleware, roleMiddleware('admin', 'teacher'), async (req, res) => {
+// Get all students (admin/teacher) — RBAC grants students:read for own profile,
+// but listing ALL students is restricted to admin/teacher.
+router.get('/', authMiddleware, requirePermission('students', 'read'), async (req, res) => {
   try {
+    if (!['admin', 'teacher'].includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ error: 'Forbidden', message: 'Only admin/teacher can list all students' });
+    }
+
     const { search, grade_id, status } = req.query;
 
     let where = ['u.role = ?'];
@@ -277,7 +290,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Create student (admin only)
-router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.post('/', authMiddleware, requirePermission('students', 'create'), async (req, res) => {
   try {
     const {
       name,
@@ -364,7 +377,7 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
 });
 
 // Update student (admin only)
-router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.put('/:id', authMiddleware, requirePermission('students', 'update'), async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     const {
@@ -445,71 +458,76 @@ router.put('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => 
 // ─── Student Lifecycle ──────────────────────────────────────────
 
 // Change student status (admin only)
-router.post('/:id/status', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const { status: newStatus, reason } = req.body;
+router.post(
+  '/:id/status',
+  authMiddleware,
+  requirePermission('students', 'update'),
+  async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { status: newStatus, reason } = req.body;
 
-    if (!newStatus) return res.status(400).json({ error: 'Status is required' });
-    if (!ALL_STATUSES.includes(newStatus)) {
-      return res
-        .status(400)
-        .json({ error: `Invalid status. Must be one of: ${ALL_STATUSES.join(', ')}` });
-    }
+      if (!newStatus) return res.status(400).json({ error: 'Status is required' });
+      if (!ALL_STATUSES.includes(newStatus)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid status. Must be one of: ${ALL_STATUSES.join(', ')}` });
+      }
 
-    const profile = await db.get(
-      `SELECT s.status, s.id as profile_id FROM students s WHERE s.user_id = ?`,
-      [userId]
-    );
-    if (!profile) return res.status(404).json({ error: 'Student not found' });
+      const profile = await db.get(
+        `SELECT s.status, s.id as profile_id FROM students s WHERE s.user_id = ?`,
+        [userId]
+      );
+      if (!profile) return res.status(404).json({ error: 'Student not found' });
 
-    const currentStatus = profile.status;
+      const currentStatus = profile.status;
 
-    // Check if status is actually changing
-    if (currentStatus === newStatus) {
-      return res.status(400).json({ error: 'Student already has this status' });
-    }
+      // Check if status is actually changing
+      if (currentStatus === newStatus) {
+        return res.status(400).json({ error: 'Student already has this status' });
+      }
 
-    // Validate transition (allow if no transition defined — backward compatible)
-    const allowed = VALID_TRANSITIONS[currentStatus];
-    if (allowed && !allowed.includes(newStatus)) {
-      return res.status(400).json({
-        error: `Cannot transition from '${currentStatus}' to '${newStatus}'. Allowed: ${allowed.join(', ')}`,
-      });
-    }
+      // Validate transition (allow if no transition defined — backward compatible)
+      const allowed = VALID_TRANSITIONS[currentStatus];
+      if (allowed && !allowed.includes(newStatus)) {
+        return res.status(400).json({
+          error: `Cannot transition from '${currentStatus}' to '${newStatus}'. Allowed: ${allowed.join(', ')}`,
+        });
+      }
 
-    // Require reason for certain transitions
-    const requiresReason = ['graduated', 'transferred', 'withdrawn', 'archived'];
-    if (requiresReason.includes(newStatus) && !reason) {
-      return res.status(400).json({ error: `Reason is required for '${newStatus}' status` });
-    }
+      // Require reason for certain transitions
+      const requiresReason = ['graduated', 'transferred', 'withdrawn', 'archived'];
+      if (requiresReason.includes(newStatus) && !reason) {
+        return res.status(400).json({ error: `Reason is required for '${newStatus}' status` });
+      }
 
-    // Update status
-    await db.run('UPDATE students SET status = ? WHERE user_id = ?', [newStatus, userId]);
+      // Update status
+      await db.run('UPDATE students SET status = ? WHERE user_id = ?', [newStatus, userId]);
 
-    // Record history
-    await db.run(
-      `INSERT INTO student_status_history (student_id, from_status, to_status, reason, changed_by)
+      // Record history
+      await db.run(
+        `INSERT INTO student_status_history (student_id, from_status, to_status, reason, changed_by)
        VALUES (?, ?, ?, ?, ?)`,
-      [profile.profile_id, currentStatus, newStatus, reason || null, req.user.id]
-    );
+        [profile.profile_id, currentStatus, newStatus, reason || null, req.user.id]
+      );
 
-    res.json({
-      message: `Status changed from '${currentStatus}' to '${newStatus}'`,
-      status: newStatus,
-    });
+      res.json({
+        message: `Status changed from '${currentStatus}' to '${newStatus}'`,
+        status: newStatus,
+      });
 
-    auditLog(req, {
-      action: 'status_change',
-      entityType: 'student',
-      entityId: userId,
-      oldValues: { status: currentStatus },
-      newValues: { status: newStatus, reason },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to change student status');
+      auditLog(req, {
+        action: 'status_change',
+        entityType: 'student',
+        entityId: userId,
+        oldValues: { status: currentStatus },
+        newValues: { status: newStatus, reason },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to change student status');
+    }
   }
-});
+);
 
 // Get student status history
 router.get('/:id/status-history', authMiddleware, async (req, res) => {
@@ -535,7 +553,7 @@ router.get('/:id/status-history', authMiddleware, async (req, res) => {
 });
 
 // Delete student (admin only)
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, requirePermission('students', 'delete'), async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
 

@@ -25,28 +25,26 @@ export default function DashboardPage() {
   const [lifecycle, setLifecycle] = useState(null);
 
   useEffect(() => {
+    // Load main dashboard stats first
     api
       .get('/reports/dashboard')
       .then((r) => setStats(r.data.dashboard))
       .catch(() => toast.error('Failed to load dashboard data'))
-      .finally(() => setLoading(false));
-
-    // Load at-risk students for admin/teacher
-    if (isAdmin || isTeacher) {
-      api
-        .get('/ai/at-risk?minScore=30')
-        .then((r) => setAtRiskStudents(r.data.students || []))
-        .catch(() => toast.error('Failed to load risk alerts'));
-      api
-        .get('/ai/stats')
-        .then((r) => setAnalyticsStats(r.data.stats))
-        .catch(() => toast.error('Failed to load analytics'));
-      // Load lifecycle summary
-      api
-        .get('/students/lifecycle/summary')
-        .then((r) => setLifecycle(r.data))
-        .catch(() => {});
-    }
+      .finally(() => setLoading(false))
+      .then(() => {
+        // Load secondary data in parallel after main stats render
+        if (isAdmin || isTeacher) {
+          Promise.allSettled([
+            api.get('/ai/at-risk?minScore=30'),
+            api.get('/ai/stats'),
+            api.get('/students/lifecycle/summary'),
+          ]).then(([risk, analytics, lifecycle]) => {
+            if (risk.status === 'fulfilled') setAtRiskStudents(risk.value.data.students || []);
+            if (analytics.status === 'fulfilled') setAnalyticsStats(analytics.value.data.stats);
+            if (lifecycle.status === 'fulfilled') setLifecycle(lifecycle.value.data);
+          });
+        }
+      });
   }, []);
 
   return (

@@ -18,6 +18,103 @@ function getDb() {
   return db;
 }
 
+/**
+ * Seed RBAC roles, areas, and default permissions.
+ * Only inserts if the roles table is empty (idempotent).
+ */
+function seedRBAC(db) {
+  const roleCount = db.prepare('SELECT COUNT(*) as count FROM roles').get();
+  if (roleCount.count > 0) return; // Already seeded
+
+  // ── Roles ──
+  const insertRole = db.prepare(
+    'INSERT INTO roles (name, description, is_system) VALUES (?, ?, 1)'
+  );
+  const roles = [
+    ['admin', 'Full system access'],
+    ['teacher', 'Teacher — can manage classes, view students, mark attendance'],
+    ['student', 'Student — can view own records'],
+    ['parent', "Parent — can view linked children's records"],
+    ['accountant', 'Accountant — can manage finances'],
+    ['staff', 'General staff — read-only access to most areas'],
+  ];
+  const roleIds = {};
+  for (const [name, desc] of roles) {
+    const r = insertRole.run(name, desc);
+    roleIds[name] = r.lastInsertRowid;
+  }
+
+  // ── Areas ──
+  const insertArea = db.prepare('INSERT INTO areas (name, description) VALUES (?, ?)');
+  const areas = [
+    ['students', 'Student records, enrollment, lifecycle'],
+    ['teachers', 'Teacher profiles, qualifications'],
+    ['classes', 'Class management, scheduling'],
+    ['finance', 'Fee structures, invoices, payments, accounting'],
+    ['attendance', 'Student and teacher attendance tracking'],
+    ['reports', 'Academic reports, analytics, exports'],
+  ];
+  const areaIds = {};
+  for (const [name, desc] of areas) {
+    const r = insertArea.run(name, desc);
+    areaIds[name] = r.lastInsertRowid;
+  }
+
+  // ── Default Permissions ──
+  // Matrix: [role, area, can_create, can_read, can_update, can_delete]
+  const insertPerm = db.prepare(`
+    INSERT INTO role_permissions (role_id, area_id, can_create, can_read, can_update, can_delete)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const permissions = [
+    // admin — full CRUD on everything
+    ['admin', 'students', 1, 1, 1, 1],
+    ['admin', 'teachers', 1, 1, 1, 1],
+    ['admin', 'classes', 1, 1, 1, 1],
+    ['admin', 'finance', 1, 1, 1, 1],
+    ['admin', 'attendance', 1, 1, 1, 1],
+    ['admin', 'reports', 1, 1, 1, 1],
+
+    // teacher — read students, read/update classes, read/update attendance, read reports
+    ['teacher', 'students', 0, 1, 0, 0],
+    ['teacher', 'teachers', 0, 1, 0, 0],
+    ['teacher', 'classes', 0, 1, 1, 0],
+    ['teacher', 'attendance', 0, 1, 1, 0],
+    ['teacher', 'reports', 0, 1, 0, 0],
+
+    // student — read-only on students (own), teachers, classes
+    ['student', 'students', 0, 1, 0, 0],
+    ['student', 'teachers', 0, 1, 0, 0],
+    ['student', 'classes', 0, 1, 0, 0],
+
+    // parent — read-only on students (children), teachers, classes
+    ['parent', 'students', 0, 1, 0, 0],
+    ['parent', 'teachers', 0, 1, 0, 0],
+    ['parent', 'classes', 0, 1, 0, 0],
+
+    // accountant — full CRUD on finance, read students/reports
+    ['accountant', 'students', 0, 1, 0, 0],
+    ['accountant', 'finance', 1, 1, 1, 1],
+    ['accountant', 'reports', 0, 1, 0, 0],
+
+    // staff — read-only on most areas
+    ['staff', 'students', 0, 1, 0, 0],
+    ['staff', 'teachers', 0, 1, 0, 0],
+    ['staff', 'classes', 0, 1, 0, 0],
+    ['staff', 'attendance', 0, 1, 0, 0],
+  ];
+
+  const insertAll = db.transaction(() => {
+    for (const [role, area, c, r, u, d] of permissions) {
+      insertPerm.run(roleIds[role], areaIds[area], c, r, u, d);
+    }
+  });
+
+  insertAll();
+  console.log('RBAC: seeded 6 roles, 6 areas, default permissions');
+}
+
 function initDatabase() {
   const db = getDb();
 
@@ -520,6 +617,35 @@ function initDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_account_lockouts_email ON account_lockouts(email);
     CREATE INDEX IF NOT EXISTS idx_account_lockouts_time ON account_lockouts(attempt_time);
+
+    -- ── RBAC Tables ──────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      description TEXT,
+      is_system INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS areas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+      area_id INTEGER NOT NULL REFERENCES areas(id) ON DELETE CASCADE,
+      can_create INTEGER DEFAULT 0,
+      can_read INTEGER DEFAULT 0,
+      can_update INTEGER DEFAULT 0,
+      can_delete INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(role_id, area_id)
+    );
   `);
 
   // ── Migration: Add new columns to existing tables ──
@@ -568,6 +694,42 @@ function initDatabase() {
         /* column may already exist */
       }
     }
+  }
+
+  // ── Migration: Expand users.role CHECK constraint for new RBAC roles ──
+  // SQLite doesn't expose CHECK constraints via PRAGMA, so we check if any
+  // user already has a role outside the original 4 — if not, rebuild the
+  // table to ensure the constraint includes accountant & staff.
+  const originalRoles = ['student', 'teacher', 'admin', 'parent'];
+  const currentRoles = db
+    .prepare('SELECT DISTINCT role FROM users')
+    .all()
+    .map((r) => r.role);
+  const alreadyExpanded = currentRoles.some((r) => !originalRoles.includes(r));
+
+  if (!alreadyExpanded) {
+    console.log('Migrating users.role CHECK constraint to include new RBAC roles...');
+    const migrateUsers = db.transaction(() => {
+      db.exec(`
+        CREATE TABLE users_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT UNIQUE NOT NULL,
+          password TEXT NOT NULL,
+          name TEXT NOT NULL,
+          role TEXT CHECK(role IN ('student', 'teacher', 'admin', 'parent', 'accountant', 'staff')) NOT NULL,
+          phone TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      db.exec(`
+        INSERT INTO users_new (id, email, password, name, role, phone, created_at)
+          SELECT id, email, password, name, role, phone, created_at FROM users
+      `);
+      db.exec('DROP TABLE users');
+      db.exec('ALTER TABLE users_new RENAME TO users');
+    });
+    migrateUsers();
+    console.log('users.role CHECK constraint updated successfully');
   }
 
   // Seed chart of accounts if empty
@@ -703,6 +865,9 @@ function initDatabase() {
 
     console.log('Parent users migrated successfully');
   }
+
+  // ── Seed RBAC Data ──────────────────────────────────────────────
+  seedRBAC(db);
 
   console.log('Database initialized successfully');
 }

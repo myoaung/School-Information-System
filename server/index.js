@@ -58,6 +58,7 @@ const budgetingRoutes = require('./routes/budgeting');
 const accountsReceivableRoutes = require('./routes/accounts-receivable');
 const accountingRoutes = require('./routes/accounting');
 const classSubjectsRoutes = require('./routes/class-subjects');
+const rbacRoutes = require('./routes/rbac');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -192,6 +193,7 @@ if (require('fs').existsSync(publicDir)) {
 // ── Routes ──
 app.use('/api', globalLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/rbac', rbacRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/contact', contactLimiter, contactRoutes);
