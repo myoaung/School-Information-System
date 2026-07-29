@@ -75,7 +75,8 @@ INSERT INTO areas (name, description) VALUES
   ('accounting', 'Double-entry accounting, ledger, reconciliation'),
   ('cash-control', 'Daily cash sessions'),
   ('budgeting', 'Budget management'),
-  ('expenses', 'Expense tracking and procurement')
+  ('expenses', 'Expense tracking and procurement'),
+  ('users', 'User account management')
 ON CONFLICT (name) DO NOTHING;
 
 -- Seed default permissions (admin gets full CRUD on everything)
