@@ -550,6 +550,13 @@ export default function Navbar() {
                                   >
                                     Audit Logs
                                   </Link>
+                                  <Link
+                                    to="/admin/users"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    User Management
+                                  </Link>
                                 </>
                               )}
                             </div>

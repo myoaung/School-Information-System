@@ -57,6 +57,7 @@ const CashControlPage = lazy(() => import('./pages/CashControlPage'));
 const BudgetingPage = lazy(() => import('./pages/BudgetingPage'));
 const AccountsReceivablePage = lazy(() => import('./pages/AccountsReceivablePage'));
 const AccountingPage = lazy(() => import('./pages/AccountingPage'));
+const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 
 function App() {
   return (
@@ -128,6 +129,14 @@ function App() {
                       element={
                         <ProtectedRoute requiredRole="admin">
                           <AuditLogsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/users"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <UserManagementPage />
                         </ProtectedRoute>
                       }
                     />
