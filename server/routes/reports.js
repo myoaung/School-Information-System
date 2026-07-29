@@ -33,7 +33,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
       const overallGpaRow = await db.get(
-        'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+        'SELECT ROUND(AVG(gpa)::numeric, 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
         [id]
       );
       const overallGpa = overallGpaRow.avg || 0;
@@ -168,10 +168,10 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
       `
       SELECT co.title as course_title, sub.code as subject_code,
         COUNT(g.id) as graded_students,
-        ROUND(AVG(g.gpa), 2) as avg_gpa,
-        ROUND(AVG(g.assignment_score), 1) as avg_assignment,
-        ROUND(AVG(g.quiz_score), 1) as avg_quiz,
-        ROUND(AVG(g.exam_score), 1) as avg_exam
+        ROUND(AVG(g.gpa)::numeric, 2) as avg_gpa,
+        ROUND(AVG(g.assignment_score)::numeric, 1) as avg_assignment,
+        ROUND(AVG(g.quiz_score)::numeric, 1) as avg_quiz,
+        ROUND(AVG(g.exam_score)::numeric, 1) as avg_exam
       FROM courses co
       JOIN subjects sub ON co.subject_id = sub.id
       JOIN classes cl ON co.class_id = cl.id
@@ -234,7 +234,7 @@ router.get('/overview', authMiddleware, requirePermission('reports', 'read'), as
 
     // Average GPA
     const avgGpaRow = await db.get(
-      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE gpa IS NOT NULL'
+      'SELECT ROUND(AVG(gpa)::numeric, 2) as avg FROM gradebook WHERE gpa IS NOT NULL'
     );
     const avgGpa = avgGpaRow.avg || 0;
 
@@ -261,7 +261,7 @@ router.get('/overview', authMiddleware, requirePermission('reports', 'read'), as
 
     // Quiz attempt stats
     const quizStats = await db.get(`
-      SELECT COUNT(*) as total, ROUND(AVG(score), 1) as avg_score
+      SELECT COUNT(*) as total, ROUND(AVG(score)::numeric, 1) as avg_score
       FROM quiz_attempts
     `);
 
@@ -276,7 +276,7 @@ router.get('/overview', authMiddleware, requirePermission('reports', 'read'), as
 
     // Top 5 students by GPA
     const topStudents = await db.all(`
-      SELECT u.name, u.id, ROUND(AVG(g.gpa), 2) as avg_gpa
+      SELECT u.name, u.id, ROUND(AVG(g.gpa)::numeric, 2) as avg_gpa
       FROM gradebook g
       JOIN users u ON g.student_id = u.id
       WHERE g.gpa IS NOT NULL
@@ -388,7 +388,7 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
 
     // Overall GPA
     const overallGpaRow = await db.get(
-      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+      'SELECT ROUND(AVG(gpa)::numeric, 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
       [studentId]
     );
     const overallGpa = overallGpaRow.avg || 0;
@@ -470,10 +470,10 @@ router.get('/class/:id', authMiddleware, requirePermission('reports', 'read'), a
         c.title as course_title,
         sub.code as subject_code,
         COUNT(g.id) as graded_students,
-        ROUND(AVG(g.gpa), 2) as avg_gpa,
-        ROUND(AVG(g.assignment_score), 1) as avg_assignment,
-        ROUND(AVG(g.quiz_score), 1) as avg_quiz,
-        ROUND(AVG(g.exam_score), 1) as avg_exam
+        ROUND(AVG(g.gpa)::numeric, 2) as avg_gpa,
+        ROUND(AVG(g.assignment_score)::numeric, 1) as avg_assignment,
+        ROUND(AVG(g.quiz_score)::numeric, 1) as avg_quiz,
+        ROUND(AVG(g.exam_score)::numeric, 1) as avg_exam
       FROM courses c
       JOIN subjects sub ON c.subject_id = sub.id
       LEFT JOIN gradebook g ON g.course_id = c.id
@@ -502,7 +502,7 @@ router.get('/class/:id', authMiddleware, requirePermission('reports', 'read'), a
     // Student ranking by average GPA in this class
     const rankings = await db.all(
       `
-      SELECT u.name, u.id, ROUND(AVG(g.gpa), 2) as avg_gpa
+      SELECT u.name, u.id, ROUND(AVG(g.gpa)::numeric, 2) as avg_gpa
       FROM enrollments e
       JOIN users u ON e.student_id = u.id
       LEFT JOIN gradebook g ON g.student_id = u.id
