@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'sonner';
 
@@ -39,6 +40,7 @@ const CONTRACT_STATUSES = {
 };
 
 export default function MyProfilePage() {
+  const { user, updateUser } = useAuth();
   const [tab, setTab] = useState('profile');
   const [profile, setProfile] = useState(null);
   const [contract, setContract] = useState(null);
@@ -50,19 +52,45 @@ export default function MyProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ phone: '', address: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' });
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const fetchProfile = () => {
     setLoading(true);
-    api
+    // Fetch core user data from /auth/me
+    const userPromise = api.get('/auth/me').catch(() => ({ data: { user: null } }));
+    // Fetch HR-specific profile data
+    const hrPromise = api
       .get('/hr/my/profile')
-      .then((r) => {
-        setProfile(r.data.profile);
-        setContract(r.data.contract);
-        setLeaveBalance(r.data.leaveBalance);
+      .catch(() => ({ data: { profile: null, contract: null, leaveBalance: null } }));
+
+    Promise.all([userPromise, hrPromise])
+      .then(([userRes, hrRes]) => {
+        const userData = userRes.data.user;
+        const hrProfile = hrRes.data.profile;
+        // Merge user data with HR profile
+        const mergedProfile = {
+          ...hrProfile,
+          name: userData?.name || hrProfile?.name,
+          email: userData?.email || hrProfile?.email,
+          phone: userData?.phone || hrProfile?.phone || hrProfile?.user_phone,
+          role: userData?.role || hrProfile?.role,
+          user_phone: userData?.phone,
+        };
+        setProfile(mergedProfile);
+        setContract(hrRes.data.contract);
+        setLeaveBalance(hrRes.data.leaveBalance);
         setForm({
-          phone: r.data.profile.phone || '',
-          address: r.data.profile.address || '',
+          name: userData?.name || '',
+          email: userData?.email || '',
+          phone: userData?.phone || '',
+          address: hrProfile?.address || '',
         });
       })
       .catch(() => toast.error('Failed to load profile'))
@@ -109,7 +137,22 @@ export default function MyProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put('/hr/my/profile', form);
+      // Update core user fields (name, email, phone) via auth route
+      const userRes = await api.put('/auth/profile', {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+      });
+      // Update HR-specific fields (address) via HR route
+      await api.put('/hr/my/profile', { phone: form.phone, address: form.address });
+      // Update token if new one returned
+      if (userRes.data.token) {
+        localStorage.setItem('token', userRes.data.token);
+      }
+      // Update auth context
+      if (userRes.data.user) {
+        updateUser(userRes.data.user);
+      }
       toast.success('Profile updated');
       setEditing(false);
       fetchProfile();
@@ -117,6 +160,28 @@ export default function MyProfilePage() {
       toast.error(err.response?.data?.error || 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await api.put('/auth/password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      toast.success('Password changed successfully');
+      setShowPasswordForm(false);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -235,6 +300,28 @@ export default function MyProfilePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
                       Phone
                     </label>
                     <input
@@ -295,6 +382,99 @@ export default function MyProfilePage() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Password Change */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                Change Password
+              </h2>
+              {!showPasswordForm && (
+                <button
+                  onClick={() => setShowPasswordForm(true)}
+                  className="text-sm text-cyan-600 hover:text-cyan-800 font-medium cursor-pointer"
+                >
+                  Change
+                </button>
+              )}
+            </div>
+            {showPasswordForm ? (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) =>
+                      setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800"
+                      required
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-purple-500">
+                  Must be 8+ characters with uppercase, lowercase, and a number.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordForm(false);
+                      setPasswordForm({
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: '',
+                      });
+                    }}
+                    className="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
+                  >
+                    {changingPassword ? 'Changing...' : 'Change Password'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <p className="text-sm text-purple-500">••••••••</p>
             )}
           </div>
 

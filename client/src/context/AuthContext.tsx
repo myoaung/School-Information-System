@@ -16,6 +16,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<User>;
   register: (email: string, password: string, name: string, role: string, phone?: string) => Promise<User>;
   logout: () => void;
+  updateUser: (user: User) => void;
   isAdmin: boolean;
   isTeacher: boolean;
   isStudent: boolean;
@@ -72,12 +73,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
   const value: AuthContextType = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     isTeacher: user?.role === 'teacher',
