@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin, isTeacher, isStudent, isParent } = useAuth();
   const { t, locale, setLocale } = useTranslation();
   const { fontSize, setFontSize } = useFont();
   const { darkMode, toggleDarkMode } = useTheme();
@@ -326,42 +326,52 @@ export default function Navbar() {
                             >
                               Notifications
                             </Link>
-                            <Link
-                              to="/messages"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Messages
-                            </Link>
-                            <Link
-                              to="/documents"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Documents
-                            </Link>
-                            <Link
-                              to="/leaves"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Leave
-                            </Link>
-                            <Link
-                              to="/reports"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Reports
-                            </Link>
-                            <Link
-                              to="/certificates"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Certificates
-                            </Link>
-                            {user?.role === 'parent' && (
+                            {!isStudent && (
+                              <Link
+                                to="/messages"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Messages
+                              </Link>
+                            )}
+                            {!isStudent && !isParent && (
+                              <Link
+                                to="/documents"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Documents
+                              </Link>
+                            )}
+                            {!isStudent && !isParent && user?.role !== 'accountant' && (
+                              <Link
+                                to="/leaves"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Leave
+                              </Link>
+                            )}
+                            {(isAdmin || isTeacher || user?.role === 'accountant') && (
+                              <Link
+                                to="/reports"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Reports
+                              </Link>
+                            )}
+                            {(isAdmin || isTeacher) && (
+                              <Link
+                                to="/certificates"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Certificates
+                              </Link>
+                            )}
+                            {isParent && (
                               <Link
                                 to="/parent"
                                 onClick={() => setUserMenuOpen(false)}
@@ -377,48 +387,60 @@ export default function Navbar() {
                             <div className="px-3 py-1 text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider">
                               Academic
                             </div>
-                            <Link
-                              to="/courses"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Courses
-                            </Link>
-                            <Link
-                              to="/assignments"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Assignments
-                            </Link>
-                            <Link
-                              to="/quizzes"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Quizzes
-                            </Link>
-                            <Link
-                              to="/gradebook"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Gradebook
-                            </Link>
-                            <Link
-                              to="/library"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Library
-                            </Link>
-                            <Link
-                              to="/resources"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
-                            >
-                              Resources
-                            </Link>
+                            {!isParent && user?.role !== 'accountant' && (
+                              <Link
+                                to="/courses"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Courses
+                              </Link>
+                            )}
+                            {(isStudent || isTeacher || isAdmin) && (
+                              <Link
+                                to="/assignments"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Assignments
+                              </Link>
+                            )}
+                            {(isStudent || isTeacher || isAdmin) && (
+                              <Link
+                                to="/quizzes"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Quizzes
+                              </Link>
+                            )}
+                            {(isStudent || isTeacher || isAdmin) && (
+                              <Link
+                                to="/gradebook"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Gradebook
+                              </Link>
+                            )}
+                            {!isParent && user?.role !== 'accountant' && (
+                              <Link
+                                to="/library"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Library
+                              </Link>
+                            )}
+                            {!isParent && user?.role !== 'accountant' && (
+                              <Link
+                                to="/resources"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                              >
+                                Resources
+                              </Link>
+                            )}
                             {(isAdmin || user?.role === 'hr') && (
                               <Link
                                 to="/training"
