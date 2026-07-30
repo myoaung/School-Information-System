@@ -63,35 +63,36 @@ export default function MyProfilePage() {
 
   const fetchProfile = () => {
     setLoading(true);
-    // Fetch core user data from /auth/me
-    const userPromise = api.get('/auth/me').catch(() => ({ data: { user: null } }));
-    // Fetch HR-specific profile data
-    const hrPromise = api
-      .get('/hr/my/profile')
-      .catch(() => ({ data: { profile: null, contract: null, leaveBalance: null } }));
-
-    Promise.all([userPromise, hrPromise])
-      .then(([userRes, hrRes]) => {
+    api
+      .get('/auth/me')
+      .then((userRes) => {
         const userData = userRes.data.user;
-        const hrProfile = hrRes.data.profile;
-        // Merge user data with HR profile
-        const mergedProfile = {
-          ...hrProfile,
-          name: userData?.name || hrProfile?.name,
-          email: userData?.email || hrProfile?.email,
-          phone: userData?.phone || hrProfile?.phone || hrProfile?.user_phone,
-          role: userData?.role || hrProfile?.role,
-          user_phone: userData?.phone,
-        };
-        setProfile(mergedProfile);
-        setContract(hrRes.data.contract);
-        setLeaveBalance(hrRes.data.leaveBalance);
+        setProfile(userData);
         setForm({
           name: userData?.name || '',
           email: userData?.email || '',
           phone: userData?.phone || '',
-          address: hrProfile?.address || '',
+          address: '',
         });
+        // Try HR-specific data, but don't fail if unavailable
+        api
+          .get('/hr/my/profile')
+          .then((hrRes) => {
+            const hrProfile = hrRes.data.profile;
+            if (hrProfile) {
+              setProfile((prev) => ({
+                ...prev,
+                ...hrProfile,
+                phone: userData?.phone || hrProfile?.phone || hrProfile?.user_phone,
+              }));
+              setForm((prev) => ({ ...prev, address: hrProfile?.address || '' }));
+            }
+            setContract(hrRes.data.contract);
+            setLeaveBalance(hrRes.data.leaveBalance);
+          })
+          .catch(() => {
+            /* HR profile not available — fine for non-teachers */
+          });
       })
       .catch(() => toast.error('Failed to load profile'))
       .finally(() => setLoading(false));
