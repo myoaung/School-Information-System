@@ -144,8 +144,8 @@ export default function MyProfilePage() {
         email: form.email,
         phone: form.phone,
       });
-      // Update HR-specific fields (address) via HR route
-      await api.put('/hr/my/profile', { phone: form.phone, address: form.address });
+      // Try updating HR-specific fields (address) — don't fail if not a teacher
+      api.put('/hr/my/profile', { phone: form.phone, address: form.address }).catch(() => {});
       // Update token if new one returned
       if (userRes.data.token) {
         localStorage.setItem('token', userRes.data.token);
