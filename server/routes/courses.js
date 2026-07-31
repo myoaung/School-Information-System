@@ -93,6 +93,83 @@ router.post(
   }
 );
 
+// Update course (admin/teacher)
+router.put('/:id', authMiddleware, requirePermission('courses', 'update'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { class_id, subject_id, title, description } = req.body;
+
+    const existing = await db.get('SELECT id FROM courses WHERE id = ?', [id]);
+    if (!existing) return res.status(404).json({ error: 'Course not found' });
+
+    const updates = [];
+    const params = [];
+
+    if (class_id) {
+      updates.push('class_id = ?');
+      params.push(class_id);
+    }
+    if (subject_id) {
+      updates.push('subject_id = ?');
+      params.push(subject_id);
+    }
+    if (title) {
+      updates.push('title = ?');
+      params.push(title);
+    }
+    if (description !== undefined) {
+      updates.push('description = ?');
+      params.push(description || null);
+    }
+
+    if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+    params.push(id);
+    await db.run(`UPDATE courses SET ${updates.join(', ')} WHERE id = ?`, params);
+
+    const course = await db.get(
+      `SELECT c.*, cl.name as class_name, s.name as subject_name, s.code as subject_code
+         FROM courses c JOIN classes cl ON c.class_id = cl.id JOIN subjects s ON c.subject_id = s.id
+         WHERE c.id = ?`,
+      [id]
+    );
+
+    res.json({ course, message: 'Course updated successfully' });
+  } catch (err) {
+    sendError(res, err, 'Failed to update course');
+  }
+});
+
+// Delete course (admin/teacher)
+router.delete('/:id', authMiddleware, requirePermission('courses', 'delete'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await db.get('SELECT id FROM courses WHERE id = ?', [id]);
+    if (!existing) return res.status(404).json({ error: 'Course not found' });
+
+    // Check for dependent records
+    const lessons = await db.get('SELECT COUNT(*) as count FROM lessons WHERE course_id = ?', [id]);
+    const assignments = await db.get(
+      'SELECT COUNT(*) as count FROM assignments WHERE course_id = ?',
+      [id]
+    );
+    const quizzes = await db.get('SELECT COUNT(*) as count FROM quizzes WHERE course_id = ?', [id]);
+
+    if ((lessons?.count || 0) + (assignments?.count || 0) + (quizzes?.count || 0) > 0) {
+      return res.status(400).json({
+        error:
+          'Cannot delete course with existing lessons, assignments, or quizzes. Remove them first.',
+      });
+    }
+
+    await db.run('DELETE FROM courses WHERE id = ?', [id]);
+    res.json({ message: 'Course deleted successfully' });
+  } catch (err) {
+    sendError(res, err, 'Failed to delete course');
+  }
+});
+
 // Add lesson to course
 router.post(
   '/:id/lessons',
