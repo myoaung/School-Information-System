@@ -369,6 +369,7 @@ const mm = {
     title: 'ပညာရေး',
     loadError: 'ပညာရေးအချက်အလက် တင်ရန် မအောင်မြင်ပါ',
     createError: 'ဖန်တီးရန် မအောင်မြင်ပါ',
+    updateError: 'အပ်ဒိတ်လုပ်ရန် မအောင်မြင်ပါ',
     current: 'လက်ရှိ',
     noYears: 'ပညာသင်နှစ် မရှိသေးပါ။',
     noSemesters: 'စာသင်ဝက် မရှိသေးပါ။',
@@ -381,6 +382,9 @@ const mm = {
     createYear: 'နှစ်ထည့်ရန်',
     createSemester: 'ဝက်ထည့်ရန်',
     createHoliday: 'ပိတ်ရက်ထည့်ရန်',
+    editYear: 'နှစ်ပြင်ရန်',
+    editSemester: 'ဝက်ပြင်ရန်',
+    editHoliday: 'ပိတ်ရက်ပြင်ရန်',
     holidayTypes: {
       public: 'အများပြည်သူ',
       school: 'ကျောင်း',

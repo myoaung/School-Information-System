@@ -369,6 +369,7 @@ const en = {
     title: 'Academic',
     loadError: 'Failed to load academic data',
     createError: 'Failed to create entry',
+    updateError: 'Failed to update entry',
     current: 'Current',
     noYears: 'No academic years yet.',
     noSemesters: 'No semesters yet.',
@@ -381,6 +382,9 @@ const en = {
     createYear: 'Add Year',
     createSemester: 'Add Semester',
     createHoliday: 'Add Holiday',
+    editYear: 'Edit Year',
+    editSemester: 'Edit Semester',
+    editHoliday: 'Edit Holiday',
     holidayTypes: {
       public: 'Public',
       school: 'School',
