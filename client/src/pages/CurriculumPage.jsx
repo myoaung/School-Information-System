@@ -255,17 +255,41 @@ export default function CurriculumPage() {
         {filtered.map((grade) => (
           <div
             key={grade.code}
-            onClick={() => setSelectedGrade(selectedGrade === grade.code ? null : grade.code)}
-            className={`bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg ${selectedGrade === grade.code ? 'ring-2 ring-purple-500' : ''}`}
+            className={`bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden transition-all duration-200 hover:shadow-lg ${selectedGrade === grade.code ? 'ring-2 ring-purple-500' : ''}`}
           >
-            <div className="p-6">
+            <div
+              className="p-6 cursor-pointer"
+              onClick={() => setSelectedGrade(selectedGrade === grade.code ? null : grade.code)}
+            >
               <div className="flex justify-between items-start mb-3">
                 <h2 className="text-lg font-bold text-purple-900 dark:text-purple-100">
                   {grade.name}
                 </h2>
-                <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-full font-medium">
-                  {grade.level_name}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-full font-medium">
+                    {grade.level_name}
+                  </span>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedGrade(selectedGrade === grade.code ? null : grade.code);
+                      }}
+                      className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors cursor-pointer"
+                      title="Manage subjects"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {grade.subjects.map((s) => (
@@ -279,7 +303,10 @@ export default function CurriculumPage() {
                 ))}
               </div>
               <p className="text-xs text-purple-400 dark:text-purple-400 mt-3 font-medium">
-                {grade.subjects.length} {t('curriculum.subjects')}
+                {grade.subjects.length} {t('curriculum.subjects')} ·{' '}
+                <span className="text-purple-500 dark:text-purple-400">
+                  {selectedGrade === grade.code ? '▲ Collapse' : '▼ Manage'}
+                </span>
               </p>
             </div>
             {selectedGrade === grade.code && (
