@@ -1,0 +1,216 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_readme_schoolhub_school_information_system",
+      "label": "\ud83c\udfeb SchoolHub \u2014 School Information System",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_readme_features",
+      "label": "\u2728 Features",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_readme_tech_stack",
+      "label": "\ud83d\udee0\ufe0f Tech Stack",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "$graphify-root$_readme_screenshots",
+      "label": "\ud83d\udcf8 Screenshots",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "$graphify-root$_readme_getting_started",
+      "label": "\ud83d\ude80 Getting Started",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "$graphify-root$_readme_prerequisites",
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "$graphify-root$_readme_installation",
+      "label": "Installation",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_readme_default_login",
+      "label": "Default Login",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L77"
+    },
+    {
+      "id": "$graphify-root$_readme_project_structure",
+      "label": "\ud83d\udcc1 Project Structure",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L85"
+    },
+    {
+      "id": "$graphify-root$_readme_api_endpoints",
+      "label": "\ud83c\udf10 API Endpoints",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "$graphify-root$_readme_contributing",
+      "label": "\ud83e\udd1d Contributing",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "$graphify-root$_readme_license",
+      "label": "\ud83d\udcc4 License",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L127"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_readme_md",
+      "target": "$graphify-root$_readme_schoolhub_school_information_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_screenshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_getting_started",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_getting_started",
+      "target": "$graphify-root$_readme_prerequisites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_getting_started",
+      "target": "$graphify-root$_readme_installation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_getting_started",
+      "target": "$graphify-root$_readme_default_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_project_structure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_api_endpoints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_contributing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_schoolhub_school_information_system",
+      "target": "$graphify-root$_readme_license",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_readme_md",
+      "target": "$graphify-root$_license_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L129",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

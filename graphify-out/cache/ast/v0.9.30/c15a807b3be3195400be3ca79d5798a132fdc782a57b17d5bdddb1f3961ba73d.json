@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "label": "01-01-PLAN.md",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_1_database_migration",
+      "label": "Task 1: Database Migration",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_2_api_routes",
+      "label": "Task 2: API Routes",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_3_mount_routes",
+      "label": "Task 3: Mount Routes",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_4_frontend_page",
+      "label": "Task 4: Frontend Page",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_5_route_nav",
+      "label": "Task 5: Route & Nav",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_verification",
+      "label": "Verification",
+      "file_type": "document",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L88"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_1_database_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_2_api_routes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_3_mount_routes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_4_frontend_page",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_task_5_route_nav",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_md",
+      "target": "$graphify-root$_planning_phases_01_hr_portal_01_01_plan_verification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/phases/01-hr-portal/01-01-PLAN.md",
+      "source_location": "L88",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

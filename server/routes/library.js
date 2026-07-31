@@ -360,7 +360,7 @@ router.get('/stats', authMiddleware, requirePermission('library', 'read'), async
       "SELECT COUNT(*) as c FROM library_borrows WHERE status = 'borrowed'"
     );
     const overdueBorrows = await db.get(
-      "SELECT COUNT(*) as c FROM library_borrows WHERE status = 'borrowed' AND due_date < to_char(CURRENT_DATE, 'YYYY-MM-DD')"
+      "SELECT COUNT(*) as c FROM library_borrows WHERE status = 'borrowed' AND due_date < date('now')"
     );
     const totalFines = await db.get(
       'SELECT COALESCE(SUM(fine), 0) as c FROM library_borrows WHERE fine > 0'

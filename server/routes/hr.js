@@ -503,7 +503,7 @@ router.get('/stats', authMiddleware, requirePermission('hr', 'read'), async (req
       "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active'"
     );
     const expiringContracts = await db.get(
-      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= to_char(CURRENT_DATE + INTERVAL '30 days', 'YYYY-MM-DD')"
+      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+30 days')"
     );
     const pendingLeaves = await db.get(
       "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"
@@ -561,7 +561,7 @@ router.get('/my/profile', authMiddleware, async (req, res) => {
     const leaveBalance = await db.get(
       `SELECT COUNT(*) as used FROM leave_requests
        WHERE user_id = ? AND status = 'approved'
-       AND start_date >= to_char(CURRENT_DATE, 'YYYY') || '-01-01'`,
+       AND start_date >= strftime('%Y', 'now') || '-01-01'`,
       [req.user.id]
     );
 

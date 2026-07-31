@@ -120,6 +120,14 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
     if (req.user.role === 'student' && req.user.id !== parseInt(req.params.id)) {
       return res.status(403).json({ error: 'Access denied' });
     }
+    // Parents can only view linked students' grades
+    if (req.user.role === 'parent') {
+      const link = await db.get(
+        'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+        [req.user.id, req.params.id]
+      );
+      if (!link) return res.status(403).json({ error: 'Access denied' });
+    }
     const grades = await db.all(
       `
       SELECT g.*, c.title as course_title, s.code as subject_code, s.name as subject_name

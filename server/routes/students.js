@@ -98,7 +98,7 @@ router.get('/me/export', authMiddleware, async (req, res) => {
 
     // Attendance
     const attendance = await db.all(
-      'SELECT date, status, reason FROM attendance WHERE user_id = ? ORDER BY date DESC LIMIT 500',
+      'SELECT date, status, note FROM attendance WHERE user_id = ? ORDER BY date DESC LIMIT 500',
       [userId]
     );
 
@@ -108,7 +108,7 @@ router.get('/me/export', authMiddleware, async (req, res) => {
        FROM submissions sub
        LEFT JOIN assignments a ON sub.assignment_id = a.id
        WHERE sub.student_id = ?
-       ORDER BY sub.created_at DESC`,
+       ORDER BY sub.submitted_at DESC`,
       [userId]
     );
 
@@ -163,7 +163,7 @@ router.delete('/me/data', authMiddleware, async (req, res) => {
 
     // Anonymize submissions
     await db.run(
-      `UPDATE submissions SET content = '[REDACTED]', file_url = NULL WHERE student_id = ?`,
+      `UPDATE submissions SET content = '[REDACTED]', file_path = NULL WHERE student_id = ?`,
       [userId]
     );
 

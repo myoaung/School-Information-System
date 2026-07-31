@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_md",
+      "label": "remaining-fix-items.md",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "label": "Remaining fix.md Items \u2014 Implementation Plan",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_item_1_health_endpoint_disclosure",
+      "label": "Item 1: Health Endpoint Disclosure",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_item_2_db_migration_consolidation",
+      "label": "Item 2: DB Migration Consolidation",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_item_3_supabase_rls_policies",
+      "label": "Item 3: Supabase RLS Policies",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_item_4_e2e_playwright_tests",
+      "label": "Item 4: E2E Playwright Tests",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_item_5_student_data_governance",
+      "label": "Item 5: Student Data Governance",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_remaining_fix_items_files_modified",
+      "label": "Files Modified",
+      "file_type": "document",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L44"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_md",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_item_1_health_endpoint_disclosure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_item_2_db_migration_consolidation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_item_3_supabase_rls_policies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_item_4_e2e_playwright_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_item_5_student_data_governance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_remaining_fix_items_remaining_fix_md_items_implementation_plan",
+      "target": "$graphify-root$_claude_plans_remaining_fix_items_files_modified",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/remaining-fix-items.md",
+      "source_location": "L44",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

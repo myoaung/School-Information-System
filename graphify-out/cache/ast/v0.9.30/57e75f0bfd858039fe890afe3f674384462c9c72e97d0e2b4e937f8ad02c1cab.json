@@ -1,0 +1,217 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_md",
+      "label": "HOW-TO-SUBMIT.md",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "label": "Chapter 6 \u2014 How to Submit (Personal Project)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_what_you_need_to_finish_the_checklist",
+      "label": "What you need to finish (the checklist)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_1_close_your_open_issues",
+      "label": "Step 1 \u2014 Close your open issues",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_2_polish_ui_ux",
+      "label": "Step 2 \u2014 Polish UI/UX",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L35"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_3_test_with_chrome_devtools_playwright_web_apps",
+      "label": "Step 3 \u2014 Test with Chrome DevTools + Playwright (web apps)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_4_polish_the_readme",
+      "label": "Step 4 \u2014 Polish the README",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_5_add_analytics",
+      "label": "Step 5 \u2014 Add analytics",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_6_deploy_for_real_new_screenshots",
+      "label": "Step 6 \u2014 Deploy for real + new screenshots",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_7_fill_in_the_report_in_your_team_repo",
+      "label": "Step 7 \u2014 Fill in the report (in your TEAM repo)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L64"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_8_check_yourself_with_doctor_sh",
+      "label": "Step 8 \u2014 Check yourself with doctor.sh",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L90"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_step_9_submit_in_discord",
+      "label": "Step 9 \u2014 Submit in Discord",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L100"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_common_mistakes",
+      "label": "Common mistakes",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L107"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_md",
+      "target": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_md",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/ch-6/HOW-TO-SUBMIT-my.md"
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_what_you_need_to_finish_the_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_1_close_your_open_issues",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_2_polish_ui_ux",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_3_test_with_chrome_devtools_playwright_web_apps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_4_polish_the_readme",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_5_add_analytics",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_6_deploy_for_real_new_screenshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_7_fill_in_the_report_in_your_team_repo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_8_check_yourself_with_doctor_sh",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_chapter_6_how_to_submit_personal_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_step_9_submit_in_discord",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_step_9_submit_in_discord",
+      "target": "$graphify-root$_ch_6_how_to_submit_common_mistakes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT.md",
+      "source_location": "L107",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

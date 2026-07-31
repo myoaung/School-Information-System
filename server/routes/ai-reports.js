@@ -267,7 +267,7 @@ router.get('/report/:reportId/html', authMiddleware, async (req, res) => {
   </div>
 
   <div class="narrative">
-    ${report.narrative}
+    ${escHtml(report.narrative)}
   </div>
 
   <div class="signature">

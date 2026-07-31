@@ -72,10 +72,9 @@ router.post(
         return res.status(400).json({ error: 'class_id, date, and records array are required' });
       }
 
-      await db.run(`BEGIN TRANSACTION`);
-      try {
+      await db.transaction(async (tx) => {
         for (const r of records) {
-          await db.run(
+          await tx.run(
             `
           INSERT INTO attendance (user_id, class_id, date, status, note, marked_by)
           VALUES (?, ?, ?, ?, ?, ?)
@@ -94,11 +93,7 @@ router.post(
             ]
           );
         }
-        await db.run(`COMMIT`);
-      } catch (txErr) {
-        await db.run(`ROLLBACK`);
-        throw txErr;
-      }
+      });
 
       res.json({ message: 'Attendance marked', count: records.length });
     } catch (err) {

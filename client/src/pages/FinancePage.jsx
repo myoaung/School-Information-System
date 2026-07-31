@@ -43,7 +43,7 @@ export default function FinancePage() {
       .then((r) => setInvoices(r.data))
       .catch(() => toast.error('Failed to load invoices'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const loadInvoiceDetail = async (id) => {
     try {

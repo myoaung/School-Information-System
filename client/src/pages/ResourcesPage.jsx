@@ -354,132 +354,130 @@ export default function ResourcesPage() {
       )}
 
       {/* Create/Edit Modal */}
-      {showModal && (
-        <Modal
-          onClose={() => setShowModal(false)}
-          title={editResource ? 'Edit Resource' : 'Add Resource'}
-        >
-          <form onSubmit={handleSave} className="space-y-4">
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editResource ? 'Edit Resource' : 'Add Resource'}
+      >
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+              Course *
+            </label>
+            <select
+              value={form.course_id}
+              onChange={(e) => setForm({ ...form, course_id: e.target.value })}
+              required
+              className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">Select course</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title} ({c.subject_code})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+              Title *
+            </label>
+            <input
+              type="text"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              required
+              className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Resource title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+              Type *
+            </label>
+            <select
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              required
+              className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="link">Link</option>
+              <option value="pdf">PDF</option>
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
+              <option value="image">Image</option>
+              <option value="document">Document</option>
+            </select>
+          </div>
+          {form.type === 'link' ? (
             <div>
               <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                Course *
-              </label>
-              <select
-                value={form.course_id}
-                onChange={(e) => setForm({ ...form, course_id: e.target.value })}
-                required
-                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Select course</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title} ({c.subject_code})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                Title *
+                URL *
               </label>
               <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                type="url"
+                value={form.url}
+                onChange={(e) => setForm({ ...form, url: e.target.value })}
                 required
                 className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Resource title"
+                placeholder="https://example.com/resource"
               />
             </div>
+          ) : (
             <div>
               <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                Type *
+                {editResource ? 'Upload new file (optional)' : 'Upload file *'}
               </label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                required
-                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="link">Link</option>
-                <option value="pdf">PDF</option>
-                <option value="video">Video</option>
-                <option value="audio">Audio</option>
-                <option value="image">Image</option>
-                <option value="document">Document</option>
-              </select>
-            </div>
-            {form.type === 'link' ? (
-              <div>
-                <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                  URL *
-                </label>
-                <input
-                  type="url"
-                  value={form.url}
-                  onChange={(e) => setForm({ ...form, url: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="https://example.com/resource"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                  {editResource ? 'Upload new file (optional)' : 'Upload file *'}
-                </label>
-                <input
-                  type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  required={!editResource}
-                  accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.mp4,.mp3,.wav,.jpg,.jpeg,.png,.gif"
-                  className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200"
-                />
-                {editResource?.url && (
-                  <p className="text-xs text-purple-500 mt-1">Current: {editResource.url}</p>
-                )}
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                Description
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Optional description"
+              <input
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                required={!editResource}
+                accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.mp4,.mp3,.wav,.jpg,.jpeg,.png,.gif"
+                className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200"
               />
+              {editResource?.url && (
+                <p className="text-xs text-purple-500 mt-1">Current: {editResource.url}</p>
+              )}
             </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-3 border border-purple-200 dark:border-purple-800 rounded-xl text-sm font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors disabled:opacity-60 cursor-pointer"
-              >
-                {saving ? 'Saving...' : editResource ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
+          )}
+          <div>
+            <label className="block text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+              Description
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-3 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Optional description"
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="flex-1 px-4 py-3 border border-purple-200 dark:border-purple-800 rounded-xl text-sm font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors disabled:opacity-60 cursor-pointer"
+            >
+              {saving ? 'Saving...' : editResource ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Delete Confirmation */}
-      {deleteId && (
-        <ConfirmDialog
-          message="Are you sure you want to delete this resource? This cannot be undone."
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteId(null)}
-        />
-      )}
+      <ConfirmDialog
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        message="Are you sure you want to delete this resource? This cannot be undone."
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_skills_daily_standup_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".claude/skills/daily-standup/SKILL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_claude_skills_daily_standup_skill_daily_standup_generator",
+      "label": "Daily Standup Generator",
+      "file_type": "document",
+      "source_file": ".claude/skills/daily-standup/SKILL.md",
+      "source_location": "L6"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_claude_skills_daily_standup_skill_md",
+      "target": "$graphify-root$_claude_skills_daily_standup_skill_daily_standup_generator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/skills/daily-standup/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

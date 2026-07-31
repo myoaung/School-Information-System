@@ -1,0 +1,95 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_slides_pitch_md",
+      "label": "pitch.md",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_slides_pitch_schoolhub",
+      "label": "SchoolHub",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L42"
+    },
+    {
+      "id": "$graphify-root$_slides_pitch_stay_connected_with_your_school_community",
+      "label": "Stay connected with your school community",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_slides_pitch_what_you_get",
+      "label": "What you get",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "$graphify-root$_slides_pitch_how_it_s_built",
+      "label": "How it's built",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "$graphify-root$_slides_pitch_try_it",
+      "label": "Try it",
+      "file_type": "document",
+      "source_file": "slides/pitch.md",
+      "source_location": "L83"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_slides_pitch_md",
+      "target": "$graphify-root$_slides_pitch_schoolhub",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/pitch.md",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_pitch_schoolhub",
+      "target": "$graphify-root$_slides_pitch_stay_connected_with_your_school_community",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/pitch.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_pitch_md",
+      "target": "$graphify-root$_slides_pitch_what_you_get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/pitch.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_pitch_md",
+      "target": "$graphify-root$_slides_pitch_how_it_s_built",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/pitch.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_pitch_md",
+      "target": "$graphify-root$_slides_pitch_try_it",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/pitch.md",
+      "source_location": "L83",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

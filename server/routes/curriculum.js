@@ -6,6 +6,32 @@ const { sendError } = require('../utils/errorHandler');
 
 const router = express.Router();
 
+// Get grades that have curriculum entries for a given academic year
+router.get('/available-grades', async (req, res) => {
+  try {
+    const { academic_year_id } = req.query;
+    if (!academic_year_id) {
+      return res.status(400).json({ error: 'academic_year_id is required' });
+    }
+
+    const grades = await db.all(
+      `SELECT DISTINCT g.id, g.code, g.name, g.display_order,
+              el.code as level_code, el.name as level_name,
+              COUNT(gs.id) as subject_count
+       FROM grades g
+       JOIN education_levels el ON g.education_level_id = el.id
+       JOIN grade_subjects gs ON gs.grade_id = g.id AND gs.academic_year_id = ?
+       GROUP BY g.id
+       ORDER BY g.display_order`,
+      [academic_year_id]
+    );
+
+    res.json({ grades });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch available grades');
+  }
+});
+
 // Get full curriculum: education levels, grades, and subjects mapped by grade
 // GET / remains public so students/parents can view curriculum
 router.get('/', async (req, res) => {

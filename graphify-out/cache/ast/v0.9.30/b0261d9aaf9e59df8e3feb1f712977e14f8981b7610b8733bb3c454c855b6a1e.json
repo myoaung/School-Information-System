@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_agents_doc_updater_md",
+      "label": "doc-updater.md",
+      "file_type": "document",
+      "source_file": ".claude/agents/doc-updater.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

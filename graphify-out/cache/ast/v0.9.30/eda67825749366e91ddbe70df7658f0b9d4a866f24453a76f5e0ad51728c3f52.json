@@ -1,0 +1,287 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_improvement_report_md",
+      "label": "improvement_report.md",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "label": "School Information System: Analysis and Improvement Report",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_1_introduction",
+      "label": "1. Introduction",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_2_live_application_audit",
+      "label": "2. Live Application Audit",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_2_1_user_experience_ux",
+      "label": "2.1. User Experience (UX)",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_2_2_performance",
+      "label": "2.2. Performance",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_2_3_accessibility",
+      "label": "2.3. Accessibility",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_2_4_functionality_admin_role",
+      "label": "2.4. Functionality (Admin Role)",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "label": "3. Codebase Analysis",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_3_1_architecture",
+      "label": "3.1. Architecture",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L42"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_3_2_tech_stack_and_dependencies",
+      "label": "3.2. Tech Stack and Dependencies",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_3_3_code_quality_and_best_practices",
+      "label": "3.3. Code Quality and Best Practices",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L82"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_3_4_security_considerations",
+      "label": "3.4. Security Considerations",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_4_recommendations",
+      "label": "4. Recommendations",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_4_1_general_improvements",
+      "label": "4.1. General Improvements",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L107"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_4_2_codebase_specific_improvements",
+      "label": "4.2. Codebase Specific Improvements",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L114"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_4_3_security_enhancements",
+      "label": "4.3. Security Enhancements",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "$graphify-root$_improvement_report_5_conclusion",
+      "label": "5. Conclusion",
+      "file_type": "document",
+      "source_file": "improvement_report.md",
+      "source_location": "L132"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_improvement_report_md",
+      "target": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "target": "$graphify-root$_improvement_report_1_introduction",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "target": "$graphify-root$_improvement_report_2_live_application_audit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_2_live_application_audit",
+      "target": "$graphify-root$_improvement_report_2_1_user_experience_ux",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_2_live_application_audit",
+      "target": "$graphify-root$_improvement_report_2_2_performance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_2_live_application_audit",
+      "target": "$graphify-root$_improvement_report_2_3_accessibility",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_2_live_application_audit",
+      "target": "$graphify-root$_improvement_report_2_4_functionality_admin_role",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "target": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "target": "$graphify-root$_improvement_report_3_1_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "target": "$graphify-root$_improvement_report_3_2_tech_stack_and_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "target": "$graphify-root$_improvement_report_3_3_code_quality_and_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_3_codebase_analysis",
+      "target": "$graphify-root$_improvement_report_3_4_security_considerations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "target": "$graphify-root$_improvement_report_4_recommendations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_4_recommendations",
+      "target": "$graphify-root$_improvement_report_4_1_general_improvements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_4_recommendations",
+      "target": "$graphify-root$_improvement_report_4_2_codebase_specific_improvements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_4_recommendations",
+      "target": "$graphify-root$_improvement_report_4_3_security_enhancements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_improvement_report_school_information_system_analysis_and_improvement_report",
+      "target": "$graphify-root$_improvement_report_5_conclusion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "improvement_report.md",
+      "source_location": "L132",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

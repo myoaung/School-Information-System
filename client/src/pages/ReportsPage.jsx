@@ -22,7 +22,7 @@ export default function ReportsPage() {
     } else {
       fetchStudentReport(user.id);
     }
-  }, []);
+  }, [isAdmin, isTeacher, user]);
 
   const fetchOverview = () => {
     setLoading(true);

@@ -6,6 +6,16 @@ const { authMiddleware } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 const { certificateRules } = require('../middleware/validate');
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Generate serial number
 function generateSerial(type) {
   const prefix = type.charAt(0).toUpperCase();
@@ -63,12 +73,12 @@ function generateCertificateHTML(cert, student, issuedBy) {
     <div class="title">${titles[cert.type] || 'Certificate'}</div>
     <div class="subtitle">This is to certify that</div>
     <div class="presented-to">&nbsp;</div>
-    <div class="student-name">${student.name}</div>
+    <div class="student-name">${escapeHtml(student.name)}</div>
     <div class="description">
-      ${data.description || `has successfully completed the requirements for ${cert.type === 'graduation' ? 'graduation' : 'the course of study'} during the academic year ${data.academic_year || '2026-2027'}.`}
+      ${escapeHtml(data.description) || `has successfully completed the requirements for ${cert.type === 'graduation' ? 'graduation' : 'the course of study'} during the academic year ${escapeHtml(data.academic_year) || '2026-2027'}.`}
     </div>
-    ${data.grade ? `<div style="font-size:16px;color:#333;margin-bottom:10px;">Grade: <strong>${data.grade}</strong></div>` : ''}
-    ${data.gpa ? `<div style="font-size:14px;color:#666;margin-bottom:20px;">GPA: ${data.gpa}</div>` : ''}
+    ${data.grade ? `<div style="font-size:16px;color:#333;margin-bottom:10px;">Grade: <strong>${escapeHtml(data.grade)}</strong></div>` : ''}
+    ${data.gpa ? `<div style="font-size:14px;color:#666;margin-bottom:20px;">GPA: ${escapeHtml(data.gpa)}</div>` : ''}
     <div class="details">
       <div class="detail-item">
         <div class="detail-label">Date Issued</div>
@@ -76,14 +86,14 @@ function generateCertificateHTML(cert, student, issuedBy) {
       </div>
       <div class="detail-item">
         <div class="detail-label">Serial Number</div>
-        <div class="detail-value">${cert.serial_number}</div>
+        <div class="detail-value">${escapeHtml(cert.serial_number)}</div>
       </div>
       <div class="detail-item">
         <div class="detail-label">Authorized By</div>
-        <div class="detail-value">${issuedBy || 'Administration'}</div>
+        <div class="detail-value">${escapeHtml(issuedBy) || 'Administration'}</div>
       </div>
     </div>
-    <div class="serial">${cert.serial_number}</div>
+    <div class="serial">${escapeHtml(cert.serial_number)}</div>
   </div>
 </body>
 </html>`;
@@ -167,13 +177,11 @@ router.post(
         [student_id, type, data ? JSON.stringify(data) : null, req.user.id, serial]
       );
 
-      res
-        .status(201)
-        .json({
-          id: result.lastInsertRowid,
-          serial_number: serial,
-          message: 'Certificate generated',
-        });
+      res.status(201).json({
+        id: result.lastInsertRowid,
+        serial_number: serial,
+        message: 'Certificate generated',
+      });
     } catch (err) {
       sendError(res, err);
     }

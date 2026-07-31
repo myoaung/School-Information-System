@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_planning_project_md",
+      "label": "PROJECT.md",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_planning_project_school_information_system",
+      "label": "School Information System",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_planning_project_project_overview",
+      "label": "Project Overview",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_planning_project_tech_stack",
+      "label": "Tech Stack",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_planning_project_current_status",
+      "label": "Current Status",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_planning_project_implemented_features",
+      "label": "Implemented Features",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_planning_project_core_school_operations",
+      "label": "Core School Operations \u2705",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_planning_project_financial_management",
+      "label": "Financial Management \u2705",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L34"
+    },
+    {
+      "id": "$graphify-root$_planning_project_communication",
+      "label": "Communication \u2705",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_planning_project_operations",
+      "label": "Operations \u2705",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_planning_project_ai_features",
+      "label": "AI Features \u2705",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "label": "Remaining Features (from PRD)",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L60"
+    },
+    {
+      "id": "$graphify-root$_planning_project_hr_portal",
+      "label": "HR Portal",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "$graphify-root$_planning_project_finance_portal",
+      "label": "Finance Portal",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "$graphify-root$_planning_project_academic",
+      "label": "Academic",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L75"
+    },
+    {
+      "id": "$graphify-root$_planning_project_cto",
+      "label": "CTO",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "$graphify-root$_planning_project_architecture_notes",
+      "label": "Architecture Notes",
+      "file_type": "document",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L83"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_planning_project_md",
+      "target": "$graphify-root$_planning_project_school_information_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_project_overview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_current_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_implemented_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_implemented_features",
+      "target": "$graphify-root$_planning_project_core_school_operations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_implemented_features",
+      "target": "$graphify-root$_planning_project_financial_management",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_implemented_features",
+      "target": "$graphify-root$_planning_project_communication",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_implemented_features",
+      "target": "$graphify-root$_planning_project_operations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_implemented_features",
+      "target": "$graphify-root$_planning_project_ai_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "target": "$graphify-root$_planning_project_hr_portal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "target": "$graphify-root$_planning_project_finance_portal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "target": "$graphify-root$_planning_project_academic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_remaining_features_from_prd",
+      "target": "$graphify-root$_planning_project_cto",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_planning_project_school_information_system",
+      "target": "$graphify-root$_planning_project_architecture_notes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".planning/PROJECT.md",
+      "source_location": "L83",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

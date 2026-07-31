@@ -1,0 +1,1429 @@
+{
+  ".claude/agents/data-cleaner.md": {
+    "size": 274,
+    "mtime_ns": 1782362018519400273,
+    "word_count": 39,
+    "hashes": {
+      ".claude/agents/data-cleaner.md": "04c6329964eac124597fc76c4ac70defbb4dca6e6b6866d10766c94641537803"
+    }
+  },
+  ".claude/agents/doc-updater.md": {
+    "size": 398,
+    "mtime_ns": 1782372288368624231,
+    "word_count": 57,
+    "hashes": {
+      ".claude/agents/doc-updater.md": "b0261d9aaf9e59df8e3feb1f712977e14f8981b7610b8733bb3c454c855b6a1e"
+    }
+  },
+  ".claude/agents/endpoint-tester.md": {
+    "size": 434,
+    "mtime_ns": 1782371054950101297,
+    "word_count": 66,
+    "hashes": {
+      ".claude/agents/endpoint-tester.md": "3018c027c6b80d6b2157833d7b5e8176b5564a3ac4f2d1abfcf8fc306582d81c"
+    }
+  },
+  ".claude/agents/refactor-cleaner.md": {
+    "size": 266,
+    "mtime_ns": 1782365956895736674,
+    "word_count": 40,
+    "hashes": {
+      ".claude/agents/refactor-cleaner.md": "dcc961bb87a88784ea4228cde3a736d6be7ad287c582bff2cba260813067801e"
+    }
+  },
+  ".claude/agents/security-auditor.md": {
+    "size": 9545,
+    "mtime_ns": 1782795186518069690,
+    "word_count": 1214,
+    "hashes": {
+      ".claude/agents/security-auditor.md": "c65d2d44c9ae2d1c0cc06e699edcefb20405ea1bb7307363305aeeb1482d1d59"
+    }
+  },
+  ".claude/agents/triage.md": {
+    "size": 446,
+    "mtime_ns": 1782367921829858512,
+    "word_count": 61,
+    "hashes": {
+      ".claude/agents/triage.md": "61c2c9c097758783e15adabc0b4f64094ffe9456507e09085b548972af6010c2"
+    }
+  },
+  ".claude/agents/ui-reviewer.md": {
+    "size": 398,
+    "mtime_ns": 1782359872662509101,
+    "word_count": 57,
+    "hashes": {
+      ".claude/agents/ui-reviewer.md": "90275f30d64554dbbbd56bff8607f3fabde4cd774c04f0c45793e2580b06a4b6"
+    }
+  },
+  ".claude/config.json": {
+    "size": 118,
+    "mtime_ns": 1785152089633810015,
+    "word_count": 6,
+    "hashes": {
+      ".claude/config.json": "1f5859370b364280a4e8e359f8f76bb322b4e8ddf629cd1d693f14655f3555ab"
+    }
+  },
+  ".claude/plans/fix-test-jwt-ci.md": {
+    "size": 3036,
+    "mtime_ns": 1784865019637898162,
+    "word_count": 443,
+    "hashes": {
+      ".claude/plans/fix-test-jwt-ci.md": "f2a201aec67592454b84eaa1bd3ac76bacabe38218afbe558bafcb396ba868e0"
+    }
+  },
+  ".claude/plans/localization-plan.md": {
+    "size": 2745,
+    "mtime_ns": 1782449181424510889,
+    "word_count": 343,
+    "hashes": {
+      ".claude/plans/localization-plan.md": "a8cd5000c9ded0619827915126e08eb0a38b60e098f9933be0a1da2f01835404"
+    }
+  },
+  ".claude/plans/remaining-fix-items.md": {
+    "size": 2443,
+    "mtime_ns": 1784889586487765357,
+    "word_count": 320,
+    "hashes": {
+      ".claude/plans/remaining-fix-items.md": "3afec0f37c05e193442be2f2b837ed13df693662eb6a70a01a7a4f1e51637f31"
+    }
+  },
+  ".claude/settings.local.json": {
+    "size": 5943,
+    "mtime_ns": 1784999942291408836,
+    "word_count": 352,
+    "hashes": {
+      ".claude/settings.local.json": "eb64bed69201a68b129f23fdde393dde19720c3873fb5b15547422db48f7d8f0"
+    }
+  },
+  ".claude/skills/SKILL.md": {
+    "size": 1576,
+    "mtime_ns": 1783748041262836701,
+    "word_count": 242,
+    "hashes": {
+      ".claude/skills/skill.md": "ea976a156ec26fc0e7436d08ee20dd0746e722659e774d15da243a8050440f53"
+    }
+  },
+  ".claude/skills/agent-evaluation/SKILL.md": {
+    "size": 2089,
+    "mtime_ns": 1782365170196410051,
+    "word_count": 284,
+    "hashes": {
+      ".claude/skills/agent-evaluation/skill.md": "8e1c4b656ae2a58e18a7290bfc4f96cb4591538df4b5082ec1007535a5cfec8e"
+    }
+  },
+  ".claude/skills/api-contract/SKILL.md": {
+    "size": 588,
+    "mtime_ns": 1782371044922995564,
+    "word_count": 86,
+    "hashes": {
+      ".claude/skills/api-contract/skill.md": "97b473b7990552c027a67cb8f368b8c4fe08f3fdc9bdd87c96c062467c362f40"
+    }
+  },
+  ".claude/skills/blog-generator/SKILL.md": {
+    "size": 569,
+    "mtime_ns": 1782373733774708179,
+    "word_count": 85,
+    "hashes": {
+      ".claude/skills/blog-generator/skill.md": "2ed3d9f7d5600e99f7e5a66529ddb81c81dcb5b6d4272bad5b1848fa841d2c6c"
+    }
+  },
+  ".claude/skills/brainstorming/SKILL.md": {
+    "size": 2505,
+    "mtime_ns": 1782616891524091068,
+    "word_count": 364,
+    "hashes": {
+      ".claude/skills/brainstorming/skill.md": "0e55af925103ef9f8551501f48f4edac60444991925a129306f617ac1f526342"
+    }
+  },
+  ".claude/skills/changelog-automation/SKILL.md": {
+    "size": 678,
+    "mtime_ns": 1782373793425278204,
+    "word_count": 98,
+    "hashes": {
+      ".claude/skills/changelog-automation/skill.md": "072a6f625592198270f0ccc7bdf836c757d2ef63098faf3356764d524c34bf7e"
+    }
+  },
+  ".claude/skills/csv-cleaner/SKILL.md": {
+    "size": 710,
+    "mtime_ns": 1782367788799133161,
+    "word_count": 114,
+    "hashes": {
+      ".claude/skills/csv-cleaner/skill.md": "e2f8f1d8353e839f8a40e177c3b6e0fa2782170498c1476ff79a4f5b8255cfff"
+    }
+  },
+  ".claude/skills/daily-standup/SKILL.md": {
+    "size": 791,
+    "mtime_ns": 1782366427037524046,
+    "word_count": 121,
+    "hashes": {
+      ".claude/skills/daily-standup/skill.md": "46a90dd373859a1c3a5d79b91a183dc9463c02b54e2857105550ea656ff644d1"
+    }
+  },
+  ".claude/skills/data-validate/SKILL.md": {
+    "size": 629,
+    "mtime_ns": 1782367644543577593,
+    "word_count": 100,
+    "hashes": {
+      ".claude/skills/data-validate/skill.md": "1ffb605b7ca4e7a2546e295d5cdc10701644a69712f4c554bc5607a0d971be5f"
+    }
+  },
+  ".claude/skills/deploy-checklist/SKILL.md": {
+    "size": 439,
+    "mtime_ns": 1782359783656911746,
+    "word_count": 76,
+    "hashes": {
+      ".claude/skills/deploy-checklist/skill.md": "c495c44e7f6f9eb48f26d8b8c9c16b90c0c476f44282d8f56042fa737f0594a3"
+    }
+  },
+  ".claude/skills/file-renamer/SKILL.md": {
+    "size": 601,
+    "mtime_ns": 1782367525700255385,
+    "word_count": 87,
+    "hashes": {
+      ".claude/skills/file-renamer/skill.md": "6c4860fde2634995c60993196b5b0476c4403e61979137bcabca0d434e9515a4"
+    }
+  },
+  ".claude/skills/flashcard-maker/SKILL.md": {
+    "size": 629,
+    "mtime_ns": 1782373815769494549,
+    "word_count": 92,
+    "hashes": {
+      ".claude/skills/flashcard-maker/skill.md": "3016205ae869a6bac038d2eb9ac1358c678901e7f3c9f00899e4392563023b96"
+    }
+  },
+  ".claude/skills/release-notes/SKILL.md": {
+    "size": 268,
+    "mtime_ns": 1782358880397787517,
+    "word_count": 45,
+    "hashes": {
+      ".claude/skills/release-notes/skill.md": "f0d6cbaf459f3e9b8539ed5459a124a4a77263a61b6589a9a48a77a07690df70"
+    }
+  },
+  ".claude/skills/reply-templates/SKILL.md": {
+    "size": 714,
+    "mtime_ns": 1782367915725541616,
+    "word_count": 103,
+    "hashes": {
+      ".claude/skills/reply-templates/skill.md": "affefe96dd32d97e260a7b24ef2271291a8c14c2f75d4074c9f6549776abeee1"
+    }
+  },
+  ".claude/skills/slide-maker/SKILL.md": {
+    "size": 538,
+    "mtime_ns": 1782373746326827171,
+    "word_count": 82,
+    "hashes": {
+      ".claude/skills/slide-maker/skill.md": "f17d6e06836fe3ec398a6d95f5460039d50a486a117678122f32be1f76bc2482"
+    }
+  },
+  ".claude/skills/study-notes/SKILL.md": {
+    "size": 520,
+    "mtime_ns": 1782373780647155152,
+    "word_count": 79,
+    "hashes": {
+      ".claude/skills/study-notes/skill.md": "2d78190d80ef0525fadb0585fc1adc2946eccdb04addc1e4474447c13182b76e"
+    }
+  },
+  ".claude/skills/style-guide/SKILL.md": {
+    "size": 689,
+    "mtime_ns": 1782372269527975577,
+    "word_count": 96,
+    "hashes": {
+      ".claude/skills/style-guide/skill.md": "e69e31f3dd5135cfd2de32e3d6eb9f6a6ea564a37f2e342e41bfcd9374209275"
+    }
+  },
+  ".claude/skills/ui-ux-pro-max/SKILL.md": {
+    "size": 13493,
+    "mtime_ns": 1782454754544474342,
+    "word_count": 1912,
+    "hashes": {
+      ".claude/skills/ui-ux-pro-max/skill.md": "43e295dadd1770e7b23a3350a8dc47ef40d3cf2cd2d1179f746c0cb1f01ced80"
+    }
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/core.py": {
+    "size": 10357,
+    "mtime_ns": 1782454754555474463,
+    "word_count": 1032,
+    "hashes": {
+      ".claude/skills/ui-ux-pro-max/scripts/core.py": "3dcf0159921947aa9ca2274d70e11c625704a18757f35b66c4410ee69a4fe175"
+    }
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/design_system.py": {
+    "size": 20874,
+    "mtime_ns": 1782454754555474463,
+    "word_count": 1812,
+    "hashes": {
+      ".claude/skills/ui-ux-pro-max/scripts/design_system.py": "9c153aec02869aa5d6701de67dd4e08c605f3359392f4c66787a350d9b2feef9"
+    }
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/search.py": {
+    "size": 3296,
+    "mtime_ns": 1782454754555474463,
+    "word_count": 270,
+    "hashes": {
+      ".claude/skills/ui-ux-pro-max/scripts/search.py": "cd2f37b01d609d56d6494c5c8cca38065b04f3db49163d7fc9d991fcbd01bd7f"
+    }
+  },
+  ".github/workflows/ci.yml": { "size": 2139, "mtime_ns": 1784868846690733265, "word_count": 245 },
+  ".mcp.json": {
+    "size": 734,
+    "mtime_ns": 1782794873845467981,
+    "word_count": 55,
+    "hashes": { ".mcp.json": "2561de60bcf02e19534f3cfb943111c2057909b73fde631c8cd6ed0d703a30e6" }
+  },
+  ".planning/PROJECT.md": {
+    "size": 2521,
+    "mtime_ns": 1783756148431770276,
+    "word_count": 350,
+    "hashes": {
+      ".planning/project.md": "0f77b34409107d5842dcd1a498f88334ef5019179fa27d340830e559065663c6"
+    }
+  },
+  ".planning/config.json": {
+    "size": 44,
+    "mtime_ns": 1785395287114177903,
+    "word_count": 7,
+    "hashes": {
+      ".planning/config.json": "0c267364e09df41b088ac0e9a33b38eb8d4138cd31e052515efd1ecc1c187d70"
+    }
+  },
+  ".planning/config.yaml": { "size": 496, "mtime_ns": 1783756177762837026, "word_count": 58 },
+  ".planning/phases/01-hr-portal/01-01-PLAN.md": {
+    "size": 2370,
+    "mtime_ns": 1783756269559709619,
+    "word_count": 290,
+    "hashes": {
+      ".planning/phases/01-hr-portal/01-01-plan.md": "c15a807b3be3195400be3ca79d5798a132fdc782a57b17d5bdddb1f3961ba73d"
+    }
+  },
+  "2026-06-28-201851-local-command-caveatcaveat-the-messages-below.txt": {
+    "size": 16612,
+    "mtime_ns": 1782654542219632453,
+    "word_count": 1087
+  },
+  "QUALITY-PLAN.md": {
+    "size": 6633,
+    "mtime_ns": 1783646806188916529,
+    "word_count": 874,
+    "hashes": {
+      "quality-plan.md": "6e874fd8a41084c74a452e9ce827eb2769574148d8c5826d2d8feaa18d40537e"
+    }
+  },
+  "README.md": {
+    "size": 4724,
+    "mtime_ns": 1783916607069384090,
+    "word_count": 629,
+    "hashes": { "readme.md": "6631487c652f607370765c4d5a5c87927019674f3ff8d6b0f61f6d7844bd7555" }
+  },
+  "SECURITY-AUDIT-REPORT.md": {
+    "size": 7210,
+    "mtime_ns": 1782795571547516146,
+    "word_count": 1009,
+    "hashes": {
+      "security-audit-report.md": "b3954d882ee13b11f73a4cf04ca9f277a85cac8c8f5b7ba6e104a17c2c03b300"
+    }
+  },
+  "SUPABASE-SETUP.md": {
+    "size": 8420,
+    "mtime_ns": 1783335266809562745,
+    "word_count": 1147,
+    "hashes": {
+      "supabase-setup.md": "ea7de15e85703a5c49b7f81d5def3e7f5f322f31284a43b33c1217133b62c0e2"
+    }
+  },
+  "api/index.js": { "size": 63, "mtime_ns": 1783316049933678477, "word_count": 7 },
+  "ch-6/HOW-TO-SUBMIT-my.md": {
+    "size": 7295,
+    "mtime_ns": 1782276364715280583,
+    "word_count": 660,
+    "hashes": {
+      "ch-6/how-to-submit-my.md": "ad3d7de3e942cc459d0dc57f31cdb708e0d73e991273f950f0bfa3aef3cd164d"
+    }
+  },
+  "ch-6/HOW-TO-SUBMIT.md": {
+    "size": 3958,
+    "mtime_ns": 1782276364715280583,
+    "word_count": 683,
+    "hashes": {
+      "ch-6/how-to-submit.md": "57e75f0bfd858039fe890afe3f674384462c9c72e97d0e2b4e937f8ad02c1cab"
+    }
+  },
+  "ch-6/_TEMPLATE.md": {
+    "size": 1756,
+    "mtime_ns": 1782276364715280583,
+    "word_count": 261,
+    "hashes": {
+      "ch-6/_template.md": "a21576ded33eba9b5b20ac71218848ad7e4c5dcbf107fb193538747d1a361993"
+    }
+  },
+  "ch-6/myoaung/report.md": {
+    "size": 3027,
+    "mtime_ns": 1784196846660254037,
+    "word_count": 294,
+    "hashes": {
+      "ch-6/myoaung/report.md": "fce2e03b91eed241420740d4beedbae6c6741c0f3de17d49d598d4b9ab6b5345"
+    }
+  },
+  "ch-6/myoaung/screenshots/01-homepage.png": {
+    "size": 438898,
+    "mtime_ns": 1784196420218349469,
+    "word_count": 15056
+  },
+  "ch-6/myoaung/screenshots/02-login.png": {
+    "size": 146719,
+    "mtime_ns": 1784196760971665969,
+    "word_count": 5039
+  },
+  "ch-6/myoaung/screenshots/03-register.png": {
+    "size": 86505,
+    "mtime_ns": 1784196760972665976,
+    "word_count": 2882
+  },
+  "ch-6/myoaung/screenshots/04-announcements.png": {
+    "size": 107790,
+    "mtime_ns": 1784196420219349476,
+    "word_count": 3173
+  },
+  "ch-6/myoaung/screenshots/06-contact.png": {
+    "size": 105112,
+    "mtime_ns": 1784196760973665983,
+    "word_count": 3242
+  },
+  "ch-6/myoaung/screenshots/07-dashboard.png": {
+    "size": 138955,
+    "mtime_ns": 1784196420219349476,
+    "word_count": 4485
+  },
+  "client/.oxlintrc.json": {
+    "size": 231,
+    "mtime_ns": 1782363819651321641,
+    "word_count": 18,
+    "hashes": {
+      "client/.oxlintrc.json": "98ef750e4b375612fc451fb89048fc74419c1a6023180feaffd111db1e1561d4"
+    }
+  },
+  "client/README.md": {
+    "size": 1009,
+    "mtime_ns": 1782363819651321641,
+    "word_count": 104,
+    "hashes": {
+      "client/readme.md": "7c57ab0c3bc77d9732158f97b4cd556d734c5f3b76a91208428e78577e222468"
+    }
+  },
+  "client/index.html": { "size": 1389, "mtime_ns": 1783916637956591795, "word_count": 82 },
+  "client/package.json": {
+    "size": 980,
+    "mtime_ns": 1783746758048702952,
+    "word_count": 78,
+    "hashes": {
+      "client/package.json": "1dddb46e20b52dd2f2f2b471f219674f9f2c74a3e059f035e6514e01a9868d26"
+    }
+  },
+  "client/public/favicon.svg": { "size": 9522, "mtime_ns": 1782363819651321641, "word_count": 491 },
+  "client/public/icons.svg": { "size": 5031, "mtime_ns": 1782363819651321641, "word_count": 382 },
+  "client/public/manifest.json": {
+    "size": 446,
+    "mtime_ns": 1783746621076079449,
+    "word_count": 41,
+    "hashes": {
+      "client/public/manifest.json": "a18c1fc324fd673ce6ee390d7866d84f0a22a87d8a30a346830e4bc7442c7188"
+    }
+  },
+  "client/src/App.jsx": { "size": 16713, "mtime_ns": 1785328854336139018, "word_count": 840 },
+  "client/src/assets/hero.png": {
+    "size": 13057,
+    "mtime_ns": 1782363819652321533,
+    "word_count": 437
+  },
+  "client/src/assets/react.svg": {
+    "size": 4126,
+    "mtime_ns": 1782363819652321533,
+    "word_count": 366
+  },
+  "client/src/assets/vite.svg": {
+    "size": 8709,
+    "mtime_ns": 1782363819652321533,
+    "word_count": 439
+  },
+  "client/src/components/AnnouncementCard.jsx": {
+    "size": 2389,
+    "mtime_ns": 1783676248951391779,
+    "word_count": 187
+  },
+  "client/src/components/ChatWidget.jsx": {
+    "size": 11769,
+    "mtime_ns": 1783662257918442959,
+    "word_count": 1006
+  },
+  "client/src/components/ConfirmDialog.jsx": {
+    "size": 1210,
+    "mtime_ns": 1783662246497323966,
+    "word_count": 100
+  },
+  "client/src/components/ErrorBoundary.tsx": {
+    "size": 2493,
+    "mtime_ns": 1783665937562153274,
+    "word_count": 199
+  },
+  "client/src/components/Footer.jsx": {
+    "size": 3824,
+    "mtime_ns": 1782458308103621807,
+    "word_count": 303
+  },
+  "client/src/components/Modal.tsx": {
+    "size": 2264,
+    "mtime_ns": 1783665139514793626,
+    "word_count": 218
+  },
+  "client/src/components/Navbar.jsx": {
+    "size": 43402,
+    "mtime_ns": 1785329077370900393,
+    "word_count": 2423
+  },
+  "client/src/components/NotificationBell.jsx": {
+    "size": 5246,
+    "mtime_ns": 1783752968437692745,
+    "word_count": 439
+  },
+  "client/src/components/OfflineIndicator.tsx": {
+    "size": 980,
+    "mtime_ns": 1783746719335087933,
+    "word_count": 115
+  },
+  "client/src/components/ProtectedRoute.tsx": {
+    "size": 920,
+    "mtime_ns": 1783822227488892221,
+    "word_count": 102
+  },
+  "client/src/context/AuthContext.tsx": {
+    "size": 2886,
+    "mtime_ns": 1783665112278835345,
+    "word_count": 303
+  },
+  "client/src/context/FontContext.jsx": {
+    "size": 1285,
+    "mtime_ns": 1782476014747972318,
+    "word_count": 149
+  },
+  "client/src/context/LanguageContext.jsx": {
+    "size": 2168,
+    "mtime_ns": 1782452736152566564,
+    "word_count": 265
+  },
+  "client/src/context/ThemeContext.jsx": {
+    "size": 994,
+    "mtime_ns": 1782551328822481461,
+    "word_count": 102
+  },
+  "client/src/hooks/useOffline.ts": {
+    "size": 654,
+    "mtime_ns": 1783746709211189108,
+    "word_count": 57
+  },
+  "client/src/locales/en.js": {
+    "size": 13585,
+    "mtime_ns": 1783702281701388936,
+    "word_count": 1384
+  },
+  "client/src/locales/mm.js": {
+    "size": 27269,
+    "mtime_ns": 1783702306704653236,
+    "word_count": 1146
+  },
+  "client/src/main.jsx": { "size": 466, "mtime_ns": 1783665033756010162, "word_count": 42 },
+  "client/src/pages/AcademicPage.jsx": {
+    "size": 19833,
+    "mtime_ns": 1783647975084520821,
+    "word_count": 1426
+  },
+  "client/src/pages/AccountingPage.jsx": {
+    "size": 45167,
+    "mtime_ns": 1783823862643223802,
+    "word_count": 3027
+  },
+  "client/src/pages/AccountsReceivablePage.jsx": {
+    "size": 22138,
+    "mtime_ns": 1783787713303768078,
+    "word_count": 1448
+  },
+  "client/src/pages/AnalyticsPage.jsx": {
+    "size": 12841,
+    "mtime_ns": 1784989847339237766,
+    "word_count": 927
+  },
+  "client/src/pages/AnnouncementDetailPage.jsx": {
+    "size": 3142,
+    "mtime_ns": 1782568120518998938,
+    "word_count": 243
+  },
+  "client/src/pages/AnnouncementsPage.jsx": {
+    "size": 13796,
+    "mtime_ns": 1783915543540339452,
+    "word_count": 996
+  },
+  "client/src/pages/AssignmentsPage.jsx": {
+    "size": 17906,
+    "mtime_ns": 1783662431432262442,
+    "word_count": 1398
+  },
+  "client/src/pages/AttendancePage.jsx": {
+    "size": 18404,
+    "mtime_ns": 1783746124589582095,
+    "word_count": 1314
+  },
+  "client/src/pages/AuditLogsPage.jsx": {
+    "size": 12199,
+    "mtime_ns": 1783702675544205782,
+    "word_count": 863
+  },
+  "client/src/pages/BudgetingPage.jsx": {
+    "size": 17095,
+    "mtime_ns": 1783787713329768246,
+    "word_count": 1210
+  },
+  "client/src/pages/CashControlPage.jsx": {
+    "size": 26297,
+    "mtime_ns": 1783787713363768466,
+    "word_count": 1781
+  },
+  "client/src/pages/CertificatesPage.jsx": {
+    "size": 10710,
+    "mtime_ns": 1783647160664346904,
+    "word_count": 792
+  },
+  "client/src/pages/ChatLogsPage.jsx": {
+    "size": 7726,
+    "mtime_ns": 1783662493372916488,
+    "word_count": 556
+  },
+  "client/src/pages/ClassDetailPage.jsx": {
+    "size": 17811,
+    "mtime_ns": 1783869987851513783,
+    "word_count": 1203
+  },
+  "client/src/pages/ClassesPage.jsx": {
+    "size": 21118,
+    "mtime_ns": 1784983158708234047,
+    "word_count": 1559
+  },
+  "client/src/pages/ContactPage.jsx": {
+    "size": 5681,
+    "mtime_ns": 1782568440318449531,
+    "word_count": 434
+  },
+  "client/src/pages/CourseDetailPage.jsx": {
+    "size": 7949,
+    "mtime_ns": 1782568254565003551,
+    "word_count": 579
+  },
+  "client/src/pages/CoursesPage.jsx": {
+    "size": 11822,
+    "mtime_ns": 1785320322975396817,
+    "word_count": 916
+  },
+  "client/src/pages/CurriculumPage.jsx": {
+    "size": 27183,
+    "mtime_ns": 1783702675595206239,
+    "word_count": 1781
+  },
+  "client/src/pages/DashboardPage.jsx": {
+    "size": 24701,
+    "mtime_ns": 1785001883205722053,
+    "word_count": 1647
+  },
+  "client/src/pages/DocumentsPage.jsx": {
+    "size": 23476,
+    "mtime_ns": 1783736289895018631,
+    "word_count": 1718
+  },
+  "client/src/pages/ExpensePage.jsx": {
+    "size": 24497,
+    "mtime_ns": 1783751302239785902,
+    "word_count": 1655
+  },
+  "client/src/pages/FinancePage.jsx": {
+    "size": 26684,
+    "mtime_ns": 1783675641944721921,
+    "word_count": 1780
+  },
+  "client/src/pages/GradebookPage.jsx": {
+    "size": 11117,
+    "mtime_ns": 1783662486040838959,
+    "word_count": 787
+  },
+  "client/src/pages/HRPage.jsx": {
+    "size": 34651,
+    "mtime_ns": 1783770223738900859,
+    "word_count": 2353
+  },
+  "client/src/pages/HomePage.jsx": {
+    "size": 15541,
+    "mtime_ns": 1783650454846287070,
+    "word_count": 1261
+  },
+  "client/src/pages/InventoryPage.jsx": {
+    "size": 35999,
+    "mtime_ns": 1783751850127728157,
+    "word_count": 2517
+  },
+  "client/src/pages/LeavePage.jsx": {
+    "size": 21924,
+    "mtime_ns": 1783749618597654041,
+    "word_count": 1508
+  },
+  "client/src/pages/LibraryPage.jsx": {
+    "size": 26863,
+    "mtime_ns": 1783747427799084849,
+    "word_count": 1944
+  },
+  "client/src/pages/LoginPage.jsx": {
+    "size": 8792,
+    "mtime_ns": 1783823862658223700,
+    "word_count": 591
+  },
+  "client/src/pages/MessagesPage.jsx": {
+    "size": 11420,
+    "mtime_ns": 1783647143307899668,
+    "word_count": 927
+  },
+  "client/src/pages/MyProfilePage.jsx": {
+    "size": 23313,
+    "mtime_ns": 1783781803289811667,
+    "word_count": 1620
+  },
+  "client/src/pages/NotificationPage.jsx": {
+    "size": 18909,
+    "mtime_ns": 1783750612763067397,
+    "word_count": 1433
+  },
+  "client/src/pages/ParentPortalPage.jsx": {
+    "size": 21837,
+    "mtime_ns": 1783675641966722888,
+    "word_count": 1465
+  },
+  "client/src/pages/QRScanPage.jsx": {
+    "size": 6236,
+    "mtime_ns": 1783746124617581751,
+    "word_count": 489
+  },
+  "client/src/pages/QuizzesPage.jsx": {
+    "size": 16971,
+    "mtime_ns": 1783647253039011245,
+    "word_count": 1302
+  },
+  "client/src/pages/RecruitmentPage.jsx": {
+    "size": 24352,
+    "mtime_ns": 1783781803328812028,
+    "word_count": 1703
+  },
+  "client/src/pages/RegisterPage.jsx": {
+    "size": 7792,
+    "mtime_ns": 1783915737934620356,
+    "word_count": 513
+  },
+  "client/src/pages/ReportsPage.jsx": {
+    "size": 30559,
+    "mtime_ns": 1783675641996724207,
+    "word_count": 1892
+  },
+  "client/src/pages/ResourcesPage.jsx": {
+    "size": 19710,
+    "mtime_ns": 1783693262739084895,
+    "word_count": 1554
+  },
+  "client/src/pages/StudentDetailPage.jsx": {
+    "size": 27167,
+    "mtime_ns": 1783734851197091396,
+    "word_count": 1751
+  },
+  "client/src/pages/StudentsPage.jsx": {
+    "size": 22294,
+    "mtime_ns": 1783734358303449752,
+    "word_count": 1529
+  },
+  "client/src/pages/TeacherWorkloadPage.jsx": {
+    "size": 16119,
+    "mtime_ns": 1783702675692207107,
+    "word_count": 939
+  },
+  "client/src/pages/TeachersPage.jsx": {
+    "size": 12638,
+    "mtime_ns": 1783662508330074730,
+    "word_count": 972
+  },
+  "client/src/pages/TimetablePage.jsx": {
+    "size": 16417,
+    "mtime_ns": 1783647757626457549,
+    "word_count": 1281
+  },
+  "client/src/pages/TrainingPage.jsx": {
+    "size": 30512,
+    "mtime_ns": 1783781803376812472,
+    "word_count": 2145
+  },
+  "client/src/pages/UserManagementPage.jsx": {
+    "size": 17865,
+    "mtime_ns": 1785329153156503598,
+    "word_count": 1418
+  },
+  "client/src/sentry.js": { "size": 295, "mtime_ns": 1783664955268033955, "word_count": 24 },
+  "client/src/services/api.ts": {
+    "size": 3306,
+    "mtime_ns": 1783746790900378527,
+    "word_count": 361
+  },
+  "client/src/services/offlineDb.ts": {
+    "size": 3707,
+    "mtime_ns": 1783746767655607867,
+    "word_count": 409
+  },
+  "client/tests/components/AnnouncementCard.test.jsx": {
+    "size": 2576,
+    "mtime_ns": 1783651396352018044,
+    "word_count": 218
+  },
+  "client/tests/components/ErrorBoundary.test.jsx": {
+    "size": 3453,
+    "mtime_ns": 1783651558380740120,
+    "word_count": 330
+  },
+  "client/tests/components/ProtectedRoute.test.jsx": {
+    "size": 3093,
+    "mtime_ns": 1783651469844318984,
+    "word_count": 226
+  },
+  "client/tests/pages/LoginPage.test.jsx": {
+    "size": 3507,
+    "mtime_ns": 1783651390124087435,
+    "word_count": 301
+  },
+  "client/tests/setup.js": { "size": 184, "mtime_ns": 1783651443865541722, "word_count": 22 },
+  "client/tsconfig.json": {
+    "size": 608,
+    "mtime_ns": 1783665093346163662,
+    "word_count": 45,
+    "hashes": {
+      "client/tsconfig.json": "f4ada3ea8c7c92d00c826cc02167101a8a7570294c05806b6654835fb1ec63d3"
+    }
+  },
+  "client/vite.config.js": { "size": 2403, "mtime_ns": 1783746927100052738, "word_count": 199 },
+  "client/vitest.config.js": { "size": 258, "mtime_ns": 1783651355146508915, "word_count": 27 },
+  "doc/FeatureUpdate.md": {
+    "size": 11369,
+    "mtime_ns": 1782644420215825327,
+    "word_count": 1543,
+    "hashes": {
+      "doc/featureupdate.md": "b75c48bd81fe5e23c21e1e09228c64d02283828b791f272cdad9706703dd888c"
+    }
+  },
+  "docker-compose.yml": { "size": 353, "mtime_ns": 1782729663724614480, "word_count": 23 },
+  "e2e/auth.spec.js": { "size": 2070, "mtime_ns": 1783651910293504482, "word_count": 174 },
+  "e2e/documents.spec.js": { "size": 1872, "mtime_ns": 1784966531407224108, "word_count": 169 },
+  "e2e/navigation.spec.js": { "size": 2099, "mtime_ns": 1783651914939517833, "word_count": 219 },
+  "e2e/permissions.spec.js": { "size": 1931, "mtime_ns": 1784966308895018822, "word_count": 173 },
+  "e2e/smoke.spec.js": { "size": 1399, "mtime_ns": 1783651905793491869, "word_count": 134 },
+  "e2e/workflows.spec.js": { "size": 1798, "mtime_ns": 1784966278007059348, "word_count": 176 },
+  "feedback/interview-notes.md": {
+    "size": 1589,
+    "mtime_ns": 1782459983879427920,
+    "word_count": 288,
+    "hashes": {
+      "feedback/interview-notes.md": "b00415321cabbf465d1a7094aeeb4de673f36dea48c139b9bf33fe5869cbb45c"
+    }
+  },
+  "grade-subject.md": {
+    "size": 5955,
+    "mtime_ns": 1782448800158183325,
+    "word_count": 1091,
+    "hashes": {
+      "grade-subject.md": "c530e2320048d89df5e1724a5e295aba9e039f6a95a74d76e819302fd965d80d"
+    }
+  },
+  "improvement_report.md": {
+    "size": 13433,
+    "mtime_ns": 1785324423638074461,
+    "word_count": 1685,
+    "hashes": {
+      "improvement_report.md": "eda67825749366e91ddbe70df7658f0b9d4a866f24453a76f5e0ad51728c3f52"
+    }
+  },
+  "package.json": {
+    "size": 1523,
+    "mtime_ns": 1784891210522264235,
+    "word_count": 139,
+    "hashes": { "package.json": "2bde5cc082de9a4569b48a02c99b36f9ebd27bba589d3d86392d29888f187713" }
+  },
+  "playwright.config.js": { "size": 788, "mtime_ns": 1783651895918465316, "word_count": 84 },
+  "requirements.txt": { "size": 113, "mtime_ns": 1782476014748972317, "word_count": 11 },
+  "screenshots/01-homepage.png": {
+    "size": 438898,
+    "mtime_ns": 1783920576308936781,
+    "word_count": 15056
+  },
+  "screenshots/02-login.png": {
+    "size": 146719,
+    "mtime_ns": 1783921864369828609,
+    "word_count": 5039
+  },
+  "screenshots/03-register.png": {
+    "size": 86505,
+    "mtime_ns": 1783923208310783327,
+    "word_count": 2882
+  },
+  "screenshots/04-announcements.png": {
+    "size": 107790,
+    "mtime_ns": 1783923237594883024,
+    "word_count": 3173
+  },
+  "screenshots/05-classes.png": {
+    "size": 28361,
+    "mtime_ns": 1783923260828966665,
+    "word_count": 1003
+  },
+  "screenshots/06-contact.png": {
+    "size": 105112,
+    "mtime_ns": 1783923280317039780,
+    "word_count": 3242
+  },
+  "screenshots/07-dashboard.png": {
+    "size": 138955,
+    "mtime_ns": 1783923340328280780,
+    "word_count": 4485
+  },
+  "server/.claude/settings.local.json": {
+    "size": 111,
+    "mtime_ns": 1783909954746112948,
+    "word_count": 9,
+    "hashes": {
+      "server/.claude/settings.local.json": "433dd4e496b7fc2510e7f8214d88ef8073dc7861bbfd5bfe15a14eadd169ef07"
+    }
+  },
+  "server/ai-scheduler.js": { "size": 17653, "mtime_ns": 1783335163145282372, "word_count": 1960 },
+  "server/ai.js": { "size": 9261, "mtime_ns": 1784195670329542646, "word_count": 980 },
+  "server/chatbot.js": { "size": 6618, "mtime_ns": 1783334936795501344, "word_count": 776 },
+  "server/config.js": { "size": 790, "mtime_ns": 1783945234656601607, "word_count": 100 },
+  "server/data.js": { "size": 11510, "mtime_ns": 1784981256995047578, "word_count": 1391 },
+  "server/db.js": { "size": 34644, "mtime_ns": 1785152089710810946, "word_count": 3732 },
+  "server/index.js": { "size": 11491, "mtime_ns": 1785322172761667819, "word_count": 1070 },
+  "server/middleware/accountLockout.js": {
+    "size": 2823,
+    "mtime_ns": 1784195670414543147,
+    "word_count": 341
+  },
+  "server/middleware/audit.js": { "size": 735, "mtime_ns": 1783702675779207886, "word_count": 85 },
+  "server/middleware/auth.js": { "size": 899, "mtime_ns": 1782660402898714916, "word_count": 101 },
+  "server/middleware/rbac.js": { "size": 2984, "mtime_ns": 1785027640402854410, "word_count": 365 },
+  "server/middleware/validate.js": {
+    "size": 6587,
+    "mtime_ns": 1782730162017603055,
+    "word_count": 603
+  },
+  "server/migrate.js": { "size": 6529, "mtime_ns": 1784981257057048224, "word_count": 637 },
+  "server/migrations/001_initial_schema.sql": {
+    "size": 26314,
+    "mtime_ns": 1784965991598976535,
+    "word_count": 2632,
+    "hashes": {
+      "server/migrations/001_initial_schema.sql": "6fc164bda5dda78b04da935972158ed4fa3fc42dfe5361364f7300bb78870c04"
+    }
+  },
+  "server/migrations/002_execute_sql_params.sql": {
+    "size": 331,
+    "mtime_ns": 1784904862740563633,
+    "word_count": 42,
+    "hashes": {
+      "server/migrations/002_execute_sql_params.sql": "b9fb3857ce587bd87f452412103c50166368659c462d103481aa2687d06b1208"
+    }
+  },
+  "server/migrations/003_audit_logs.sql": {
+    "size": 497,
+    "mtime_ns": 1784904862752563231,
+    "word_count": 57,
+    "hashes": {
+      "server/migrations/003_audit_logs.sql": "2d163367a9dee0c70a5cc500eb7ec8e706fb4795a65e94e74f51efe0fda98f64"
+    }
+  },
+  "server/migrations/004_student_profile_fields.sql": {
+    "size": 204,
+    "mtime_ns": 1784904862764562829,
+    "word_count": 33,
+    "hashes": {
+      "server/migrations/004_student_profile_fields.sql": "9c4ef45b1f1e7534753a6bfce7c67d1c5914a1119bbac9816ad9e750b994a2f9"
+    }
+  },
+  "server/migrations/005_curriculum_versioning.sql": {
+    "size": 274,
+    "mtime_ns": 1784904862776562426,
+    "word_count": 38,
+    "hashes": {
+      "server/migrations/005_curriculum_versioning.sql": "2d4d4a350ccc2b7f7ca9b8767e1d00116ac91c18da5ea0b9cb6cd15c70745d73"
+    }
+  },
+  "server/migrations/006_student_lifecycle.sql": {
+    "size": 446,
+    "mtime_ns": 1784904862787562058,
+    "word_count": 49,
+    "hashes": {
+      "server/migrations/006_student_lifecycle.sql": "4a53def09d011ad75439e4c18338d0def5dcc79c583cea1cdbb00ce653c0e74e"
+    }
+  },
+  "server/migrations/007_documents.sql": {
+    "size": 778,
+    "mtime_ns": 1784904862798561689,
+    "word_count": 85,
+    "hashes": {
+      "server/migrations/007_documents.sql": "6166de767ebb638cba54294db518ff8c31febb5f3f63183acf89c345d70f85d4"
+    }
+  },
+  "server/migrations/008_qr_attendance.sql": {
+    "size": 756,
+    "mtime_ns": 1784904862809561320,
+    "word_count": 85,
+    "hashes": {
+      "server/migrations/008_qr_attendance.sql": "cf6b8a75577f4ae16ff7cada731622fb99019f7e69d8dc3a91339c564ccac403"
+    }
+  },
+  "server/migrations/009_library.sql": {
+    "size": 1196,
+    "mtime_ns": 1784904862819560985,
+    "word_count": 131,
+    "hashes": {
+      "server/migrations/009_library.sql": "f9c1030d1e79597dbbd7000f86d0a78af251e611b8d1f68d2901148f9e343db2"
+    }
+  },
+  "server/migrations/010_leave_management.sql": {
+    "size": 820,
+    "mtime_ns": 1784904862830560617,
+    "word_count": 84,
+    "hashes": {
+      "server/migrations/010_leave_management.sql": "b54e762c93376204a7d2441bed649ed86eee8ffad897135b38ce8de9ef0e190d"
+    }
+  },
+  "server/migrations/011_notifications.sql": {
+    "size": 1398,
+    "mtime_ns": 1784904862841560248,
+    "word_count": 143,
+    "hashes": {
+      "server/migrations/011_notifications.sql": "2a86f66742fdfc82ff4bb667f81bcf8a83ef19f81c29e31d21acd19255aebb6e"
+    }
+  },
+  "server/migrations/012_expenses.sql": {
+    "size": 917,
+    "mtime_ns": 1784904862852559880,
+    "word_count": 91,
+    "hashes": {
+      "server/migrations/012_expenses.sql": "f7070b3203719dd1398d74952964bd538194ba1283108640dfc20b1e3e41f551"
+    }
+  },
+  "server/migrations/013_inventory.sql": {
+    "size": 2066,
+    "mtime_ns": 1784904862863559511,
+    "word_count": 205,
+    "hashes": {
+      "server/migrations/013_inventory.sql": "93e5b0a4ef2e0327fc37d47c23201545c9389bc2b9e1c57a4460d0ad1e44d90b"
+    }
+  },
+  "server/migrations/014_hr_contracts.sql": {
+    "size": 898,
+    "mtime_ns": 1784904862874559142,
+    "word_count": 92,
+    "hashes": {
+      "server/migrations/014_hr_contracts.sql": "626d090975c240632b0f661bfd5171db6b4e2ed60f555b0e30b5c40c43855593"
+    }
+  },
+  "server/migrations/015_performance_reviews.sql": {
+    "size": 1069,
+    "mtime_ns": 1784904862884558807,
+    "word_count": 92,
+    "hashes": {
+      "server/migrations/015_performance_reviews.sql": "31d7920ab54024e005d6cefdb09d9b2450d5820777cc4b0d5f4b3fcce8a327b4"
+    }
+  },
+  "server/migrations/016_recruitment.sql": {
+    "size": 1824,
+    "mtime_ns": 1784904862899558304,
+    "word_count": 186,
+    "hashes": {
+      "server/migrations/016_recruitment.sql": "a9840bc1017495f4e7f7222a13e25a7ebfcfa72d43491f2aa48b8cdee4a4bbd9"
+    }
+  },
+  "server/migrations/017_training.sql": {
+    "size": 1314,
+    "mtime_ns": 1784904862910557936,
+    "word_count": 130,
+    "hashes": {
+      "server/migrations/017_training.sql": "bd9a32718d19a1ad425116ec2ed706170b37492daa023b2e7ccc54094aa17594"
+    }
+  },
+  "server/migrations/018_daily_cash.sql": {
+    "size": 1539,
+    "mtime_ns": 1784904862919557634,
+    "word_count": 167,
+    "hashes": {
+      "server/migrations/018_daily_cash.sql": "91d51dd8c07cce5234f45c128c5fc0c2f42e3a0ea89d23af2fd1d060607499cf"
+    }
+  },
+  "server/migrations/019_budgeting.sql": {
+    "size": 664,
+    "mtime_ns": 1784904862930557266,
+    "word_count": 75,
+    "hashes": {
+      "server/migrations/019_budgeting.sql": "2dacf371edb3a2b55f2487810fce49db55c92bda700ac6990b00b106e93015fe"
+    }
+  },
+  "server/migrations/020_accounts_receivable.sql": {
+    "size": 406,
+    "mtime_ns": 1784904862939556964,
+    "word_count": 48,
+    "hashes": {
+      "server/migrations/020_accounts_receivable.sql": "c296f3f557756491d9d7d59fc93eba9cfea3fadc4e15432fe9791e38dec556d5"
+    }
+  },
+  "server/migrations/021_accounting.sql": {
+    "size": 5402,
+    "mtime_ns": 1784904862949556629,
+    "word_count": 610,
+    "hashes": {
+      "server/migrations/021_accounting.sql": "85bcf6520429db6e7f2b1ac577f3d9c54f8e748e63e0260f317eddf5a0ac4642"
+    }
+  },
+  "server/migrations/022_class_readiness.sql": {
+    "size": 1355,
+    "mtime_ns": 1784904862959556294,
+    "word_count": 160,
+    "hashes": {
+      "server/migrations/022_class_readiness.sql": "d75f51daf2ed6ebc338f18551ab9b0b018822b91297ca8f39578577ce1549864"
+    }
+  },
+  "server/migrations/023_storage_setup.sql": {
+    "size": 483,
+    "mtime_ns": 1784976873149671660,
+    "word_count": 63,
+    "hashes": {
+      "server/migrations/023_storage_setup.sql": "707b46cf642d5553d3d65045ad0d11b31c7be3e026a68d5e5031593ed2a5a23e"
+    }
+  },
+  "server/migrations/024_rbac_and_lockouts.sql": {
+    "size": 5007,
+    "mtime_ns": 1785322461090261819,
+    "word_count": 625,
+    "hashes": {
+      "server/migrations/024_rbac_and_lockouts.sql": "1ed5f32cb8543079a337e441ddcb9196916fdf16498d430791098eb3412e197a"
+    }
+  },
+  "server/package.json": {
+    "size": 829,
+    "mtime_ns": 1783664952171911908,
+    "word_count": 69,
+    "hashes": {
+      "server/package.json": "bf77893b611c3a83fa7e252a57c3665712c6a1f52d3c05cee315717566083b0c"
+    }
+  },
+  "server/predictive-analytics.js": {
+    "size": 13225,
+    "mtime_ns": 1783335094781506505,
+    "word_count": 1520
+  },
+  "server/query-tools.js": { "size": 17551, "mtime_ns": 1783334989427168921, "word_count": 1728 },
+  "server/report-generator.js": {
+    "size": 13959,
+    "mtime_ns": 1783335124482885268,
+    "word_count": 1569
+  },
+  "server/routes/academic.js": {
+    "size": 8135,
+    "mtime_ns": 1785152089737811272,
+    "word_count": 1006
+  },
+  "server/routes/accounting.js": {
+    "size": 43868,
+    "mtime_ns": 1785152089833812432,
+    "word_count": 4644
+  },
+  "server/routes/accounts-receivable.js": {
+    "size": 9334,
+    "mtime_ns": 1785152089855812698,
+    "word_count": 1038
+  },
+  "server/routes/ai-analytics.js": {
+    "size": 5194,
+    "mtime_ns": 1785150388964219956,
+    "word_count": 567
+  },
+  "server/routes/ai-reports.js": {
+    "size": 10725,
+    "mtime_ns": 1785152089900813242,
+    "word_count": 1084
+  },
+  "server/routes/ai-schedule.js": {
+    "size": 7325,
+    "mtime_ns": 1785152089928813580,
+    "word_count": 747
+  },
+  "server/routes/announcements.js": {
+    "size": 5206,
+    "mtime_ns": 1785152089942813749,
+    "word_count": 666
+  },
+  "server/routes/assignments.js": {
+    "size": 4930,
+    "mtime_ns": 1785152089958813943,
+    "word_count": 611
+  },
+  "server/routes/attendance.js": {
+    "size": 8324,
+    "mtime_ns": 1785152089976814160,
+    "word_count": 977
+  },
+  "server/routes/audit.js": { "size": 1618, "mtime_ns": 1785151228043079788, "word_count": 207 },
+  "server/routes/auth.js": { "size": 4104, "mtime_ns": 1783954140873020291, "word_count": 500 },
+  "server/routes/budgeting.js": {
+    "size": 8918,
+    "mtime_ns": 1785152090008814547,
+    "word_count": 925
+  },
+  "server/routes/cash-control.js": {
+    "size": 11117,
+    "mtime_ns": 1785152090024814741,
+    "word_count": 1129
+  },
+  "server/routes/certificates.js": {
+    "size": 8107,
+    "mtime_ns": 1785152090035814874,
+    "word_count": 895
+  },
+  "server/routes/chat.js": { "size": 5920, "mtime_ns": 1785152090051815067, "word_count": 695 },
+  "server/routes/class-subjects.js": {
+    "size": 10207,
+    "mtime_ns": 1785152090065815236,
+    "word_count": 1081
+  },
+  "server/routes/classes.js": { "size": 7869, "mtime_ns": 1785152090079815406, "word_count": 947 },
+  "server/routes/contact.js": { "size": 1552, "mtime_ns": 1785151281024192568, "word_count": 196 },
+  "server/routes/courses.js": { "size": 4575, "mtime_ns": 1785152090094815588, "word_count": 573 },
+  "server/routes/curriculum.js": {
+    "size": 4811,
+    "mtime_ns": 1785152090103815696,
+    "word_count": 570
+  },
+  "server/routes/documents.js": {
+    "size": 11657,
+    "mtime_ns": 1785152090131816035,
+    "word_count": 1209
+  },
+  "server/routes/expenses.js": {
+    "size": 9541,
+    "mtime_ns": 1785152090149816253,
+    "word_count": 1006
+  },
+  "server/routes/finance.js": {
+    "size": 10356,
+    "mtime_ns": 1785152090165816446,
+    "word_count": 1219
+  },
+  "server/routes/gradebook.js": {
+    "size": 5828,
+    "mtime_ns": 1785150874992522647,
+    "word_count": 663
+  },
+  "server/routes/hr.js": { "size": 20199, "mtime_ns": 1785152090201816882, "word_count": 2228 },
+  "server/routes/inventory.js": {
+    "size": 15838,
+    "mtime_ns": 1785152090218817088,
+    "word_count": 1628
+  },
+  "server/routes/leaves.js": { "size": 8888, "mtime_ns": 1785152090230817233, "word_count": 1009 },
+  "server/routes/library.js": {
+    "size": 13046,
+    "mtime_ns": 1785152090251817487,
+    "word_count": 1449
+  },
+  "server/routes/messages.js": { "size": 2803, "mtime_ns": 1783334828339190073, "word_count": 377 },
+  "server/routes/notifications.js": {
+    "size": 8159,
+    "mtime_ns": 1785152090267817680,
+    "word_count": 840
+  },
+  "server/routes/parent.js": { "size": 5519, "mtime_ns": 1785151866487509117, "word_count": 687 },
+  "server/routes/qr-attendance.js": {
+    "size": 8424,
+    "mtime_ns": 1785152090277817801,
+    "word_count": 938
+  },
+  "server/routes/quizzes.js": { "size": 7312, "mtime_ns": 1785152090289817946, "word_count": 887 },
+  "server/routes/rbac.js": { "size": 7383, "mtime_ns": 1785137063148071565, "word_count": 835 },
+  "server/routes/recruitment.js": {
+    "size": 13815,
+    "mtime_ns": 1785152090306818152,
+    "word_count": 1454
+  },
+  "server/routes/reports.js": {
+    "size": 15598,
+    "mtime_ns": 1785323332579941010,
+    "word_count": 1803
+  },
+  "server/routes/resources.js": {
+    "size": 7431,
+    "mtime_ns": 1785152090334818491,
+    "word_count": 848
+  },
+  "server/routes/students.js": {
+    "size": 17858,
+    "mtime_ns": 1785137063171068922,
+    "word_count": 2009
+  },
+  "server/routes/teacher-workload.js": {
+    "size": 3495,
+    "mtime_ns": 1785150220657558612,
+    "word_count": 398
+  },
+  "server/routes/teachers.js": { "size": 5916, "mtime_ns": 1785152090354818733, "word_count": 720 },
+  "server/routes/timetable.js": {
+    "size": 6162,
+    "mtime_ns": 1785152090366818878,
+    "word_count": 760
+  },
+  "server/routes/training.js": {
+    "size": 10719,
+    "mtime_ns": 1785152090381819060,
+    "word_count": 1134
+  },
+  "server/routes/upload.js": { "size": 1451, "mtime_ns": 1783702675902208987, "word_count": 166 },
+  "server/routes/users.js": { "size": 10434, "mtime_ns": 1785329153186503838, "word_count": 1191 },
+  "server/seed-bulk.js": { "size": 32883, "mtime_ns": 1782735443347467798, "word_count": 3582 },
+  "server/seed.js": { "size": 33063, "mtime_ns": 1784195670496543630, "word_count": 3509 },
+  "server/sentry.js": { "size": 400, "mtime_ns": 1783664957259112218, "word_count": 38 },
+  "server/services/notificationService.js": {
+    "size": 10709,
+    "mtime_ns": 1783750612828065258,
+    "word_count": 1020
+  },
+  "server/setup-supabase.js": { "size": 3840, "mtime_ns": 1783335495040175237, "word_count": 397 },
+  "server/storage.js": { "size": 6453, "mtime_ns": 1784981257150049194, "word_count": 649 },
+  "server/supabase.js": { "size": 1318, "mtime_ns": 1783342071290347950, "word_count": 139 },
+  "server/tests/ai-analytics.test.js": {
+    "size": 2405,
+    "mtime_ns": 1782732267627591648,
+    "word_count": 204
+  },
+  "server/tests/ai-chat.test.js": {
+    "size": 2967,
+    "mtime_ns": 1782732259858155807,
+    "word_count": 254
+  },
+  "server/tests/ai-reports.test.js": {
+    "size": 2120,
+    "mtime_ns": 1782732475801780739,
+    "word_count": 187
+  },
+  "server/tests/ai-schedule.test.js": {
+    "size": 1889,
+    "mtime_ns": 1782732458227561480,
+    "word_count": 168
+  },
+  "server/tests/assignments.test.js": {
+    "size": 1447,
+    "mtime_ns": 1782730068824139992,
+    "word_count": 134
+  },
+  "server/tests/auth.test.js": { "size": 3639, "mtime_ns": 1782729616309625159, "word_count": 326 },
+  "server/tests/certificates.test.js": {
+    "size": 1748,
+    "mtime_ns": 1782730592683276727,
+    "word_count": 148
+  },
+  "server/tests/courses.test.js": {
+    "size": 2078,
+    "mtime_ns": 1782730064642005339,
+    "word_count": 192
+  },
+  "server/tests/finance.test.js": {
+    "size": 2880,
+    "mtime_ns": 1784981257160049298,
+    "word_count": 241
+  },
+  "server/tests/health.test.js": { "size": 705, "mtime_ns": 1782722542028329434, "word_count": 53 },
+  "server/tests/messages.test.js": {
+    "size": 2146,
+    "mtime_ns": 1782730080125504750,
+    "word_count": 188
+  },
+  "server/tests/notifications.test.js": {
+    "size": 1378,
+    "mtime_ns": 1784981257167049371,
+    "word_count": 113
+  },
+  "server/tests/parent.test.js": {
+    "size": 2149,
+    "mtime_ns": 1782730102723211001,
+    "word_count": 165
+  },
+  "server/tests/quizzes.test.js": {
+    "size": 1399,
+    "mtime_ns": 1782730073387287119,
+    "word_count": 134
+  },
+  "server/tests/rbac.test.js": {
+    "size": 13967,
+    "mtime_ns": 1785152090408819386,
+    "word_count": 1291
+  },
+  "server/tests/reports.test.js": {
+    "size": 1359,
+    "mtime_ns": 1782730110401387327,
+    "word_count": 115
+  },
+  "server/tests/setup.js": { "size": 1004, "mtime_ns": 1784981257171049413, "word_count": 132 },
+  "server/tests/students.test.js": {
+    "size": 3295,
+    "mtime_ns": 1784868693216599764,
+    "word_count": 262
+  },
+  "server/touch.txt": { "size": 34, "mtime_ns": 1783343332558919660, "word_count": 7 },
+  "server/utils/errorHandler.js": {
+    "size": 540,
+    "mtime_ns": 1782730706491672933,
+    "word_count": 67
+  },
+  "server/vitest.config.js": { "size": 478, "mtime_ns": 1785131959080818470, "word_count": 55 },
+  "slides/pitch.md": {
+    "size": 2744,
+    "mtime_ns": 1782443454896367275,
+    "word_count": 295,
+    "hashes": {
+      "slides/pitch.md": "0cc3f56036489b438ffa26ef0a954d0cfee0d303a3e1a247de268e54aa88b93a"
+    }
+  },
+  "slides/tech-stack.md": {
+    "size": 3560,
+    "mtime_ns": 1782459886703952656,
+    "word_count": 465,
+    "hashes": {
+      "slides/tech-stack.md": "04483384f7087a642c663382a82aeba0cc2658aba4a157e02668fc331bb5ac69"
+    }
+  },
+  "suggestions_report.md": {
+    "size": 9493,
+    "mtime_ns": 1785328948499879789,
+    "word_count": 1168,
+    "hashes": {
+      "suggestions_report.md": "81681b8a1359412cd7a742338cfde16d73d65b0962872e8cf521dac5aec05b31"
+    }
+  },
+  "tools/daily-standup.js": { "size": 3936, "mtime_ns": 1782366608497892546, "word_count": 442 },
+  "tools/file-renamer.js": { "size": 4717, "mtime_ns": 1782367551868420206, "word_count": 458 },
+  "tools/package.json": {
+    "size": 230,
+    "mtime_ns": 1782366440541794161,
+    "word_count": 24,
+    "hashes": {
+      "tools/package.json": "15d0def285650985c376e020f5fe2246f79af8ecec225d24aa89de973b683e59"
+    }
+  },
+  "tools/screenshot.mjs": { "size": 2495, "mtime_ns": 1782448800158183325, "word_count": 240 },
+  "vercel.json": {
+    "size": 702,
+    "mtime_ns": 1783682690972413133,
+    "word_count": 79,
+    "hashes": { "vercel.json": "71af99e8742a80a6f18ee1f1a20d743cdb65e92b9d603cb1b1f7bf0935fa4908" }
+  }
+}

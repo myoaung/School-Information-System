@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_feedback_interview_notes_md",
+      "label": "interview-notes.md",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "label": "User Interview \u2014 SchoolHub",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_what_they_do_today_without_your_project",
+      "label": "What they do today (without your project)",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_what_they_liked",
+      "label": "What they liked",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_what_confused_them_what_s_missing",
+      "label": "What confused them / what's missing",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_what_would_make_them_actually_use_it",
+      "label": "What would make them actually use it",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "$graphify-root$_feedback_interview_notes_what_i_ll_change_next_steps",
+      "label": "What I'll change (next steps)",
+      "file_type": "document",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L32"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_feedback_interview_notes_md",
+      "target": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "target": "$graphify-root$_feedback_interview_notes_what_they_do_today_without_your_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "target": "$graphify-root$_feedback_interview_notes_what_they_liked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "target": "$graphify-root$_feedback_interview_notes_what_confused_them_what_s_missing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "target": "$graphify-root$_feedback_interview_notes_what_would_make_them_actually_use_it",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_feedback_interview_notes_user_interview_schoolhub",
+      "target": "$graphify-root$_feedback_interview_notes_what_i_ll_change_next_steps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "feedback/interview-notes.md",
+      "source_location": "L32",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -7,6 +7,56 @@ const { auditLog } = require('../middleware/audit');
 
 const router = express.Router();
 
+// Check if class curriculum matches current grade_subjects
+async function checkCurriculumSync(classData) {
+  if (!classData.grade_id || !classData.academic_year_id) {
+    return { is_synced: true, missing: [], extra: [] };
+  }
+
+  const currentCurriculum = await db.all(
+    'SELECT subject_id FROM grade_subjects WHERE grade_id = ? AND academic_year_id = ?',
+    [classData.grade_id, classData.academic_year_id]
+  );
+
+  const appliedSubjects = await db.all(
+    'SELECT subject_id FROM class_subject_teachers WHERE class_id = ? AND academic_year_id = ?',
+    [classData.id, classData.academic_year_id]
+  );
+
+  const curriculumIds = new Set(currentCurriculum.map((r) => r.subject_id));
+  const appliedIds = new Set(appliedSubjects.map((r) => r.subject_id));
+
+  const missing = currentCurriculum
+    .filter((r) => !appliedIds.has(r.subject_id))
+    .map((r) => r.subject_id);
+
+  const extra = appliedSubjects
+    .filter((r) => !curriculumIds.has(r.subject_id))
+    .map((r) => r.subject_id);
+
+  // Look up subject names for missing/extra
+  let missingDetails = [];
+  let extraDetails = [];
+  if (missing.length > 0) {
+    missingDetails = await db.all(
+      `SELECT id, name, code FROM subjects WHERE id IN (${missing.map(() => '?').join(',')})`,
+      missing
+    );
+  }
+  if (extra.length > 0) {
+    extraDetails = await db.all(
+      `SELECT id, name, code FROM subjects WHERE id IN (${extra.map(() => '?').join(',')})`,
+      extra
+    );
+  }
+
+  return {
+    is_synced: missing.length === 0 && extra.length === 0,
+    missing: missingDetails,
+    extra: extraDetails,
+  };
+}
+
 // ─── Get Class Subject-Teacher Assignments ─────────────────────
 router.get('/:classId', authMiddleware, async (req, res) => {
   try {
@@ -76,6 +126,7 @@ router.get('/:classId', authMiddleware, async (req, res) => {
         })),
         can_activate: missing.length === 0 && assignments.length > 0,
       },
+      curriculum_sync: await checkCurriculumSync(classData),
     });
   } catch (err) {
     sendError(res, err, 'Failed to fetch class subjects');
@@ -313,6 +364,71 @@ router.post(
       });
     } catch (err) {
       sendError(res, err, 'Failed to activate class');
+    }
+  }
+);
+
+// ─── Reapply Curriculum (sync with latest grade_subjects) ──────
+router.post(
+  '/:classId/reapply-curriculum',
+  authMiddleware,
+  requirePermission('classes', 'update'),
+  async (req, res) => {
+    try {
+      const classId = parseInt(req.params.classId);
+
+      const classData = await db.get('SELECT * FROM classes WHERE id = ?', [classId]);
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+
+      if (!classData.grade_id || !classData.academic_year_id) {
+        return res.status(400).json({ error: 'Class must have grade and academic year' });
+      }
+
+      // Get current curriculum
+      const gradeSubjects = await db.all(
+        'SELECT gs.* FROM grade_subjects gs WHERE gs.grade_id = ? AND gs.academic_year_id = ?',
+        [classData.grade_id, classData.academic_year_id]
+      );
+
+      if (gradeSubjects.length === 0) {
+        return res.status(400).json({ error: 'No curriculum found for this grade and year' });
+      }
+
+      // Remove old subject assignments for this year
+      await db.run(
+        'DELETE FROM class_subject_teachers WHERE class_id = ? AND academic_year_id = ?',
+        [classId, classData.academic_year_id]
+      );
+
+      // Apply fresh curriculum
+      let applied = 0;
+      for (const gs of gradeSubjects) {
+        await db.run(
+          `INSERT INTO class_subject_teachers (class_id, subject_id, academic_year_id, is_required)
+           VALUES (?, ?, ?, ?)`,
+          [classId, gs.subject_id, classData.academic_year_id, gs.is_required]
+        );
+        applied++;
+      }
+
+      // Update class status
+      await db.run(
+        "UPDATE classes SET status = 'incomplete', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [classId]
+      );
+
+      res.json({ message: `Curriculum reapplied: ${applied} subjects`, applied });
+
+      auditLog(req, {
+        action: 'reapply_curriculum',
+        entityType: 'class',
+        entityId: classId,
+        newValues: { academic_year_id: classData.academic_year_id, subjects_applied: applied },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to reapply curriculum');
     }
   }
 );

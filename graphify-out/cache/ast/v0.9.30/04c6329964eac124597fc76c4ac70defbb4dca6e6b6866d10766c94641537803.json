@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_agents_data_cleaner_md",
+      "label": "data-cleaner.md",
+      "file_type": "document",
+      "source_file": ".claude/agents/data-cleaner.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,191 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_slides_tech_stack_md",
+      "label": "tech-stack.md",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_schoolhub_tech_stack",
+      "label": "SchoolHub \u2014 Tech Stack",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_how_it_s_built_automated_and_delivered",
+      "label": "How it's built, automated, and delivered",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_tech_stack",
+      "label": "Tech Stack",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_architecture",
+      "label": "Architecture",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_skills",
+      "label": "Skills",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_subagents",
+      "label": "Subagents",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_methodology",
+      "label": "Methodology",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L75"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_triggers_commands",
+      "label": "Triggers & Commands",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L85"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_mlm_i18n",
+      "label": "MLM + i18n",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_lesson_learned",
+      "label": "Lesson Learned",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L114"
+    },
+    {
+      "id": "$graphify-root$_slides_tech_stack_thank_you",
+      "label": "Thank You",
+      "file_type": "document",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L124"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_schoolhub_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_schoolhub_tech_stack",
+      "target": "$graphify-root$_slides_tech_stack_how_it_s_built_automated_and_delivered",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_tech_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_skills",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_subagents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_methodology",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_triggers_commands",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_mlm_i18n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_lesson_learned",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_slides_tech_stack_md",
+      "target": "$graphify-root$_slides_tech_stack_thank_you",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "slides/tech-stack.md",
+      "source_location": "L124",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,191 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_quality_plan_md",
+      "label": "QUALITY-PLAN.md",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "label": "Quality & Polish Plan \u2014 Error Handling & Resilience",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_goals",
+      "label": "Goals",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_decisions_locked",
+      "label": "Decisions (Locked)",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_tasks",
+      "label": "Tasks",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_task_1_add_toast_library_sonner",
+      "label": "Task 1: Add toast library (`sonner`)",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_task_2_root_errorboundary_component",
+      "label": "Task 2: Root ErrorBoundary component",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L43"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_task_3_standardize_server_error_handling",
+      "label": "Task 3: Standardize server error handling",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_task_4_replace_silent_catch_blocks_with_toasts",
+      "label": "Task 4: Replace silent catch blocks with toasts",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L98"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_task_5_add_retry_button_on_user_initiated_failures",
+      "label": "Task 5: Add retry button on user-initiated failures",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L140"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_execution_order",
+      "label": "Execution Order",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "$graphify-root$_quality_plan_out_of_scope_deferred",
+      "label": "Out of Scope (Deferred)",
+      "file_type": "document",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L208"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_quality_plan_md",
+      "target": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "target": "$graphify-root$_quality_plan_goals",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "target": "$graphify-root$_quality_plan_decisions_locked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "target": "$graphify-root$_quality_plan_tasks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_tasks",
+      "target": "$graphify-root$_quality_plan_task_1_add_toast_library_sonner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_tasks",
+      "target": "$graphify-root$_quality_plan_task_2_root_errorboundary_component",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_tasks",
+      "target": "$graphify-root$_quality_plan_task_3_standardize_server_error_handling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_tasks",
+      "target": "$graphify-root$_quality_plan_task_4_replace_silent_catch_blocks_with_toasts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L98",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_tasks",
+      "target": "$graphify-root$_quality_plan_task_5_add_retry_button_on_user_initiated_failures",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "target": "$graphify-root$_quality_plan_execution_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_quality_plan_quality_polish_plan_error_handling_resilience",
+      "target": "$graphify-root$_quality_plan_out_of_scope_deferred",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "QUALITY-PLAN.md",
+      "source_location": "L208",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

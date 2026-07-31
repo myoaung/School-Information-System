@@ -1,0 +1,895 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_doc_featureupdate_md",
+      "label": "FeatureUpdate.md",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "label": "AI Feature Update \u2014 School Information System",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_overview",
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "label": "Phase 1: AI Chatbot",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_description",
+      "label": "Description",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_files",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_features",
+      "label": "Features",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_configuration",
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_api",
+      "label": "API",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "label": "Phase 2: Natural Language Query Interface",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_description_47",
+      "label": "Description",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_files_50",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_query_tools",
+      "label": "Query Tools",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_role_based_access",
+      "label": "Role-Based Access",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L66"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_example_queries",
+      "label": "Example Queries",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "label": "Phase 3: AI Report Generation",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_description_80",
+      "label": "Description",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L80"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_files_83",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_features_87",
+      "label": "Features",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_api_endpoints",
+      "label": "API Endpoints",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_workflow",
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L105"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_example_output",
+      "label": "Example Output",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L118"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "label": "Phase 4: Predictive Analytics",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L127"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_description_129",
+      "label": "Description",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L129"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_files_132",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L132"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_risk_scoring_formula",
+      "label": "Risk Scoring Formula",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L136"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_risk_levels",
+      "label": "Risk Levels",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L144"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_features_152",
+      "label": "Features",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L152"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_api_endpoints_159",
+      "label": "API Endpoints",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L159"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_example_risk_assessment",
+      "label": "Example Risk Assessment",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L169"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "label": "Phase 5: AI Scheduling",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L190"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_description_192",
+      "label": "Description",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_files_195",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L195"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_features_199",
+      "label": "Features",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L199"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_constraints_considered",
+      "label": "Constraints Considered",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L206"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_api_endpoints_213",
+      "label": "API Endpoints",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L213"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_example_generation",
+      "label": "Example Generation",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L223"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_frontend_integration",
+      "label": "Frontend Integration",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L237"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_dashboard_early_warning_widget",
+      "label": "Dashboard (Early Warning Widget)",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L239"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_student_detail_page_report_generation",
+      "label": "Student Detail Page (Report Generation)",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L244"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_timetable_page_auto_generate",
+      "label": "Timetable Page (Auto-Generate)",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L250"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "label": "Technical Architecture",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L257"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_dependencies",
+      "label": "Dependencies",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L259"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_environment_variables",
+      "label": "Environment Variables",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L266"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_database_tables_added",
+      "label": "Database Tables Added",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L271"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_file_structure",
+      "label": "File Structure",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L286"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_testing_results",
+      "label": "Testing Results",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L303"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_module_loading",
+      "label": "Module Loading",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L305"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_functional_tests",
+      "label": "Functional Tests",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L314"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_usage_examples",
+      "label": "Usage Examples",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L324"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_chat_with_ai_assistant",
+      "label": "Chat with AI Assistant",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L326"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_generate_student_report",
+      "label": "Generate Student Report",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L332"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_check_at_risk_students",
+      "label": "Check At-Risk Students",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L338"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_auto_generate_schedule",
+      "label": "Auto-Generate Schedule",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L344"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_future_enhancements",
+      "label": "Future Enhancements",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L353"
+    },
+    {
+      "id": "$graphify-root$_doc_featureupdate_conclusion",
+      "label": "Conclusion",
+      "file_type": "document",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L364"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_doc_featureupdate_md",
+      "target": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_overview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "target": "$graphify-root$_doc_featureupdate_description",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "target": "$graphify-root$_doc_featureupdate_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "target": "$graphify-root$_doc_featureupdate_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "target": "$graphify-root$_doc_featureupdate_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_1_ai_chatbot",
+      "target": "$graphify-root$_doc_featureupdate_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "target": "$graphify-root$_doc_featureupdate_description_47",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "target": "$graphify-root$_doc_featureupdate_files_50",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "target": "$graphify-root$_doc_featureupdate_query_tools",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "target": "$graphify-root$_doc_featureupdate_role_based_access",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_2_natural_language_query_interface",
+      "target": "$graphify-root$_doc_featureupdate_example_queries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_description_80",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_files_83",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_features_87",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_api_endpoints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_3_ai_report_generation",
+      "target": "$graphify-root$_doc_featureupdate_example_output",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_description_129",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_files_132",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_risk_scoring_formula",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_risk_levels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_features_152",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L152",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_api_endpoints_159",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_4_predictive_analytics",
+      "target": "$graphify-root$_doc_featureupdate_example_risk_assessment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_description_192",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_files_195",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L195",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_features_199",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L199",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_constraints_considered",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L206",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_api_endpoints_213",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L213",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_phase_5_ai_scheduling",
+      "target": "$graphify-root$_doc_featureupdate_example_generation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L223",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_frontend_integration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L237",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_frontend_integration",
+      "target": "$graphify-root$_doc_featureupdate_dashboard_early_warning_widget",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L239",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_frontend_integration",
+      "target": "$graphify-root$_doc_featureupdate_student_detail_page_report_generation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L244",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_frontend_integration",
+      "target": "$graphify-root$_doc_featureupdate_timetable_page_auto_generate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L257",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "target": "$graphify-root$_doc_featureupdate_dependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "target": "$graphify-root$_doc_featureupdate_environment_variables",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "target": "$graphify-root$_doc_featureupdate_database_tables_added",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_technical_architecture",
+      "target": "$graphify-root$_doc_featureupdate_file_structure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_testing_results",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L303",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_testing_results",
+      "target": "$graphify-root$_doc_featureupdate_module_loading",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L305",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_testing_results",
+      "target": "$graphify-root$_doc_featureupdate_functional_tests",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L314",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_usage_examples",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L324",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_usage_examples",
+      "target": "$graphify-root$_doc_featureupdate_chat_with_ai_assistant",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L326",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_usage_examples",
+      "target": "$graphify-root$_doc_featureupdate_generate_student_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L332",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_usage_examples",
+      "target": "$graphify-root$_doc_featureupdate_check_at_risk_students",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L338",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_usage_examples",
+      "target": "$graphify-root$_doc_featureupdate_auto_generate_schedule",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L344",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_future_enhancements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L353",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_doc_featureupdate_ai_feature_update_school_information_system",
+      "target": "$graphify-root$_doc_featureupdate_conclusion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "doc/FeatureUpdate.md",
+      "source_location": "L364",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

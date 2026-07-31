@@ -1,0 +1,217 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_md",
+      "label": "HOW-TO-SUBMIT-my.md",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "label": "\u1021\u1001\u1014\u103a\u1038 \u1046 \u2014 \u1018\u101a\u103a\u101c\u102d\u102f\u1010\u1004\u103a\u101b\u1019\u101c\u1032 (\u1000\u102d\u102f\u101a\u103a\u1015\u102d\u102f\u1004\u103a Project)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1015_\u1021_\u1004_\u101c_\u1015_\u101b\u1019\u101a_\u1021\u101b_\u1010_\u1005\u1005_\u1006_\u101b\u1014_\u1005_\u101b\u1004",
+      "label": "\u1015\u103c\u102e\u1038\u1021\u1031\u102c\u1004\u103a\u101c\u102f\u1015\u103a\u101b\u1019\u101a\u1037\u103a\u1021\u101b\u102c\u1010\u103d\u1031 (\u1005\u1005\u103a\u1006\u1031\u1038\u101b\u1014\u103a\u1005\u102c\u101b\u1004\u103a\u1038)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1041_open_issues_\u1010_\u1015_\u1010_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1041 \u2014 open issues \u1010\u103d\u1031 \u1015\u102d\u1010\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1042_ui_ux_polish_\u101c_\u1015_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1042 \u2014 UI/UX polish \u101c\u102f\u1015\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L35"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1043_chrome_devtools_playwright_\u1014_test_web_app",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1043 \u2014 Chrome DevTools + Playwright \u1014\u1032\u1037 test (web app)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1044_readme_polish_\u101c_\u1015_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1044 \u2014 README polish \u101c\u102f\u1015\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1045_analytics_\u1011\u100a_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1045 \u2014 Analytics \u1011\u100a\u1037\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1046_\u1010\u1000\u101a_deploy_screenshot_\u1021\u101e\u1005",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1046 \u2014 \u1010\u1000\u101a\u103a deploy + screenshot \u1021\u101e\u1005\u103a",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1047_report_\u1016_\u100a_\u1015_team_repo_\u1011",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1047 \u2014 Report \u1016\u103c\u100a\u1037\u103a\u1015\u102b (TEAM repo \u1011\u1032)",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L73"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1048_doctor_sh_\u1014_\u1000_\u101a_\u1000_\u101a_\u1000_\u1005\u1005_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1048 \u2014 doctor.sh \u1014\u1032\u1037 \u1000\u102d\u102f\u101a\u1037\u103a\u1000\u102d\u102f\u101a\u103a\u1000\u102d\u102f \u1005\u1005\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1049_discord_\u1019_\u1010\u1004_\u1015",
+      "label": "\u1021\u1006\u1004\u1037\u103a \u1049 \u2014 Discord \u1019\u103e\u102c \u1010\u1004\u103a\u1015\u102b",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1019_\u1006_\u1019_\u1010\u1010_\u1010_\u1010",
+      "label": "\u1021\u1019\u103b\u102c\u1038\u1006\u102f\u1036\u1038 \u1019\u103e\u102c\u1038\u1010\u1010\u103a\u1010\u102c\u1010\u103d\u1031",
+      "file_type": "document",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L116"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_md",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_md",
+      "target": "$graphify-root$_ch_6_how_to_submit_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/ch-6/HOW-TO-SUBMIT.md"
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1015_\u1021_\u1004_\u101c_\u1015_\u101b\u1019\u101a_\u1021\u101b_\u1010_\u1005\u1005_\u1006_\u101b\u1014_\u1005_\u101b\u1004",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1041_open_issues_\u1010_\u1015_\u1010_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1042_ui_ux_polish_\u101c_\u1015_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1043_chrome_devtools_playwright_\u1014_test_web_app",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1044_readme_polish_\u101c_\u1015_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1045_analytics_\u1011\u100a_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1046_\u1010\u1000\u101a_deploy_screenshot_\u1021\u101e\u1005",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1047_report_\u1016_\u100a_\u1015_team_repo_\u1011",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1048_doctor_sh_\u1014_\u1000_\u101a_\u1000_\u101a_\u1000_\u1005\u1005_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1001\u1014_\u1046_\u1018\u101a_\u101c_\u1010\u1004_\u101b\u1019\u101c_\u1000_\u101a_\u1015_\u1004_project",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1049_discord_\u1019_\u1010\u1004_\u1015",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1006\u1004_\u1049_discord_\u1019_\u1010\u1004_\u1015",
+      "target": "$graphify-root$_ch_6_how_to_submit_my_\u1021\u1019_\u1006_\u1019_\u1010\u1010_\u1010_\u1010",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/HOW-TO-SUBMIT-my.md",
+      "source_location": "L116",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

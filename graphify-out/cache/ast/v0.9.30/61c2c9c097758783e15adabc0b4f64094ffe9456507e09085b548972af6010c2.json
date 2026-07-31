@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_agents_triage_md",
+      "label": "triage.md",
+      "file_type": "document",
+      "source_file": ".claude/agents/triage.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

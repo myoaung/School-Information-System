@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_md",
+      "label": "localization-plan.md",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "label": "i18n Localization Plan \u2014 EN + Myanmar",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_approach",
+      "label": "Approach",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_files_to_create",
+      "label": "Files to create",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_files_to_modify",
+      "label": "Files to modify",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_myanmar_font",
+      "label": "Myanmar Font",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_translation_strategy",
+      "label": "Translation Strategy",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_claude_plans_localization_plan_language_toggle",
+      "label": "Language Toggle",
+      "file_type": "document",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L50"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_md",
+      "target": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_approach",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_files_to_create",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_files_to_modify",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_myanmar_font",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_translation_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_claude_plans_localization_plan_i18n_localization_plan_en_myanmar",
+      "target": "$graphify-root$_claude_plans_localization_plan_language_toggle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".claude/plans/localization-plan.md",
+      "source_location": "L50",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

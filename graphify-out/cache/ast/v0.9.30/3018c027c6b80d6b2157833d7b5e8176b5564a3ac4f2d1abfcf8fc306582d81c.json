@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_claude_agents_endpoint_tester_md",
+      "label": "endpoint-tester.md",
+      "file_type": "document",
+      "source_file": ".claude/agents/endpoint-tester.md",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

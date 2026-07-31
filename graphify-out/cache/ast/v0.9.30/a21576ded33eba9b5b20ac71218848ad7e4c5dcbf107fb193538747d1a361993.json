@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_ch_6_template_md",
+      "label": "_TEMPLATE.md",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "label": "ch-6 Personal Project \u2014 Report",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_project",
+      "label": "Project",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_issues_closed_from_chapter_5_feedback",
+      "label": "Issues Closed (from Chapter 5 feedback)",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_polish",
+      "label": "Polish",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_updated_screenshots",
+      "label": "Updated Screenshots",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_ch_6_template_gallery_card_this_project_goes_public",
+      "label": "Gallery Card (this project goes public)",
+      "file_type": "document",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L45"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_ch_6_template_md",
+      "target": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "target": "$graphify-root$_ch_6_template_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "target": "$graphify-root$_ch_6_template_issues_closed_from_chapter_5_feedback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "target": "$graphify-root$_ch_6_template_polish",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "target": "$graphify-root$_ch_6_template_updated_screenshots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_ch_6_template_ch_6_personal_project_report",
+      "target": "$graphify-root$_ch_6_template_gallery_card_this_project_goes_public",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ch-6/_TEMPLATE.md",
+      "source_location": "L45",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

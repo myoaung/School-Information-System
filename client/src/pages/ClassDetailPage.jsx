@@ -33,6 +33,7 @@ export default function ClassDetailPage() {
   const [classData, setClassData] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [readiness, setReadiness] = useState(null);
+  const [curriculumSync, setCurriculumSync] = useState(null);
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,7 @@ export default function ClassDetailPage() {
       setStudents(classRes.data.class?.students || []);
       setAssignments(subjectsRes.data.assignments || []);
       setReadiness(subjectsRes.data.readiness);
+      setCurriculumSync(subjectsRes.data.curriculum_sync);
     } catch (err) {
       toast.error('Failed to load class data');
     } finally {
@@ -112,6 +114,16 @@ export default function ClassDetailPage() {
       fetchClassData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to activate class');
+    }
+  };
+
+  const handleReapplyCurriculum = async () => {
+    try {
+      await api.post(`/class-subjects/${id}/reapply-curriculum`);
+      toast.success('Curriculum synced');
+      fetchClassData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to sync curriculum');
     }
   };
 
@@ -185,6 +197,39 @@ export default function ClassDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Curriculum Sync Warning */}
+      {curriculumSync && !curriculumSync.is_synced && isAdmin && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+                Curriculum Out of Sync
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                The curriculum has changed since it was last applied to this class.
+              </p>
+              {curriculumSync.missing.length > 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  New subjects: {curriculumSync.missing.map((s) => s.name).join(', ')}
+                </p>
+              )}
+              {curriculumSync.extra.length > 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Removed subjects: {curriculumSync.extra.map((s) => s.name).join(', ')}
+                </p>
+              )}
+              <button
+                onClick={handleReapplyCurriculum}
+                className="mt-2 px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 cursor-pointer"
+              >
+                Sync Curriculum
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">

@@ -36,6 +36,7 @@ export default function ClassesPage() {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [availableGrades, setAvailableGrades] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -67,6 +68,17 @@ export default function ClassesPage() {
       .finally(() => setLoading(false));
   };
 
+  const fetchAvailableGrades = (yearId) => {
+    if (!yearId) {
+      setAvailableGrades([]);
+      return;
+    }
+    api
+      .get(`/curriculum/available-grades?academic_year_id=${yearId}`)
+      .then((r) => setAvailableGrades(r.data.grades || []))
+      .catch(() => setAvailableGrades([]));
+  };
+
   useEffect(() => {
     fetchClasses();
     if (isAdmin) {
@@ -93,6 +105,7 @@ export default function ClassesPage() {
 
   const openCreate = () => {
     setEditClass(null);
+    setAvailableGrades([]);
     setForm({
       name: '',
       description: '',
@@ -109,6 +122,7 @@ export default function ClassesPage() {
 
   const openEdit = (cls) => {
     setEditClass(cls);
+    if (cls.academic_year_id) fetchAvailableGrades(cls.academic_year_id);
     setForm({
       name: cls.name,
       description: cls.description || '',
@@ -418,12 +432,17 @@ export default function ClassesPage() {
                 className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 cursor-pointer"
               >
                 <option value="">Select grade</option>
-                {grades.map((g) => (
+                {(form.academic_year_id ? availableGrades : grades).map((g) => (
                   <option key={g.id} value={g.id}>
-                    {g.name}
+                    {g.name} {g.subject_count ? `(${g.subject_count} subjects)` : ''}
                   </option>
                 ))}
               </select>
+              {form.academic_year_id && availableGrades.length === 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  No curriculum defined for this year. Add curriculum entries first.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
@@ -461,7 +480,11 @@ export default function ClassesPage() {
             </label>
             <select
               value={form.academic_year_id}
-              onChange={(e) => setForm({ ...form, academic_year_id: e.target.value })}
+              onChange={(e) => {
+                const yearId = e.target.value;
+                setForm({ ...form, academic_year_id: yearId, grade_id: '' });
+                fetchAvailableGrades(yearId);
+              }}
               className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 cursor-pointer"
             >
               <option value="">Select year</option>

@@ -1,0 +1,159 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_suggestions_report_md",
+      "label": "suggestions_report.md",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_suggestions_for_schoolhub_class_curriculum_mapping_and_student_registration_in_myanmar",
+      "label": "Suggestions for SchoolHub: Class-Curriculum Mapping and Student Registration in Myanmar",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_1_class_curriculum_mapping",
+      "label": "1. Class-Curriculum Mapping",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_1_1_does_a_class_need_to_map_with_curriculum",
+      "label": "1.1. Does a Class Need to Map with Curriculum?",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "label": "2. Student Registration Fields in Myanmar",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_2_1_required_fields_minimum_for_official_registration",
+      "label": "2.1. Required Fields (Minimum for Official Registration)",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_2_2_highly_recommended_fields_for_comprehensive_records",
+      "label": "2.2. Highly Recommended Fields (for Comprehensive Records)",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_2_3_optional_context_specific_fields",
+      "label": "2.3. Optional/Context-Specific Fields",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_2_4_proposed_schema_adjustments",
+      "label": "2.4. Proposed Schema Adjustments",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "$graphify-root$_suggestions_report_references",
+      "label": "References",
+      "file_type": "document",
+      "source_file": "suggestions_report.md",
+      "source_location": "L133"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_suggestions_report_md",
+      "target": "$graphify-root$_suggestions_report_suggestions_for_schoolhub_class_curriculum_mapping_and_student_registration_in_myanmar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_suggestions_for_schoolhub_class_curriculum_mapping_and_student_registration_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_1_class_curriculum_mapping",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_1_class_curriculum_mapping",
+      "target": "$graphify-root$_suggestions_report_1_1_does_a_class_need_to_map_with_curriculum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_suggestions_for_schoolhub_class_curriculum_mapping_and_student_registration_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_2_1_required_fields_minimum_for_official_registration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_2_2_highly_recommended_fields_for_comprehensive_records",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_2_3_optional_context_specific_fields",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_2_student_registration_fields_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_2_4_proposed_schema_adjustments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_suggestions_report_suggestions_for_schoolhub_class_curriculum_mapping_and_student_registration_in_myanmar",
+      "target": "$graphify-root$_suggestions_report_references",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "suggestions_report.md",
+      "source_location": "L133",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

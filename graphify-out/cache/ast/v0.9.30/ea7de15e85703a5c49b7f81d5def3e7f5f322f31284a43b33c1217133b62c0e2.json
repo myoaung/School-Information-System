@@ -1,0 +1,681 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_supabase_setup_md",
+      "label": "SUPABASE-SETUP.md",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "label": "Supabase Setup Guide \u2014 School Information System",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_table_of_contents",
+      "label": "\ud83d\udccb Table of Contents",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_overview",
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_prerequisites",
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_create_supabase_project",
+      "label": "Create Supabase Project",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_1_sign_up_log_in",
+      "label": "Step 1: Sign Up / Log In",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_2_create_new_project",
+      "label": "Step 2: Create New Project",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_get_api_credentials",
+      "label": "Get API Credentials",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L63"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_1_navigate_to_api_settings",
+      "label": "Step 1: Navigate to API Settings",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_2_copy_credentials",
+      "label": "Step 2: Copy Credentials",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_configure_environment",
+      "label": "Configure Environment",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L91"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_1_create_env_file",
+      "label": "Step 1: Create `.env` File",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_2_add_supabase_credentials",
+      "label": "Step 2: Add Supabase Credentials",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L100"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_3_verify_env_is_in_gitignore",
+      "label": "Step 3: Verify `.env` is in `.gitignore`",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L115"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_run_migrations",
+      "label": "Run Migrations",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_option_a_using_the_migration_script_recommended",
+      "label": "Option A: Using the Migration Script (Recommended)",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_option_b_using_supabase_dashboard",
+      "label": "Option B: Using Supabase Dashboard",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L138"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_what_the_migration_creates",
+      "label": "What the Migration Creates",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_seed_demo_data",
+      "label": "Seed Demo Data",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L160"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_demo_accounts",
+      "label": "Demo Accounts",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L182"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_verify_setup",
+      "label": "Verify Setup",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_1_start_the_server",
+      "label": "Step 1: Start the Server",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L194"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_2_test_health_endpoint",
+      "label": "Step 2: Test Health Endpoint",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L209"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_step_3_test_login",
+      "label": "Step 3: Test Login",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L224"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_row_level_security_rls",
+      "label": "Row Level Security (RLS)",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L234"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_default_policies",
+      "label": "Default Policies",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L238"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_using_service_key_admin_operations",
+      "label": "Using Service Key (Admin Operations)",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L246"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_customizing_rls",
+      "label": "Customizing RLS",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L255"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_troubleshooting",
+      "label": "Troubleshooting",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L273"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_issue_relation_does_not_exist",
+      "label": "Issue: \"relation does not exist\"",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L275"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_issue_permission_denied_for_table",
+      "label": "Issue: \"permission denied for table\"",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L284"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_issue_new_row_violates_row_level_security_policy",
+      "label": "Issue: \"new row violates row-level security policy\"",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L290"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_issue_connection_timeout",
+      "label": "Issue: Connection timeout",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L301"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_issue_invalid_api_key",
+      "label": "Issue: \"Invalid API key\"",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L310"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_development_workflow",
+      "label": "Development Workflow",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L321"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_local_development_sqlite",
+      "label": "Local Development (SQLite)",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L323"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_production_supabase",
+      "label": "Production (Supabase)",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L331"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_switching_between_modes",
+      "label": "Switching Between Modes",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L339"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_useful_supabase_dashboard_links",
+      "label": "Useful Supabase Dashboard Links",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L353"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_next_steps",
+      "label": "Next Steps",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L365"
+    },
+    {
+      "id": "$graphify-root$_supabase_setup_support",
+      "label": "Support",
+      "file_type": "document",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L375"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_supabase_setup_md",
+      "target": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_table_of_contents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_overview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_prerequisites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_create_supabase_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_create_supabase_project",
+      "target": "$graphify-root$_supabase_setup_step_1_sign_up_log_in",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_create_supabase_project",
+      "target": "$graphify-root$_supabase_setup_step_2_create_new_project",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_get_api_credentials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_get_api_credentials",
+      "target": "$graphify-root$_supabase_setup_step_1_navigate_to_api_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_get_api_credentials",
+      "target": "$graphify-root$_supabase_setup_step_2_copy_credentials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_configure_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_configure_environment",
+      "target": "$graphify-root$_supabase_setup_step_1_create_env_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_configure_environment",
+      "target": "$graphify-root$_supabase_setup_step_2_add_supabase_credentials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_configure_environment",
+      "target": "$graphify-root$_supabase_setup_step_3_verify_env_is_in_gitignore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_run_migrations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_run_migrations",
+      "target": "$graphify-root$_supabase_setup_option_a_using_the_migration_script_recommended",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_run_migrations",
+      "target": "$graphify-root$_supabase_setup_option_b_using_supabase_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_run_migrations",
+      "target": "$graphify-root$_supabase_setup_what_the_migration_creates",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_seed_demo_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_seed_demo_data",
+      "target": "$graphify-root$_supabase_setup_demo_accounts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_verify_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_verify_setup",
+      "target": "$graphify-root$_supabase_setup_step_1_start_the_server",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L194",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_verify_setup",
+      "target": "$graphify-root$_supabase_setup_step_2_test_health_endpoint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_verify_setup",
+      "target": "$graphify-root$_supabase_setup_step_3_test_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_row_level_security_rls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L234",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_row_level_security_rls",
+      "target": "$graphify-root$_supabase_setup_default_policies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L238",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_row_level_security_rls",
+      "target": "$graphify-root$_supabase_setup_using_service_key_admin_operations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L246",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_row_level_security_rls",
+      "target": "$graphify-root$_supabase_setup_customizing_rls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L273",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_troubleshooting",
+      "target": "$graphify-root$_supabase_setup_issue_relation_does_not_exist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L275",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_troubleshooting",
+      "target": "$graphify-root$_supabase_setup_issue_permission_denied_for_table",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L284",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_troubleshooting",
+      "target": "$graphify-root$_supabase_setup_issue_new_row_violates_row_level_security_policy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L290",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_troubleshooting",
+      "target": "$graphify-root$_supabase_setup_issue_connection_timeout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L301",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_troubleshooting",
+      "target": "$graphify-root$_supabase_setup_issue_invalid_api_key",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L310",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_development_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_development_workflow",
+      "target": "$graphify-root$_supabase_setup_local_development_sqlite",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L323",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_development_workflow",
+      "target": "$graphify-root$_supabase_setup_production_supabase",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L331",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_development_workflow",
+      "target": "$graphify-root$_supabase_setup_switching_between_modes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L339",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_useful_supabase_dashboard_links",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L353",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_next_steps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L365",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_supabase_setup_guide_school_information_system",
+      "target": "$graphify-root$_supabase_setup_support",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L375",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_supabase_setup_md",
+      "target": "$graphify-root$_readme_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "SUPABASE-SETUP.md",
+      "source_location": "L379",
+      "weight": 1.0,
+      "target_file": "$graphify-root$/README.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

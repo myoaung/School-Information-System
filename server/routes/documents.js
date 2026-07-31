@@ -18,7 +18,7 @@ const upload = multer({
     const allowed = /jpeg|jpg|png|gif|pdf|doc|docx|txt|xls|xlsx|ppt|pptx|webp/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
     const mime = allowed.test(file.mimetype);
-    cb(null, ext || mime);
+    cb(null, ext && mime);
   },
 });
 

@@ -131,7 +131,40 @@ router.post(
         result.lastInsertRowid,
       ]);
 
-      res.status(201).json({ message: 'Class created', class: classData });
+      // Auto-apply curriculum if grade and academic year are provided
+      let curriculumApplied = 0;
+      if (classData.grade_id && classData.academic_year_id) {
+        const gradeSubjects = await db.all(
+          `SELECT gs.* FROM grade_subjects gs
+           WHERE gs.grade_id = ? AND gs.academic_year_id = ?`,
+          [classData.grade_id, classData.academic_year_id]
+        );
+
+        if (gradeSubjects.length > 0) {
+          for (const gs of gradeSubjects) {
+            await db.run(
+              `INSERT INTO class_subject_teachers (class_id, subject_id, academic_year_id, is_required)
+               VALUES (?, ?, ?, ?)`,
+              [classData.id, gs.subject_id, classData.academic_year_id, gs.is_required]
+            );
+            curriculumApplied++;
+          }
+          await db.run(
+            "UPDATE classes SET status = 'incomplete', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            [classData.id]
+          );
+          classData.status = 'incomplete';
+        }
+      }
+
+      res.status(201).json({
+        message:
+          curriculumApplied > 0
+            ? `Class created and curriculum applied (${curriculumApplied} subjects)`
+            : 'Class created',
+        class: classData,
+        curriculum_applied: curriculumApplied,
+      });
     } catch (err) {
       sendError(res, err, 'Failed to create class');
     }

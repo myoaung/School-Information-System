@@ -1,0 +1,447 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_security_audit_report_md",
+      "label": "SECURITY-AUDIT-REPORT.md",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_security_audit_report",
+      "label": "Security Audit Report",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_school_information_system_schoolhub",
+      "label": "School Information System (SchoolHub)",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L2"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_executive_summary",
+      "label": "Executive Summary",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_risk_summary",
+      "label": "Risk Summary",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_critical_findings",
+      "label": "\ud83d\udd34 Critical Findings",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_c1_hardcoded_weak_jwt_secret",
+      "label": "C1: Hardcoded Weak JWT Secret",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_c2_vercel_oidc_token_exposed_in_env_local",
+      "label": "C2: Vercel OIDC Token Exposed in `.env.local`",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_high_findings",
+      "label": "\ud83d\udfe0 High Findings",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_h1_demo_accounts_with_weak_passwords",
+      "label": "H1: Demo Accounts with Weak Passwords",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_h2_overly_permissive_cors_in_production",
+      "label": "H2: Overly Permissive CORS in Production",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_h3_no_csrf_protection",
+      "label": "H3: No CSRF Protection",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_medium_findings",
+      "label": "\ud83d\udfe1 Medium Findings",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L107"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_m1_content_security_policy_disabled",
+      "label": "M1: Content Security Policy Disabled",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_m2_rate_limiting_not_applied_to_all_routes",
+      "label": "M2: Rate Limiting Not Applied to All Routes",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L120"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_m3_file_path_disclosure_in_chat_responses",
+      "label": "M3: File Path Disclosure in Chat Responses",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L132"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_m4_database_ephemeral_on_vercel",
+      "label": "M4: Database Ephemeral on Vercel",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L145"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_m5_no_token_refresh_mechanism",
+      "label": "M5: No Token Refresh Mechanism",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L158"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_low_findings",
+      "label": "\ud83d\udfe2 Low Findings",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_l1_no_https_enforcement",
+      "label": "L1: No HTTPS Enforcement",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L169"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_l2_verbose_errors_in_development",
+      "label": "L2: Verbose Errors in Development",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L172"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_l3_no_account_lockout",
+      "label": "L3: No Account Lockout",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L181"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_positive_findings",
+      "label": "\u2705 Positive Findings",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L186"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_remediation_priority",
+      "label": "Remediation Priority",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L203"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_immediate_today",
+      "label": "Immediate (Today)",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L205"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_before_production_this_week",
+      "label": "Before Production (This Week)",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L209"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_next_sprint",
+      "label": "Next Sprint",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L214"
+    },
+    {
+      "id": "$graphify-root$_security_audit_report_compliance_notes",
+      "label": "Compliance Notes",
+      "file_type": "document",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L223"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_security_audit_report_md",
+      "target": "$graphify-root$_security_audit_report_security_audit_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_school_information_system_schoolhub",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_executive_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_executive_summary",
+      "target": "$graphify-root$_security_audit_report_risk_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_critical_findings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_critical_findings",
+      "target": "$graphify-root$_security_audit_report_c1_hardcoded_weak_jwt_secret",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_critical_findings",
+      "target": "$graphify-root$_security_audit_report_c2_vercel_oidc_token_exposed_in_env_local",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_high_findings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_high_findings",
+      "target": "$graphify-root$_security_audit_report_h1_demo_accounts_with_weak_passwords",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_high_findings",
+      "target": "$graphify-root$_security_audit_report_h2_overly_permissive_cors_in_production",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_high_findings",
+      "target": "$graphify-root$_security_audit_report_h3_no_csrf_protection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_medium_findings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_medium_findings",
+      "target": "$graphify-root$_security_audit_report_m1_content_security_policy_disabled",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_medium_findings",
+      "target": "$graphify-root$_security_audit_report_m2_rate_limiting_not_applied_to_all_routes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_medium_findings",
+      "target": "$graphify-root$_security_audit_report_m3_file_path_disclosure_in_chat_responses",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_medium_findings",
+      "target": "$graphify-root$_security_audit_report_m4_database_ephemeral_on_vercel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L145",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_medium_findings",
+      "target": "$graphify-root$_security_audit_report_m5_no_token_refresh_mechanism",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_low_findings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_low_findings",
+      "target": "$graphify-root$_security_audit_report_l1_no_https_enforcement",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_low_findings",
+      "target": "$graphify-root$_security_audit_report_l2_verbose_errors_in_development",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_low_findings",
+      "target": "$graphify-root$_security_audit_report_l3_no_account_lockout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_positive_findings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L186",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_remediation_priority",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_remediation_priority",
+      "target": "$graphify-root$_security_audit_report_immediate_today",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_remediation_priority",
+      "target": "$graphify-root$_security_audit_report_before_production_this_week",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_remediation_priority",
+      "target": "$graphify-root$_security_audit_report_next_sprint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_security_audit_report_security_audit_report",
+      "target": "$graphify-root$_security_audit_report_compliance_notes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "SECURITY-AUDIT-REPORT.md",
+      "source_location": "L223",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
