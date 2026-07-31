@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { toast } from 'sonner';
 
 export default function UserManagementPage() {
-  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const fileInputRef = useRef(null);
 
@@ -123,7 +121,7 @@ export default function UserManagementPage() {
       link.click();
       link.remove();
       toast.success('Exported successfully');
-    } catch (err) {
+    } catch {
       toast.error('Failed to export');
     }
   };
@@ -152,55 +150,75 @@ export default function UserManagementPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          {/* Help icon */}
-          <div className="relative">
-            <button
-              onClick={() => setShowHelp(!showHelp)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              title="Help"
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-purple-600 dark:text-purple-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </button>
-            {showHelp && (
-              <div className="absolute left-0 top-8 z-10 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-sm text-gray-600">
-                <h4 className="font-semibold text-gray-900 mb-2">User Management</h4>
-                <ul className="space-y-1 list-disc list-inside">
-                  <li>View, edit, and delete user accounts</li>
-                  <li>Filter by role or search by name/email</li>
-                  <li>
-                    <strong>Import:</strong> Upload CSV with columns: name, email, password, role,
-                    phone
-                  </li>
-                  <li>
-                    <strong>Export:</strong> Download filtered users as CSV
-                  </li>
-                </ul>
-                <button
-                  onClick={() => setShowHelp(false)}
-                  className="mt-2 text-purple-600 hover:underline"
-                >
-                  Got it
-                </button>
-              </div>
-            )}
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87" />
+              <path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
+          </div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-extrabold text-purple-900 dark:text-purple-100">
+              User Management
+            </h1>
+            {/* Help icon */}
+            <div className="relative">
+              <button
+                onClick={() => setShowHelp(!showHelp)}
+                className="text-purple-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors cursor-pointer"
+                title="Help"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+              {showHelp && (
+                <div className="absolute left-0 top-8 z-10 w-72 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-xl shadow-lg p-4 text-sm text-purple-700 dark:text-purple-300">
+                  <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                    User Management
+                  </h4>
+                  <ul className="space-y-1 list-disc list-inside text-purple-600 dark:text-purple-400">
+                    <li>View, edit, and delete user accounts</li>
+                    <li>Filter by role or search by name/email</li>
+                    <li>
+                      <strong>Import:</strong> Upload CSV with columns: name, email, password, role,
+                      phone
+                    </li>
+                    <li>
+                      <strong>Export:</strong> Download filtered users as CSV
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => setShowHelp(false)}
+                    className="mt-2 text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
+                  >
+                    Got it
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setShowImportModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm hover:bg-green-700 transition-colors cursor-pointer flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -214,7 +232,7 @@ export default function UserManagementPage() {
           </button>
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-colors cursor-pointer flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -230,18 +248,18 @@ export default function UserManagementPage() {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-4 mb-6">
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-purple-200 dark:border-purple-800 rounded-xl text-sm focus:outline-none focus:border-purple-500 bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100"
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer"
           >
             Search
           </button>
@@ -249,7 +267,11 @@ export default function UserManagementPage() {
         <div className="flex gap-2 mt-3 flex-wrap">
           <button
             onClick={() => handleRoleFilter('')}
-            className={`px-3 py-1 rounded-full text-sm ${!roleFilter ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+              !roleFilter
+                ? 'bg-purple-600 text-white'
+                : 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50'
+            }`}
           >
             All
           </button>
@@ -257,7 +279,11 @@ export default function UserManagementPage() {
             <button
               key={r}
               onClick={() => handleRoleFilter(r)}
-              className={`px-3 py-1 rounded-full text-sm capitalize ${roleFilter === r ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
+                roleFilter === r
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50'
+              }`}
             >
               {r}
             </button>
@@ -266,91 +292,110 @@ export default function UserManagementPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
           </div>
         ) : users.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No users found</div>
+          <div className="text-center py-12">
+            <svg
+              className="w-12 h-12 text-purple-300 dark:text-purple-400 mx-auto mb-3"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+            </svg>
+            <p className="text-purple-500 dark:text-purple-400">No users found</p>
+          </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                    {user.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 capitalize">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">{user.phone || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <button
-                      onClick={() => openEdit(user)}
-                      className="text-purple-600 hover:text-purple-900 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(user.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <caption className="sr-only">User Management</caption>
+              <thead>
+                <tr className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-left">
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Name
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Role
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Phone
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Created
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium text-right">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-purple-50 dark:divide-purple-900">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/30">
+                    <td className="px-6 py-4 font-medium text-purple-900 dark:text-purple-100">
+                      {user.name}
+                    </td>
+                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 capitalize">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
+                      {user.phone || '—'}
+                    </td>
+                    <td className="px-6 py-4 text-purple-500 dark:text-purple-400 text-xs">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEdit(user)}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 text-xs font-medium cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(user.id)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-800 text-xs font-medium cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center px-6 py-3 bg-gray-50 border-t">
-            <span className="text-sm text-gray-600">
+          <div className="flex justify-between items-center px-6 py-3 bg-purple-50/50 dark:bg-purple-950/20 border-t border-purple-100 dark:border-purple-900">
+            <span className="text-sm text-purple-600 dark:text-purple-400">
               Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+                className="px-3 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
               >
                 Previous
               </button>
               <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+                className="px-3 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
               >
                 Next
               </button>
@@ -363,31 +408,37 @@ export default function UserManagementPage() {
       <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit User">
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Name
+            </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Role
+            </label>
             <select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 cursor-pointer"
               required
             >
               {roles.map((r) => (
@@ -398,26 +449,28 @@ export default function UserManagementPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
+              Phone
+            </label>
             <input
               type="text"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-purple-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => setShowEditModal(false)}
-              className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -435,7 +488,7 @@ export default function UserManagementPage() {
         title="Import Users"
       >
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm text-blue-800 dark:text-blue-300">
             <p className="font-medium mb-1">CSV Format:</p>
             <p className="font-mono text-xs">name, email, password, role, phone</p>
             <p className="mt-1 text-xs">
@@ -448,23 +501,23 @@ export default function UserManagementPage() {
               type="file"
               accept=".csv,.xlsx,.xls"
               onChange={(e) => setImportFile(e.target.files[0])}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              className="w-full text-sm text-purple-700 dark:text-purple-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 dark:file:bg-purple-900/50 dark:file:text-purple-300 hover:file:bg-purple-200 dark:hover:file:bg-purple-800/50 cursor-pointer"
             />
           </div>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => {
                 setShowImportModal(false);
                 setImportFile(null);
               }}
-              className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleImport}
               disabled={!importFile || importing}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
             >
               {importing ? 'Importing...' : 'Import'}
             </button>
