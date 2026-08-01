@@ -967,11 +967,17 @@ function initDatabase() {
     .prepare('SELECT DISTINCT role FROM users')
     .all()
     .map((r) => r.role);
-  const alreadyExpanded = currentRoles.some((r) => !originalRoles.includes(r));
+  const hasNonOriginalRoles = currentRoles.some((r) => !originalRoles.includes(r));
+  const usersTableDef = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'")
+    .get();
+  const alreadyExpanded =
+    hasNonOriginalRoles || (usersTableDef && usersTableDef.sql.includes('accountant'));
 
   if (!alreadyExpanded) {
     console.log('Migrating users.role CHECK constraint to include new RBAC roles...');
-    const migrateUsers = db.transaction(() => {
+    db.pragma('foreign_keys = OFF');
+    try {
       db.exec(`
         CREATE TABLE users_new (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -989,9 +995,10 @@ function initDatabase() {
       `);
       db.exec('DROP TABLE users');
       db.exec('ALTER TABLE users_new RENAME TO users');
-    });
-    migrateUsers();
-    console.log('users.role CHECK constraint updated successfully');
+      console.log('users.role CHECK constraint updated successfully');
+    } finally {
+      db.pragma('foreign_keys = ON');
+    }
   }
 
   // Seed chart of accounts if empty
@@ -1050,21 +1057,26 @@ function initDatabase() {
       .get();
     if (tableInfo && tableInfo.sql && !tableInfo.sql.includes('academic_year_id')) {
       // Recreate the table with the new UNIQUE constraint
-      db.exec(`
-        CREATE TABLE grade_subjects_new (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
-          subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
-          academic_year_id INTEGER REFERENCES academic_years(id),
-          weekly_periods INTEGER,
-          is_required INTEGER DEFAULT 1,
-          UNIQUE(grade_id, subject_id, academic_year_id)
-        );
-        INSERT INTO grade_subjects_new (id, grade_id, subject_id, academic_year_id, weekly_periods, is_required)
-        SELECT id, grade_id, subject_id, academic_year_id, weekly_periods, is_required FROM grade_subjects;
-        DROP TABLE grade_subjects;
-        ALTER TABLE grade_subjects_new RENAME TO grade_subjects;
-      `);
+      db.pragma('foreign_keys = OFF');
+      try {
+        db.exec(`
+          CREATE TABLE grade_subjects_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            grade_id INTEGER REFERENCES grades(id) ON DELETE CASCADE,
+            subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+            academic_year_id INTEGER REFERENCES academic_years(id),
+            weekly_periods INTEGER,
+            is_required INTEGER DEFAULT 1,
+            UNIQUE(grade_id, subject_id, academic_year_id)
+          );
+          INSERT INTO grade_subjects_new (id, grade_id, subject_id, academic_year_id, weekly_periods, is_required)
+          SELECT id, grade_id, subject_id, academic_year_id, weekly_periods, is_required FROM grade_subjects;
+          DROP TABLE grade_subjects;
+          ALTER TABLE grade_subjects_new RENAME TO grade_subjects;
+        `);
+      } finally {
+        db.pragma('foreign_keys = ON');
+      }
       console.log(
         'Migration: updated grade_subjects UNIQUE constraint to include academic_year_id'
       );
