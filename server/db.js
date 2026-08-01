@@ -110,6 +110,7 @@ function seedRBAC(db) {
     P('teacher', 'inventory', ...R___),
     P('teacher', 'library', ...[1, 1, 1, 0]),
     P('teacher', 'expenses', ...R___),
+    P('teacher', 'hr', ...R___),
 
     // ── student ──
     P('student', 'students', ...R___),
@@ -144,6 +145,7 @@ function seedRBAC(db) {
     P('accountant', 'budgeting', ...CRUD),
     P('accountant', 'expenses', ...CRUD),
     P('accountant', 'notifications', ...R___),
+    P('accountant', 'hr', ...R___),
 
     // ── staff ──
     P('staff', 'students', ...R___),
@@ -154,6 +156,7 @@ function seedRBAC(db) {
     P('staff', 'documents', ...R___),
     P('staff', 'inventory', ...R___),
     P('staff', 'library', ...R___),
+    P('staff', 'hr', ...R___),
   ];
 
   const insertAll = db.transaction(() => {
