@@ -58,6 +58,8 @@ const BudgetingPage = lazy(() => import('./pages/BudgetingPage'));
 const AccountsReceivablePage = lazy(() => import('./pages/AccountsReceivablePage'));
 const AccountingPage = lazy(() => import('./pages/AccountingPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
+const PayrollPage = lazy(() => import('./pages/PayrollPage'));
+const WorkforcePage = lazy(() => import('./pages/WorkforcePage'));
 
 function App() {
   return (
@@ -289,6 +291,22 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <HRPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/payroll"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <PayrollPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/workforce"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <WorkforcePage />
                         </ProtectedRoute>
                       }
                     />

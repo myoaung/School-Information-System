@@ -535,6 +535,20 @@ export default function Navbar() {
                                   >
                                     Recruitment
                                   </Link>
+                                  <Link
+                                    to="/payroll"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Payroll
+                                  </Link>
+                                  <Link
+                                    to="/workforce"
+                                    onClick={() => setUserMenuOpen(false)}
+                                    className="block px-3 py-1.5 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700"
+                                  >
+                                    Workforce
+                                  </Link>
                                 </>
                               )}
 
@@ -753,6 +767,16 @@ export default function Navbar() {
                   <Link to="/hr" className="mobile-nav-link" onClick={closeMobileMenu}>
                     HR
                   </Link>
+                  {isAdmin && (
+                    <>
+                      <Link to="/payroll" className="mobile-nav-link" onClick={closeMobileMenu}>
+                        Payroll
+                      </Link>
+                      <Link to="/workforce" className="mobile-nav-link" onClick={closeMobileMenu}>
+                        Workforce
+                      </Link>
+                    </>
+                  )}
                   <Link to="/my-profile" className="mobile-nav-link" onClick={closeMobileMenu}>
                     My Profile
                   </Link>
