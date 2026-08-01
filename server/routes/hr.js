@@ -205,7 +205,7 @@ router.get(
        FROM staff_contracts sc
        LEFT JOIN users u ON sc.staff_id = u.id
        WHERE sc.status = 'active' AND sc.end_date IS NOT NULL
-       AND sc.end_date <= date('now', '+' || ? || ' days')
+       AND sc.end_date <= (CURRENT_DATE + (? || ' days')::interval)::text
        ORDER BY sc.end_date ASC`,
         [daysAhead]
       );
@@ -503,7 +503,7 @@ router.get('/stats', authMiddleware, requirePermission('hr', 'read'), async (req
       "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active'"
     );
     const expiringContracts = await db.get(
-      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+90 days')"
+      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= (CURRENT_DATE + INTERVAL '90 days')::text"
     );
     const pendingLeaves = await db.get(
       "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"
