@@ -263,6 +263,24 @@ router.get('/reviews', authMiddleware, requirePermission('hr', 'read'), async (r
   }
 });
 
+// Get my reviews (teacher view)
+router.get('/reviews/my/list', authMiddleware, async (req, res) => {
+  try {
+    const reviews = await db.all(
+      `SELECT pr.*, r.name as reviewer_name
+       FROM performance_reviews pr
+       LEFT JOIN users r ON pr.reviewer_id = r.id
+       WHERE pr.staff_id = ?
+       ORDER BY pr.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ reviews });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch your reviews');
+  }
+});
+
 // Get single review
 router.get('/reviews/:id', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
@@ -475,24 +493,6 @@ router.put('/reviews/:id/acknowledge', authMiddleware, async (req, res) => {
   }
 });
 
-// Get my reviews (teacher view)
-router.get('/reviews/my/list', authMiddleware, async (req, res) => {
-  try {
-    const reviews = await db.all(
-      `SELECT pr.*, r.name as reviewer_name
-       FROM performance_reviews pr
-       LEFT JOIN users r ON pr.reviewer_id = r.id
-       WHERE pr.staff_id = ?
-       ORDER BY pr.created_at DESC`,
-      [req.user.id]
-    );
-
-    res.json({ reviews });
-  } catch (err) {
-    sendError(res, err, 'Failed to fetch your reviews');
-  }
-});
-
 // ─── HR Statistics ─────────────────────────────────────────────
 router.get('/stats', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
@@ -503,7 +503,7 @@ router.get('/stats', authMiddleware, requirePermission('hr', 'read'), async (req
       "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active'"
     );
     const expiringContracts = await db.get(
-      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+30 days')"
+      "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+90 days')"
     );
     const pendingLeaves = await db.get(
       "SELECT COUNT(*) as c FROM leave_requests WHERE status = 'pending'"

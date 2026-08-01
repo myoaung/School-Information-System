@@ -315,6 +315,7 @@ function initDatabase() {
       qualification TEXT,
       specialization TEXT,
       hire_date TEXT,
+      address TEXT,
       status TEXT CHECK(status IN ('active','on_leave','resigned')) DEFAULT 'active'
     );
 
@@ -845,6 +846,68 @@ function initDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_staffing_gaps_department ON staffing_gaps(department);
     CREATE INDEX IF NOT EXISTS idx_staffing_gaps_academic_year ON staffing_gaps(academic_year);
+
+    -- ── HR Tables ───────────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS staff_contracts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL REFERENCES users(id),
+      contract_type TEXT CHECK(contract_type IN ('permanent','temporary','probation','contract','intern')) NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      salary REAL,
+      position TEXT,
+      department TEXT,
+      status TEXT CHECK(status IN ('active','expired','terminated','renewed')) DEFAULT 'active',
+      notes TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_staff_contracts_staff_id ON staff_contracts(staff_id);
+    CREATE INDEX IF NOT EXISTS idx_staff_contracts_status ON staff_contracts(status);
+    CREATE INDEX IF NOT EXISTS idx_staff_contracts_end_date ON staff_contracts(end_date);
+
+    CREATE TABLE IF NOT EXISTS leave_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      leave_type TEXT CHECK(leave_type IN ('sick','personal','vacation','maternity','other')) NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      reason TEXT,
+      status TEXT CHECK(status IN ('pending','approved','rejected')) DEFAULT 'pending',
+      approved_by INTEGER REFERENCES users(id),
+      admin_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_leave_requests_user_id ON leave_requests(user_id);
+    CREATE INDEX IF NOT EXISTS idx_leave_requests_status ON leave_requests(status);
+    CREATE INDEX IF NOT EXISTS idx_leave_requests_start_date ON leave_requests(start_date);
+
+    CREATE TABLE IF NOT EXISTS performance_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL REFERENCES users(id),
+      review_type TEXT CHECK(review_type IN ('probation','annual','mid_year','observation','goal_setting','other')) NOT NULL,
+      review_period TEXT,
+      reviewer_id INTEGER REFERENCES users(id),
+      rating TEXT CHECK(rating IN ('excellent','good','satisfactory','needs_improvement','unsatisfactory')),
+      strengths TEXT,
+      areas_for_improvement TEXT,
+      goals TEXT,
+      development_plan TEXT,
+      comments TEXT,
+      status TEXT CHECK(status IN ('draft','submitted','acknowledged','completed')) DEFAULT 'draft',
+      review_date TEXT,
+      next_review_date TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_performance_reviews_staff_id ON performance_reviews(staff_id);
+    CREATE INDEX IF NOT EXISTS idx_performance_reviews_status ON performance_reviews(status);
+    CREATE INDEX IF NOT EXISTS idx_performance_reviews_review_type ON performance_reviews(review_type);
   `);
 
   // ── Migration: Add new columns to existing tables ──
