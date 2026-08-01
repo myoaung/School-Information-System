@@ -1,4 +1,4 @@
--- dialect: sqlite
+-- dialect: sqlite | postgres
 CREATE TABLE IF NOT EXISTS leave_requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL REFERENCES users(id),
@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   status TEXT CHECK(status IN ('pending','approved','rejected')) DEFAULT 'pending',
   approved_by INTEGER REFERENCES users(id),
   admin_notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_leave_requests_user_id ON leave_requests(user_id);

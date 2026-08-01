@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS salary_structures (
   min_salary REAL NOT NULL,
   max_salary REAL NOT NULL,
   description TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Allowance types
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS allowance_types (
   description TEXT,
   is_taxable BOOLEAN DEFAULT true,
   is_fixed BOOLEAN DEFAULT true,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Deduction types
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS deduction_types (
   description TEXT,
   is_tax BOOLEAN DEFAULT false,
   is_fixed BOOLEAN DEFAULT true,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Staff salary assignments (link staff to salary structure + custom allowances/deductions)
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS staff_salary_assignments (
   effective_date TEXT NOT NULL,
   end_date TEXT,
   status TEXT CHECK(status IN ('active', 'inactive')) DEFAULT 'active',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_staff_salary_staff_id ON staff_salary_assignments(staff_id);
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS staff_allowances (
   staff_salary_id INTEGER NOT NULL REFERENCES staff_salary_assignments(id),
   allowance_type_id INTEGER NOT NULL REFERENCES allowance_types(id),
   amount REAL NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Staff deduction assignments
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS staff_deductions (
   staff_salary_id INTEGER NOT NULL REFERENCES staff_salary_assignments(id),
   deduction_type_id INTEGER NOT NULL REFERENCES deduction_types(id),
   amount REAL NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Payslips
@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS payslips (
   status TEXT CHECK(status IN ('draft', 'approved', 'paid', 'cancelled')) DEFAULT 'draft',
   notes TEXT,
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_payslips_staff_id ON payslips(staff_id);
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS payslip_items (
   item_type TEXT CHECK(item_type IN ('allowance', 'deduction')) NOT NULL,
   item_name TEXT NOT NULL,
   amount REAL NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_payslip_items_payslip_id ON payslip_items(payslip_id);

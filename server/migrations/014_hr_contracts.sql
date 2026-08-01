@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS staff_contracts (
   status TEXT CHECK(status IN ('active','expired','terminated','renewed')) DEFAULT 'active',
   notes TEXT,
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_staff_contracts_staff_id ON staff_contracts(staff_id);

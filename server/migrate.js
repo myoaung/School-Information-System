@@ -60,21 +60,34 @@ async function runMigrations() {
     console.log(`📄 Running: ${file}`);
 
     try {
-      // Split by semicolons and execute each statement
-      const statements = sql.split(';').filter((s) => s.trim());
+      // Split by semicolons — but respect parentheses so CHECK(...) doesn't split mid-constraint
+      const statements = [];
+      let current = '';
+      let depth = 0;
+      for (const ch of sql) {
+        if (ch === '(') depth++;
+        else if (ch === ')') depth--;
+        else if (ch === ';' && depth === 0) {
+          if (current.trim()) statements.push(current.trim());
+          current = '';
+          continue;
+        }
+        current += ch;
+      }
+      if (current.trim()) statements.push(current.trim());
 
       for (const stmt of statements) {
         if (stmt.trim()) {
-          const { error } = await supabaseAdmin.rpc('execute_sql', {
+          const { data, error } = await supabaseAdmin.rpc('execute_sql', {
             query: stmt.trim(),
           });
 
-          if (error) {
-            // Some errors are expected (table already exists, etc.)
-            if (error.message?.includes('already exists')) {
+          const errMsg = data?.error || error?.message;
+          if (errMsg) {
+            if (errMsg.includes('already exists')) {
               console.log(`   ⏭️  Skipped (already exists)`);
             } else {
-              console.error(`   ⚠️  Error: ${error.message}`);
+              console.error(`   ⚠️  Error: ${errMsg}`);
             }
           }
         }

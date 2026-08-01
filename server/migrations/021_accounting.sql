@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   parent_id INTEGER REFERENCES accounts(id),
   is_active BOOLEAN DEFAULT true,
   description TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_accounts_type ON accounts(type);
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS journal_entries (
   reversed_at DATETIME,
   reversal_reason TEXT,
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_journal_entries_date ON journal_entries(entry_date);
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS accounting_periods (
   closed_by INTEGER REFERENCES users(id),
   closed_at DATETIME,
   academic_year_id INTEGER,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_accounting_periods_status ON accounting_periods(status);
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS bank_reconciliations (
   reconciled_by INTEGER REFERENCES users(id),
   reconciled_at DATETIME,
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_bank_reconciliations_account ON bank_reconciliations(account_id);

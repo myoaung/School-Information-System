@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS job_postings (
   requirements TEXT,
   status TEXT CHECK(status IN ('open','closed','filled')) DEFAULT 'open',
   posted_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_job_postings_status ON job_postings(status);
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS job_applications (
   cover_letter TEXT,
   status TEXT CHECK(status IN ('new','reviewing','interview','offered','hired','rejected')) DEFAULT 'new',
   notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_job_applications_posting ON job_applications(job_posting_id);
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS interviews (
   notes TEXT,
   result TEXT CHECK(result IN ('pending','pass','fail','conditional')) DEFAULT 'pending',
   feedback TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_interviews_application ON interviews(application_id);

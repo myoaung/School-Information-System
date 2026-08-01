@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS ar_writeoffs (
   amount REAL NOT NULL,
   reason TEXT,
   written_off_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_ar_writeoffs_invoice ON ar_writeoffs(invoice_id);

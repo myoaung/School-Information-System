@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS performance_reviews (
   status TEXT CHECK(status IN ('draft','submitted','acknowledged','completed')) DEFAULT 'draft',
   review_date TEXT,
   next_review_date TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_performance_reviews_staff_id ON performance_reviews(staff_id);

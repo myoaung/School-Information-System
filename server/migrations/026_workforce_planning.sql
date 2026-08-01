@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS department_budgets (
   budgeted_positions INTEGER NOT NULL DEFAULT 0,
   filled_positions INTEGER NOT NULL DEFAULT 0,
   notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(department, academic_year)
 );
 
@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS job_vacancies (
   filled_date TEXT,
   filled_by INTEGER REFERENCES users(id),
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_job_vacancies_department ON job_vacancies(department);
@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS staffing_gaps (
   gap INTEGER GENERATED ALWAYS AS (required_count - current_count) STORED,
   priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium',
   notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_staffing_gaps_department ON staffing_gaps(department);

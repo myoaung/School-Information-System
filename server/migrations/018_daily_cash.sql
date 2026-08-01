@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS cash_sessions (
   variance REAL,
   status TEXT CHECK(status IN ('open', 'closed')) DEFAULT 'open',
   notes TEXT,
-  opened_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   closed_at DATETIME
 );
 
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS cash_transactions (
   related_invoice_id INTEGER REFERENCES invoices(id),
   related_expense_id INTEGER REFERENCES expenses(id),
   recorded_by INTEGER NOT NULL REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_cash_transactions_session ON cash_transactions(cash_session_id);

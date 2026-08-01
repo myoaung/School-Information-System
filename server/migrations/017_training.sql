@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS training_programs (
   max_participants INTEGER,
   status TEXT CHECK(status IN ('planned','active','completed','cancelled')) DEFAULT 'planned',
   created_by INTEGER REFERENCES users(id),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_training_programs_status ON training_programs(status);
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS training_assignments (
   certificate_url TEXT,
   feedback TEXT,
   rating TEXT CHECK(rating IN ('excellent','good','satisfactory','poor')),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(program_id, staff_id)
 );
 
