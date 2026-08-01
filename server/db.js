@@ -699,6 +699,149 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(role_id, area_id)
     );
+
+    -- ── Payroll Tables ──────────────────────────────────────────────
+    CREATE TABLE IF NOT EXISTS salary_structures (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grade_name TEXT NOT NULL UNIQUE,
+      min_salary REAL NOT NULL,
+      max_salary REAL NOT NULL,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS allowance_types (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      is_taxable INTEGER DEFAULT 1,
+      is_fixed INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS deduction_types (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      is_tax INTEGER DEFAULT 0,
+      is_fixed INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS staff_salary_assignments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL REFERENCES users(id),
+      salary_structure_id INTEGER REFERENCES salary_structures(id),
+      basic_salary REAL NOT NULL,
+      effective_date TEXT NOT NULL,
+      end_date TEXT,
+      status TEXT CHECK(status IN ('active', 'inactive')) DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_staff_salary_staff_id ON staff_salary_assignments(staff_id);
+    CREATE INDEX IF NOT EXISTS idx_staff_salary_status ON staff_salary_assignments(status);
+
+    CREATE TABLE IF NOT EXISTS staff_allowances (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_salary_id INTEGER NOT NULL REFERENCES staff_salary_assignments(id),
+      allowance_type_id INTEGER NOT NULL REFERENCES allowance_types(id),
+      amount REAL NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS staff_deductions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_salary_id INTEGER NOT NULL REFERENCES staff_salary_assignments(id),
+      deduction_type_id INTEGER NOT NULL REFERENCES deduction_types(id),
+      amount REAL NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS payslips (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL REFERENCES users(id),
+      staff_salary_id INTEGER REFERENCES staff_salary_assignments(id),
+      pay_period TEXT NOT NULL,
+      pay_date TEXT NOT NULL,
+      basic_salary REAL NOT NULL,
+      total_allowances REAL DEFAULT 0,
+      total_deductions REAL DEFAULT 0,
+      net_salary REAL NOT NULL,
+      status TEXT CHECK(status IN ('draft', 'approved', 'paid', 'cancelled')) DEFAULT 'draft',
+      notes TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_payslips_staff_id ON payslips(staff_id);
+    CREATE INDEX IF NOT EXISTS idx_payslips_pay_period ON payslips(pay_period);
+    CREATE INDEX IF NOT EXISTS idx_payslips_status ON payslips(status);
+
+    CREATE TABLE IF NOT EXISTS payslip_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      payslip_id INTEGER NOT NULL REFERENCES payslips(id) ON DELETE CASCADE,
+      item_type TEXT CHECK(item_type IN ('allowance', 'deduction')) NOT NULL,
+      item_name TEXT NOT NULL,
+      amount REAL NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_payslip_items_payslip_id ON payslip_items(payslip_id);
+
+    -- ── Workforce Planning Tables ──────────────────────────────────
+    CREATE TABLE IF NOT EXISTS department_budgets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      department TEXT NOT NULL,
+      academic_year TEXT NOT NULL,
+      budgeted_positions INTEGER NOT NULL DEFAULT 0,
+      filled_positions INTEGER NOT NULL DEFAULT 0,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(department, academic_year)
+    );
+
+    CREATE TABLE IF NOT EXISTS job_vacancies (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      department TEXT NOT NULL,
+      position TEXT NOT NULL,
+      description TEXT,
+      requirements TEXT,
+      salary_range_min REAL,
+      salary_range_max REAL,
+      vacancy_type TEXT CHECK(vacancy_type IN ('full_time', 'part_time', 'contract', 'intern')) NOT NULL,
+      status TEXT CHECK(status IN ('open', 'filled', 'closed', 'cancelled')) DEFAULT 'open',
+      posted_date TEXT NOT NULL,
+      closing_date TEXT,
+      filled_date TEXT,
+      filled_by INTEGER REFERENCES users(id),
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_job_vacancies_department ON job_vacancies(department);
+    CREATE INDEX IF NOT EXISTS idx_job_vacancies_status ON job_vacancies(status);
+
+    CREATE TABLE IF NOT EXISTS staffing_gaps (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      department TEXT NOT NULL,
+      academic_year TEXT NOT NULL,
+      required_count INTEGER NOT NULL DEFAULT 0,
+      current_count INTEGER NOT NULL DEFAULT 0,
+      priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium',
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_staffing_gaps_department ON staffing_gaps(department);
+    CREATE INDEX IF NOT EXISTS idx_staffing_gaps_academic_year ON staffing_gaps(academic_year);
   `);
 
   // ── Migration: Add new columns to existing tables ──

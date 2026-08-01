@@ -60,6 +60,8 @@ const accountingRoutes = require('./routes/accounting');
 const classSubjectsRoutes = require('./routes/class-subjects');
 const rbacRoutes = require('./routes/rbac');
 const userRoutes = require('./routes/users');
+const payrollRoutes = require('./routes/payroll');
+const workforceRoutes = require('./routes/workforce');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -242,6 +244,8 @@ app.use('/api/accounts-receivable', accountsReceivableRoutes);
 app.use('/api/accounting', accountingRoutes);
 app.use('/api/class-subjects', classSubjectsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payroll', payrollRoutes);
+app.use('/api/workforce', workforceRoutes);
 
 // ── Health Check ──
 // SECURITY: Only expose minimal info — no deployment architecture details
