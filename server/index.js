@@ -62,6 +62,7 @@ const rbacRoutes = require('./routes/rbac');
 const userRoutes = require('./routes/users');
 const payrollRoutes = require('./routes/payroll');
 const workforceRoutes = require('./routes/workforce');
+const registrationRoutes = require('./routes/registration');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -246,6 +247,7 @@ app.use('/api/class-subjects', classSubjectsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/workforce', workforceRoutes);
+app.use('/api/registration', registrationRoutes);
 
 // ── Health Check ──
 // SECURITY: Only expose minimal info — no deployment architecture details

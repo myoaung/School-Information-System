@@ -60,6 +60,7 @@ const AccountingPage = lazy(() => import('./pages/AccountingPage'));
 const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const PayrollPage = lazy(() => import('./pages/PayrollPage'));
 const WorkforcePage = lazy(() => import('./pages/WorkforcePage'));
+const RegistrationSettingsPage = lazy(() => import('./pages/RegistrationSettingsPage'));
 
 function App() {
   return (
@@ -139,6 +140,14 @@ function App() {
                       element={
                         <ProtectedRoute requiredRole="admin">
                           <UserManagementPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/registration"
+                      element={
+                        <ProtectedRoute requiredRole="admin">
+                          <RegistrationSettingsPage />
                         </ProtectedRoute>
                       }
                     />
