@@ -61,6 +61,7 @@ const UserManagementPage = lazy(() => import('./pages/UserManagementPage'));
 const PayrollPage = lazy(() => import('./pages/PayrollPage'));
 const WorkforcePage = lazy(() => import('./pages/WorkforcePage'));
 const RegistrationSettingsPage = lazy(() => import('./pages/RegistrationSettingsPage'));
+const ContractsPage = lazy(() => import('./pages/ContractsPage'));
 
 function App() {
   return (
@@ -316,6 +317,14 @@ function App() {
                       element={
                         <ProtectedRoute requiredRole="admin">
                           <WorkforcePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/contracts"
+                      element={
+                        <ProtectedRoute requiredRole={['admin', 'hr']}>
+                          <ContractsPage />
                         </ProtectedRoute>
                       }
                     />

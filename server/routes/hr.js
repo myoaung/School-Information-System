@@ -10,6 +10,222 @@ const router = express.Router();
 const CONTRACT_TYPES = ['permanent', 'temporary', 'probation', 'contract', 'intern'];
 const CONTRACT_STATUSES = ['active', 'expired', 'terminated', 'renewed'];
 
+// ─── List All Contracts (dedicated endpoint) ──────────────────
+router.get('/contracts', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
+  try {
+    const { status, contract_type, staff_id, search } = req.query;
+
+    let where = [];
+    let params = [];
+
+    if (status) {
+      where.push('sc.status = ?');
+      params.push(status);
+    }
+    if (contract_type) {
+      where.push('sc.contract_type = ?');
+      params.push(contract_type);
+    }
+    if (staff_id) {
+      where.push('sc.staff_id = ?');
+      params.push(staff_id);
+    }
+    if (search) {
+      where.push('(u.name LIKE ? OR u.email LIKE ? OR sc.position LIKE ? OR sc.department LIKE ?)');
+      const q = `%${search}%`;
+      params.push(q, q, q, q);
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+    const contracts = await db.all(
+      `SELECT sc.*, u.name as staff_name, u.email as staff_email,
+              u.role as staff_role, cr.name as created_by_name
+       FROM staff_contracts sc
+       LEFT JOIN users u ON sc.staff_id = u.id
+       LEFT JOIN users cr ON sc.created_by = cr.id
+       ${whereClause}
+       ORDER BY sc.created_at DESC`,
+      params
+    );
+
+    res.json({ contracts });
+  } catch (err) {
+    sendError(res, err, 'Failed to fetch contracts');
+  }
+});
+
+// ─── Contract Stats ───────────────────────────────────────────
+router.get(
+  '/contracts/stats',
+  authMiddleware,
+  requirePermission('hr', 'read'),
+  async (req, res) => {
+    try {
+      const total = await db.get('SELECT COUNT(*) as c FROM staff_contracts');
+      const active = await db.get(
+        "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active'"
+      );
+      const expired = await db.get(
+        "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'expired'"
+      );
+      const terminated = await db.get(
+        "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'terminated'"
+      );
+      const renewed = await db.get(
+        "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'renewed'"
+      );
+
+      // Expiring within 90 days — use compatible date math
+      const expiring = await db.get(
+        "SELECT COUNT(*) as c FROM staff_contracts WHERE status = 'active' AND end_date IS NOT NULL AND end_date <= date('now', '+90 days')"
+      );
+
+      // By type
+      const byType = await db.all(
+        "SELECT contract_type, COUNT(*) as count FROM staff_contracts WHERE status = 'active' GROUP BY contract_type"
+      );
+
+      // By department
+      const byDepartment = await db.all(
+        "SELECT department, COUNT(*) as count FROM staff_contracts WHERE status = 'active' AND department IS NOT NULL GROUP BY department"
+      );
+
+      res.json({
+        stats: {
+          total: total?.c || 0,
+          active: active?.c || 0,
+          expired: expired?.c || 0,
+          terminated: terminated?.c || 0,
+          renewed: renewed?.c || 0,
+          expiring: expiring?.c || 0,
+          byType: byType || [],
+          byDepartment: byDepartment || [],
+        },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch contract stats');
+    }
+  }
+);
+
+// ─── Renew Contract ───────────────────────────────────────────
+router.put(
+  '/contracts/:id/renew',
+  authMiddleware,
+  requirePermission('hr', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { start_date, end_date, salary, position, department, notes } = req.body;
+
+      const existing = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [id]);
+      if (!existing) return res.status(404).json({ error: 'Contract not found' });
+
+      // Mark old contract as renewed
+      await db.run(
+        "UPDATE staff_contracts SET status = 'renewed', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [id]
+      );
+
+      // Create new contract with same type
+      const result = await db.run(
+        `INSERT INTO staff_contracts (staff_id, contract_type, start_date, end_date, salary, position, department, notes, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          existing.staff_id,
+          existing.contract_type,
+          start_date || existing.start_date,
+          end_date || null,
+          salary ?? existing.salary,
+          position ?? existing.position,
+          department ?? existing.department,
+          notes || null,
+          req.user.id,
+        ]
+      );
+
+      const contract = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [
+        result.lastInsertRowid,
+      ]);
+
+      res.status(201).json({ message: 'Contract renewed', contract });
+
+      auditLog(req, {
+        action: 'renew',
+        entityType: 'staff_contract',
+        entityId: result.lastInsertRowid,
+        newValues: { previous_contract_id: id },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to renew contract');
+    }
+  }
+);
+
+// ─── Terminate Contract ───────────────────────────────────────
+router.put(
+  '/contracts/:id/terminate',
+  authMiddleware,
+  requirePermission('hr', 'update'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { notes } = req.body;
+
+      const contract = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [id]);
+      if (!contract) return res.status(404).json({ error: 'Contract not found' });
+
+      if (contract.status !== 'active') {
+        return res
+          .status(400)
+          .json({ error: `Cannot terminate contract with status '${contract.status}'` });
+      }
+
+      await db.run(
+        "UPDATE staff_contracts SET status = 'terminated', notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [notes || contract.notes, id]
+      );
+
+      res.json({ message: 'Contract terminated' });
+
+      auditLog(req, {
+        action: 'terminate',
+        entityType: 'staff_contract',
+        entityId: id,
+        newValues: { status: 'terminated' },
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to terminate contract');
+    }
+  }
+);
+
+// ─── Delete Contract ──────────────────────────────────────────
+router.delete(
+  '/contracts/:id',
+  authMiddleware,
+  requirePermission('hr', 'delete'),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contract = await db.get('SELECT * FROM staff_contracts WHERE id = ?', [id]);
+      if (!contract) return res.status(404).json({ error: 'Contract not found' });
+
+      await db.run('DELETE FROM staff_contracts WHERE id = ?', [id]);
+      res.json({ message: 'Contract deleted' });
+
+      auditLog(req, {
+        action: 'delete',
+        entityType: 'staff_contract',
+        entityId: id,
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to delete contract');
+    }
+  }
+);
+
 // ─── List Staff with Contract Info ─────────────────────────────
 router.get('/staff', authMiddleware, requirePermission('hr', 'read'), async (req, res) => {
   try {
