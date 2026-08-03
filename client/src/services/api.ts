@@ -36,7 +36,7 @@ api.interceptors.response.use(
     const config = error.config;
 
     // Handle 401 (but not for chat or offline scenarios)
-    if (error.response?.status === 401 && !config?.url?.includes('/chat')) {
+    if (error.response?.status === 401 && !config?.url?.includes('/chat') && !config?.url?.includes('/registration/open') && !config?.url?.includes('/registration/submit')) {
       // Don't redirect if offline — token might still be valid
       if (navigator.onLine) {
         localStorage.removeItem('token');
