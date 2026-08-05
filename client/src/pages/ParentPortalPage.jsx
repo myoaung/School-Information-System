@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'sonner';
+import { SkeletonBase, SkeletonText, SkeletonStatCard } from '../components/skeleton';
 
 export default function ParentPortalPage() {
   const { user } = useAuth();
@@ -503,12 +504,25 @@ const StatusBadge = memo(function StatusBadge({ status }) {
 function LoadingSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 animate-pulse">
-      <div className="h-8 w-48 bg-purple-200 dark:bg-gray-700 rounded mb-4" />
-      <div className="h-24 bg-purple-200 dark:bg-gray-700 rounded-2xl mb-6" />
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <SkeletonText width="w-48" height="h-9" className="mb-4" />
+      <SkeletonBase width="w-full" height="h-24" rounded="rounded-2xl" className="mb-6" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 bg-purple-200 dark:bg-gray-700 rounded-2xl" />
+          <SkeletonStatCard key={i} />
         ))}
+      </div>
+      <div className="flex gap-2 mb-6">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <SkeletonBase key={i} width="w-24" height="h-10" rounded="rounded-lg" />
+        ))}
+      </div>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 p-6">
+        <SkeletonText width="w-32" height="h-5" className="mb-4" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <SkeletonText key={i} width={i === 3 ? 'w-3/4' : 'w-full'} height="h-4" />
+          ))}
+        </div>
       </div>
     </div>
   );

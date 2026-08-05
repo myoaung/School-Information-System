@@ -6,6 +6,7 @@ import api from '../services/api';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { toast } from 'sonner';
+import { SkeletonRow } from '../components/skeleton';
 
 export default function StudentsPage() {
   const { t } = useTranslation();
@@ -129,13 +130,6 @@ export default function StudentsPage() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-      </div>
-    );
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -216,7 +210,7 @@ export default function StudentsPage() {
         </div>
       )}
 
-      {students.length > 0 ? (
+      {students.length > 0 || loading ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md shadow-purple-100/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -247,70 +241,76 @@ export default function StudentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-purple-50 dark:divide-purple-900">
-                {students.map((s) => (
-                  <tr key={s.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/30">
-                    <td className="px-4 py-3 font-medium text-purple-900 dark:text-purple-100">
-                      {s.student_id || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-purple-900 dark:text-purple-100">{s.name}</td>
-                    <td className="px-4 py-3 text-purple-600 dark:text-purple-400">{s.email}</td>
-                    <td className="px-4 py-3 text-purple-600 dark:text-purple-400">
-                      {s.grade_name || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-purple-600 dark:text-purple-400">
-                      {s.section || '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                          s.status === 'active'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300'
-                            : s.status === 'suspended'
-                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300'
-                              : s.status === 'graduated'
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-                                : s.status === 'applicant'
-                                  ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                                  : s.status === 'approved'
-                                    ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300'
-                                    : s.status === 'transferred'
-                                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
-                                      : s.status === 'withdrawn'
-                                        ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
-                                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                        }`}
-                      >
-                        {s.status || 'active'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/students/${s.id}`}
-                          className="text-purple-600 dark:text-purple-400 hover:text-purple-800 text-xs font-medium"
-                        >
-                          {t('students.view')}
-                        </Link>
-                        {isAdmin && (
-                          <>
-                            <button
-                              onClick={() => openEdit(s)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 text-xs font-medium cursor-pointer"
+                {loading
+                  ? Array.from({ length: 8 }).map((_, i) => (
+                      <SkeletonRow key={`skel-${i}`} columns={7} />
+                    ))
+                  : students.map((s) => (
+                      <tr key={s.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/30">
+                        <td className="px-4 py-3 font-medium text-purple-900 dark:text-purple-100">
+                          {s.student_id || '—'}
+                        </td>
+                        <td className="px-4 py-3 text-purple-900 dark:text-purple-100">{s.name}</td>
+                        <td className="px-4 py-3 text-purple-600 dark:text-purple-400">
+                          {s.email}
+                        </td>
+                        <td className="px-4 py-3 text-purple-600 dark:text-purple-400">
+                          {s.grade_name || '—'}
+                        </td>
+                        <td className="px-4 py-3 text-purple-600 dark:text-purple-400">
+                          {s.section || '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                              s.status === 'active'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300'
+                                : s.status === 'suspended'
+                                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300'
+                                  : s.status === 'graduated'
+                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                                    : s.status === 'applicant'
+                                      ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                      : s.status === 'approved'
+                                        ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300'
+                                        : s.status === 'transferred'
+                                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
+                                          : s.status === 'withdrawn'
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'
+                                            : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                            }`}
+                          >
+                            {s.status || 'active'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              to={`/students/${s.id}`}
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-800 text-xs font-medium"
                             >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => setDeleteId(s.id)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-800 text-xs font-medium cursor-pointer"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                              {t('students.view')}
+                            </Link>
+                            {isAdmin && (
+                              <>
+                                <button
+                                  onClick={() => openEdit(s)}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 text-xs font-medium cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => setDeleteId(s.id)}
+                                  className="text-red-600 dark:text-red-400 hover:text-red-800 text-xs font-medium cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
           </div>

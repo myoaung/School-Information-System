@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 import { toast } from 'sonner';
+import { SkeletonStatCard } from '../components/skeleton';
 
 const COLORS = {
   blue: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -59,56 +60,68 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Widgets */}
-      {!loading && stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" aria-live="polite">
-          {isAdmin || isTeacher ? (
-            <>
-              <StatCard
-                label={t('dashboard.stats.students')}
-                value={stats.totalStudents}
-                color="blue"
-              />
-              <StatCard
-                label={t('dashboard.stats.teachers')}
-                value={stats.totalTeachers}
-                color="green"
-              />
-              <StatCard
-                label={t('dashboard.stats.attendanceRate')}
-                value={`${stats.attendanceRate}%`}
-                color="purple"
-              />
-              <StatCard
-                label={t('dashboard.stats.pendingSubmissions')}
-                value={stats.pendingSubmissions}
-                color="orange"
-              />
-            </>
-          ) : (
-            <>
-              <StatCard
-                label={t('dashboard.stats.myAttendance')}
-                value={`${stats.attendanceRate}%`}
-                color="green"
-              />
-              <StatCard
-                label={t('dashboard.stats.myGpa')}
-                value={stats.overallGpa || '—'}
-                color="purple"
-              />
-              <StatCard
-                label={t('dashboard.stats.pendingAssignments')}
-                value={stats.pendingAssignments}
-                color="orange"
-              />
-              <StatCard
-                label={t('dashboard.stats.upcomingQuizzes')}
-                value={stats.upcomingQuizzes}
-                color="blue"
-              />
-            </>
-          )}
+      {loading ? (
+        <div
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          aria-busy="true"
+          aria-label="Loading statistics"
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonStatCard key={i} />
+          ))}
         </div>
+      ) : (
+        stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" aria-live="polite">
+            {isAdmin || isTeacher ? (
+              <>
+                <StatCard
+                  label={t('dashboard.stats.students')}
+                  value={stats.totalStudents}
+                  color="blue"
+                />
+                <StatCard
+                  label={t('dashboard.stats.teachers')}
+                  value={stats.totalTeachers}
+                  color="green"
+                />
+                <StatCard
+                  label={t('dashboard.stats.attendanceRate')}
+                  value={`${stats.attendanceRate}%`}
+                  color="purple"
+                />
+                <StatCard
+                  label={t('dashboard.stats.pendingSubmissions')}
+                  value={stats.pendingSubmissions}
+                  color="orange"
+                />
+              </>
+            ) : (
+              <>
+                <StatCard
+                  label={t('dashboard.stats.myAttendance')}
+                  value={`${stats.attendanceRate}%`}
+                  color="green"
+                />
+                <StatCard
+                  label={t('dashboard.stats.myGpa')}
+                  value={stats.overallGpa || '—'}
+                  color="purple"
+                />
+                <StatCard
+                  label={t('dashboard.stats.pendingAssignments')}
+                  value={stats.pendingAssignments}
+                  color="orange"
+                />
+                <StatCard
+                  label={t('dashboard.stats.upcomingQuizzes')}
+                  value={stats.upcomingQuizzes}
+                  color="blue"
+                />
+              </>
+            )}
+          </div>
+        )
       )}
 
       {/* Early Warning — At-Risk Students */}
