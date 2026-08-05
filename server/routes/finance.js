@@ -138,10 +138,14 @@ router.get('/invoices', authMiddleware, requirePermission('finance', 'read'), as
 });
 
 // Get single invoice with payments
-router.get('/invoices/:id', authMiddleware, async (req, res) => {
-  try {
-    const invoice = await db.get(
-      `
+router.get(
+  '/invoices/:id',
+  authMiddleware,
+  requirePermission('finance', 'read'),
+  async (req, res) => {
+    try {
+      const invoice = await db.get(
+        `
       SELECT inv.*, u.name as student_name, s.student_id as student_code,
              fs.fee_type, g.name as grade_name
       FROM invoices inv
@@ -151,24 +155,25 @@ router.get('/invoices/:id', authMiddleware, async (req, res) => {
       LEFT JOIN grades g ON g.id = fs.grade_id
       WHERE inv.id = ?
     `,
-      [req.params.id]
-    );
-    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+        [req.params.id]
+      );
+      if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-    // Students can only see their own
-    if (req.user.role === 'student' && invoice.student_id !== req.user.id) {
-      return res.status(403).json({ error: 'Forbidden' });
+      // Students can only see their own
+      if (req.user.role === 'student' && invoice.student_id !== req.user.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const payments = await db.all(
+        'SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at DESC',
+        [req.params.id]
+      );
+      res.json({ ...invoice, payments });
+    } catch (err) {
+      sendError(res, err);
     }
-
-    const payments = await db.all(
-      'SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at DESC',
-      [req.params.id]
-    );
-    res.json({ ...invoice, payments });
-  } catch (err) {
-    sendError(res, err);
   }
-});
+);
 
 // Create invoice
 router.post(
@@ -207,6 +212,12 @@ router.put(
   async (req, res) => {
     try {
       const { status } = req.body;
+      const validStatuses = ['pending', 'paid', 'overdue', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      }
       await db.run('UPDATE invoices SET status = ? WHERE id = ?', [status, req.params.id]);
       res.json({ message: 'Updated' });
 
@@ -270,37 +281,53 @@ router.post(
 );
 
 // Get student fee summary
-router.get('/student/:id/summary', authMiddleware, async (req, res) => {
-  try {
-    // Students can only see their own
-    if (req.user.role === 'student' && parseInt(req.params.id) !== req.user.id) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
+router.get(
+  '/student/:id/summary',
+  authMiddleware,
+  requirePermission('finance', 'read'),
+  async (req, res) => {
+    try {
+      // Students can only see their own
+      if (req.user.role === 'student' && parseInt(req.params.id) !== req.user.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
 
-    const invoices = await db.all(
-      `
+      // Parents can only see their linked children's fees
+      if (req.user.role === 'parent') {
+        const link = await db.get(
+          'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+          [req.user.id, parseInt(req.params.id)]
+        );
+        if (!link) {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+      }
+
+      const invoices = await db.all(
+        `
       SELECT inv.*, fs.fee_type
       FROM invoices inv
       LEFT JOIN fee_structures fs ON fs.id = inv.fee_structure_id
       WHERE inv.student_id = ?
       ORDER BY inv.created_at DESC
     `,
-      [req.params.id]
-    );
+        [req.params.id]
+      );
 
-    const totalDue = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-    const totalPaid = invoices
-      .filter((i) => i.status === 'paid')
-      .reduce((sum, inv) => sum + inv.amount, 0);
-    const outstanding = invoices
-      .filter((i) => i.status === 'pending' || i.status === 'overdue')
-      .reduce((sum, inv) => sum + inv.amount, 0);
+      const totalDue = invoices.reduce((sum, inv) => sum + inv.amount, 0);
+      const totalPaid = invoices
+        .filter((i) => i.status === 'paid')
+        .reduce((sum, inv) => sum + inv.amount, 0);
+      const outstanding = invoices
+        .filter((i) => i.status === 'pending' || i.status === 'overdue')
+        .reduce((sum, inv) => sum + inv.amount, 0);
 
-    res.json({ invoices, totalDue, totalPaid, outstanding });
-  } catch (err) {
-    sendError(res, err);
+      res.json({ invoices, totalDue, totalPaid, outstanding });
+    } catch (err) {
+      sendError(res, err);
+    }
   }
-});
+);
 
 // Finance overview (admin)
 router.get('/overview', authMiddleware, requirePermission('finance', 'read'), async (req, res) => {

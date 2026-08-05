@@ -365,6 +365,10 @@ const db = {
    */
   async count(tableName) {
     if (!isSupabaseConfigured) {
+      // SECURITY: Validate table name to prevent SQL injection
+      if (!/^[a-z_][a-z0-9_]*$/i.test(tableName)) {
+        throw new Error(`Invalid table name: ${tableName}`);
+      }
       const result = getSqliteDb().prepare(`SELECT COUNT(*) as count FROM ${tableName}`).get();
       return result.count;
     }

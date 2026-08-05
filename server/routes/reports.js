@@ -117,55 +117,59 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 });
 
 // GET /api/reports/teacher/:id — teacher performance report
-router.get('/teacher/:id', authMiddleware, async (req, res) => {
-  try {
-    const teacherId = parseInt(req.params.id);
+router.get(
+  '/teacher/:id',
+  authMiddleware,
+  requirePermission('reports', 'read'),
+  async (req, res) => {
+    try {
+      const teacherId = parseInt(req.params.id);
 
-    // Teachers can only view their own report
-    if (req.user.role === 'teacher' && req.user.id !== teacherId) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
+      // Teachers can only view their own report
+      if (req.user.role === 'teacher' && req.user.id !== teacherId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
 
-    // Teacher info
-    const teacher = await db.get(
-      `
+      // Teacher info
+      const teacher = await db.get(
+        `
       SELECT t.*, u.name, u.email
       FROM teachers t
       JOIN users u ON t.user_id = u.id
       WHERE t.user_id = ?
     `,
-      [teacherId]
-    );
+        [teacherId]
+      );
 
-    if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
+      if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
 
-    // Classes taught
-    const classes = await db.all(
-      `
+      // Classes taught
+      const classes = await db.all(
+        `
       SELECT c.*, COUNT(e.student_id) as student_count
       FROM classes c
       LEFT JOIN enrollments e ON e.class_id = c.id
       WHERE c.teacher_id = ?
       GROUP BY c.id
     `,
-      [teacherId]
-    );
+        [teacherId]
+      );
 
-    // Courses taught
-    const courses = await db.all(
-      `
+      // Courses taught
+      const courses = await db.all(
+        `
       SELECT co.*, sub.code as subject_code, sub.name as subject_name, cl.name as class_name
       FROM courses co
       JOIN subjects sub ON co.subject_id = sub.id
       JOIN classes cl ON co.class_id = cl.id
       WHERE cl.teacher_id = ?
     `,
-      [teacherId]
-    );
+        [teacherId]
+      );
 
-    // Average student GPA per course
-    const courseStats = await db.all(
-      `
+      // Average student GPA per course
+      const courseStats = await db.all(
+        `
       SELECT co.title as course_title, sub.code as subject_code,
         COUNT(g.id) as graded_students,
         ROUND(AVG(g.gpa), 2) as avg_gpa,
@@ -179,40 +183,41 @@ router.get('/teacher/:id', authMiddleware, async (req, res) => {
       WHERE cl.teacher_id = ?
       GROUP BY co.id
     `,
-      [teacherId]
-    );
+        [teacherId]
+      );
 
-    // Total unique students
-    const totalStudentsRow = await db.get(
-      `
+      // Total unique students
+      const totalStudentsRow = await db.get(
+        `
       SELECT COUNT(DISTINCT e.student_id) as count
       FROM enrollments e
       JOIN classes c ON e.class_id = c.id
       WHERE c.teacher_id = ?
     `,
-      [teacherId]
-    );
-    const totalStudents = totalStudentsRow.count;
+        [teacherId]
+      );
+      const totalStudents = totalStudentsRow.count;
 
-    res.json({
-      report: {
-        teacher: {
-          name: teacher.name,
-          email: teacher.email,
-          teacherId: teacher.teacher_id,
-          qualification: teacher.qualification,
-          specialization: teacher.specialization,
+      res.json({
+        report: {
+          teacher: {
+            name: teacher.name,
+            email: teacher.email,
+            teacherId: teacher.teacher_id,
+            qualification: teacher.qualification,
+            specialization: teacher.specialization,
+          },
+          classes,
+          courses,
+          courseStats,
+          totalStudents,
         },
-        classes,
-        courses,
-        courseStats,
-        totalStudents,
-      },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to generate teacher report');
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to generate teacher report');
+    }
   }
-});
+);
 
 // GET /api/reports/overview — school-wide stats (admin/teacher)
 router.get('/overview', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {
@@ -305,39 +310,43 @@ router.get('/overview', authMiddleware, requirePermission('reports', 'read'), as
 });
 
 // GET /api/reports/student/:id — student report card
-router.get('/student/:id', authMiddleware, async (req, res) => {
-  try {
-    const studentId = parseInt(req.params.id);
+router.get(
+  '/student/:id',
+  authMiddleware,
+  requirePermission('reports', 'read'),
+  async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
 
-    // Students can only view their own report
-    if (req.user.role === 'student' && req.user.id !== studentId) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    // Parents can only view linked students' reports
-    if (req.user.role === 'parent') {
-      const link = await db.get(
-        'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
-        [req.user.id, studentId]
-      );
-      if (!link) return res.status(403).json({ error: 'Access denied' });
-    }
+      // Students can only view their own report
+      if (req.user.role === 'student' && req.user.id !== studentId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      // Parents can only view linked students' reports
+      if (req.user.role === 'parent') {
+        const link = await db.get(
+          'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+          [req.user.id, studentId]
+        );
+        if (!link) return res.status(403).json({ error: 'Access denied' });
+      }
 
-    // Student info
-    const student = await db.get(
-      `
+      // Student info
+      const student = await db.get(
+        `
       SELECT s.*, u.name, u.email
       FROM students s
       JOIN users u ON s.user_id = u.id
       WHERE s.user_id = ?
     `,
-      [studentId]
-    );
+        [studentId]
+      );
 
-    if (!student) return res.status(404).json({ error: 'Student not found' });
+      if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    // Grades per course
-    const grades = await db.all(
-      `
+      // Grades per course
+      const grades = await db.all(
+        `
       SELECT g.*, c.title as course_title, sub.code as subject_code, sub.name as subject_name
       FROM gradebook g
       JOIN courses c ON g.course_id = c.id
@@ -345,12 +354,12 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       WHERE g.student_id = ?
       ORDER BY sub.code
     `,
-      [studentId]
-    );
+        [studentId]
+      );
 
-    // Assignment submissions
-    const assignments = await db.all(
-      `
+      // Assignment submissions
+      const assignments = await db.all(
+        `
       SELECT a.title as assignment_title, c.title as course_title,
              s.score, a.max_score, s.status, s.submitted_at
       FROM submissions s
@@ -359,12 +368,12 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       WHERE s.student_id = ?
       ORDER BY s.submitted_at DESC
     `,
-      [studentId]
-    );
+        [studentId]
+      );
 
-    // Quiz attempts
-    const quizzes = await db.all(
-      `
+      // Quiz attempts
+      const quizzes = await db.all(
+        `
       SELECT q.title as quiz_title, c.title as course_title,
              qa.score, q.max_score, qa.completed_at
       FROM quiz_attempts qa
@@ -373,12 +382,12 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       WHERE qa.student_id = ?
       ORDER BY qa.completed_at DESC
     `,
-      [studentId]
-    );
+        [studentId]
+      );
 
-    // Attendance summary
-    const attendance = await db.get(
-      `
+      // Attendance summary
+      const attendance = await db.get(
+        `
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -388,39 +397,40 @@ router.get('/student/:id', authMiddleware, async (req, res) => {
       FROM attendance
       WHERE user_id = ?
     `,
-      [studentId]
-    );
+        [studentId]
+      );
 
-    const attendanceRate =
-      attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : 0;
+      const attendanceRate =
+        attendance.total > 0 ? Math.round((attendance.present / attendance.total) * 100) : 0;
 
-    // Overall GPA
-    const overallGpaRow = await db.get(
-      'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
-      [studentId]
-    );
-    const overallGpa = overallGpaRow.avg || 0;
+      // Overall GPA
+      const overallGpaRow = await db.get(
+        'SELECT ROUND(AVG(gpa), 2) as avg FROM gradebook WHERE student_id = ? AND gpa IS NOT NULL',
+        [studentId]
+      );
+      const overallGpa = overallGpaRow.avg || 0;
 
-    res.json({
-      report: {
-        student: {
-          name: student.name,
-          email: student.email,
-          studentId: student.student_id,
-          grade: student.grade_id,
-          section: student.section,
+      res.json({
+        report: {
+          student: {
+            name: student.name,
+            email: student.email,
+            studentId: student.student_id,
+            grade: student.grade_id,
+            section: student.section,
+          },
+          grades,
+          assignments,
+          quizzes,
+          attendance: { ...attendance, rate: attendanceRate },
+          overallGpa,
         },
-        grades,
-        assignments,
-        quizzes,
-        attendance: { ...attendance, rate: attendanceRate },
-        overallGpa,
-      },
-    });
-  } catch (err) {
-    sendError(res, err, 'Failed to generate student report');
+      });
+    } catch (err) {
+      sendError(res, err, 'Failed to generate student report');
+    }
   }
-});
+);
 
 // GET /api/reports/class/:id — class performance summary
 router.get('/class/:id', authMiddleware, requirePermission('reports', 'read'), async (req, res) => {

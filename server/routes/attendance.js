@@ -8,7 +8,7 @@ const { markAttendanceRules } = require('../middleware/validate');
 const router = express.Router();
 
 // Get attendance for a class on a date (admin/teacher)
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, requirePermission('attendance', 'read'), async (req, res) => {
   try {
     const { class_id, date } = req.query;
 
@@ -53,8 +53,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     res.json({ attendance, date, class_id: parseInt(class_id) });
   } catch (err) {
-    console.error('Error fetching attendance:', err);
-    res.status(500).json({ error: 'Failed to fetch attendance' });
+    sendError(res, err, 'Failed to fetch attendance');
   }
 });
 
@@ -97,44 +96,58 @@ router.post(
 
       res.json({ message: 'Attendance marked', count: records.length });
     } catch (err) {
-      console.error('Error marking attendance:', err);
-      res.status(500).json({ error: 'Failed to mark attendance' });
+      sendError(res, err, 'Failed to mark attendance');
     }
   }
 );
 
 // Get attendance summary for a student
-router.get('/summary', authMiddleware, async (req, res) => {
-  try {
-    const { user_id, class_id } = req.query;
+router.get(
+  '/summary',
+  authMiddleware,
+  requirePermission('attendance', 'read'),
+  async (req, res) => {
+    try {
+      const { user_id, class_id } = req.query;
 
-    const targetUserId = user_id || req.user.id;
+      const targetUserId = user_id || req.user.id;
 
-    // Students can only view their own
-    if (req.user.role === 'student' && req.user.id !== parseInt(targetUserId)) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
+      // Students can only view their own
+      if (req.user.role === 'student' && req.user.id !== parseInt(targetUserId)) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
 
-    let where = ['a.user_id = ?'];
-    let params = [targetUserId];
+      // Parents can only view their linked children's attendance
+      if (req.user.role === 'parent') {
+        const link = await db.get(
+          'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+          [req.user.id, parseInt(targetUserId)]
+        );
+        if (!link) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+      }
 
-    if (class_id) {
-      where.push('a.class_id = ?');
-      params.push(class_id);
-    }
+      let where = ['a.user_id = ?'];
+      let params = [targetUserId];
 
-    const summary = await db.all(
-      `
+      if (class_id) {
+        where.push('a.class_id = ?');
+        params.push(class_id);
+      }
+
+      const summary = await db.all(
+        `
       SELECT a.status, COUNT(*) as count
       FROM attendance a
       WHERE ${where.join(' AND ')}
       GROUP BY a.status
     `,
-      params
-    );
+        params
+      );
 
-    const recent = await db.all(
-      `
+      const recent = await db.all(
+        `
       SELECT a.date, a.status, c.name as class_name
       FROM attendance a
       JOIN classes c ON a.class_id = c.id
@@ -142,15 +155,15 @@ router.get('/summary', authMiddleware, async (req, res) => {
       ORDER BY a.date DESC
       LIMIT 10
     `,
-      params
-    );
+        params
+      );
 
-    res.json({ summary, recent });
-  } catch (err) {
-    console.error('Error fetching attendance summary:', err);
-    res.status(500).json({ error: 'Failed to fetch attendance summary' });
+      res.json({ summary, recent });
+    } catch (err) {
+      sendError(res, err, 'Failed to fetch attendance summary');
+    }
   }
-});
+);
 
 // ── Teacher Attendance ──
 

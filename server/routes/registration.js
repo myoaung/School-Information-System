@@ -222,6 +222,12 @@ router.post('/submit', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      return res
+        .status(400)
+        .json({ error: 'Password must include uppercase, lowercase, and a number' });
+    }
+
     // Validate registration period
     const now = new Date().toISOString();
     const period = await db.get(
@@ -260,91 +266,106 @@ router.post('/submit', async (req, res) => {
     );
     const userId = userResult.lastInsertRowid;
 
-    // Generate student ID
-    const maxRow = await db.get('SELECT student_id FROM students ORDER BY id DESC LIMIT 1');
-    let nextNum = 1;
-    if (maxRow?.student_id) {
-      const match = maxRow.student_id.match(/(\d+)$/);
-      nextNum = match ? parseInt(match[1], 10) + 1 : 1;
-    }
-    const studentId = `STU-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`;
+    // Generate unique student ID with retry to handle concurrent requests
+    let studentId;
+    const yearPrefix = `STU-${new Date().getFullYear()}-`;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const maxRow = await db.get(
+        'SELECT student_id FROM students WHERE student_id LIKE ? ORDER BY id DESC LIMIT 1',
+        [`${yearPrefix}%`]
+      );
+      let nextNum = 1;
+      if (maxRow?.student_id) {
+        const match = maxRow.student_id.match(/(\d+)$/);
+        nextNum = match ? parseInt(match[1], 10) + 1 : 1;
+      }
+      studentId = `${yearPrefix}${String(nextNum).padStart(3, '0')}`;
 
-    // Create student profile
-    await db.run(
-      `INSERT INTO students (
-        user_id, student_id, grade_id, status,
-        full_name_mm, date_of_birth, gender, nationality, ethnicity, religion,
-        nrc_no, birth_cert_no, blood_type, phone, photo_url, enrollment_type,
-        prev_school_name, prev_school_location, prev_grade_completed,
-        transfer_cert_no, transfer_cert_date,
-        father_name, father_nrc, father_occupation, father_phone, father_email,
-        mother_name, mother_nrc, mother_occupation, mother_phone, mother_email,
-        guardian_name, guardian_relationship, guardian_nrc, guardian_phone, guardian_email,
-        emergency_contact_name, emergency_relationship, emergency_phone,
-        house_no, street, ward, township, state_region, permanent_address,
-        medical_conditions, medications, special_needs, emergency_medical_consent
-      ) VALUES (?, ?, ?, 'applicant',
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?)`,
-      [
-        userId,
-        studentId,
-        grade_id,
-        full_name_mm || null,
-        date_of_birth || null,
-        gender || null,
-        nationality || null,
-        ethnicity || null,
-        religion || null,
-        nrc_no || null,
-        birth_cert_no || null,
-        blood_type || null,
-        phone || null,
-        photo_url || null,
-        enrollment_type || 'new',
-        prev_school_name || null,
-        prev_school_location || null,
-        prev_grade_completed || null,
-        transfer_cert_no || null,
-        transfer_cert_date || null,
-        father_name || null,
-        father_nrc || null,
-        father_occupation || null,
-        father_phone || null,
-        father_email || null,
-        mother_name || null,
-        mother_nrc || null,
-        mother_occupation || null,
-        mother_phone || null,
-        mother_email || null,
-        guardian_name || null,
-        guardian_relationship || null,
-        guardian_nrc || null,
-        guardian_phone || null,
-        guardian_email || null,
-        emergency_contact_name || null,
-        emergency_relationship || null,
-        emergency_phone2 || null,
-        house_no || null,
-        street || null,
-        ward || null,
-        township || null,
-        state_region || null,
-        permanent_address || null,
-        medical_conditions || null,
-        medications || null,
-        special_needs || null,
-        emergency_medical_consent ? 1 : 0,
-      ]
-    );
+      // UNIQUE constraint on student_id will catch duplicates — retry if needed
+      try {
+        await db.run(
+          `INSERT INTO students (
+            user_id, student_id, grade_id, status,
+            full_name_mm, date_of_birth, gender, nationality, ethnicity, religion,
+            nrc_no, birth_cert_no, blood_type, phone, photo_url, enrollment_type,
+            prev_school_name, prev_school_location, prev_grade_completed,
+            transfer_cert_no, transfer_cert_date,
+            father_name, father_nrc, father_occupation, father_phone, father_email,
+            mother_name, mother_nrc, mother_occupation, mother_phone, mother_email,
+            guardian_name, guardian_relationship, guardian_nrc, guardian_phone, guardian_email,
+            emergency_contact_name, emergency_relationship, emergency_phone,
+            house_no, street, ward, township, state_region, permanent_address,
+            medical_conditions, medications, special_needs, emergency_medical_consent
+          ) VALUES (?, ?, ?, 'applicant',
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?)`,
+          [
+            userId,
+            studentId,
+            grade_id,
+            full_name_mm || null,
+            date_of_birth || null,
+            gender || null,
+            nationality || null,
+            ethnicity || null,
+            religion || null,
+            nrc_no || null,
+            birth_cert_no || null,
+            blood_type || null,
+            phone || null,
+            photo_url || null,
+            enrollment_type || 'new',
+            prev_school_name || null,
+            prev_school_location || null,
+            prev_grade_completed || null,
+            transfer_cert_no || null,
+            transfer_cert_date || null,
+            father_name || null,
+            father_nrc || null,
+            father_occupation || null,
+            father_phone || null,
+            father_email || null,
+            mother_name || null,
+            mother_nrc || null,
+            mother_occupation || null,
+            mother_phone || null,
+            mother_email || null,
+            guardian_name || null,
+            guardian_relationship || null,
+            guardian_nrc || null,
+            guardian_phone || null,
+            guardian_email || null,
+            emergency_contact_name || null,
+            emergency_relationship || null,
+            emergency_phone2 || null,
+            house_no || null,
+            street || null,
+            ward || null,
+            township || null,
+            state_region || null,
+            permanent_address || null,
+            medical_conditions || null,
+            medications || null,
+            special_needs || null,
+            emergency_medical_consent ? 1 : 0,
+          ]
+        );
+        break; // Success — exit retry loop
+      } catch (insertErr) {
+        if (insertErr.message && insertErr.message.includes('UNIQUE constraint failed')) {
+          continue; // Duplicate — retry with next number
+        }
+        throw insertErr; // Non-duplicate error — rethrow
+      }
+    }
 
     // Increment seat count
     await db.run('UPDATE registration_periods SET current_seats = current_seats + 1 WHERE id = ?', [

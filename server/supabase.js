@@ -18,8 +18,8 @@ if (isSupabaseConfigured) {
   supabase = createClient(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: true,
-      persistSession: false
-    }
+      persistSession: false,
+    },
   });
 
   // Admin client with service key (bypasses RLS) — for migrations, seeding
@@ -27,13 +27,12 @@ if (isSupabaseConfigured) {
     supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
   }
 
   console.log('✅ Supabase client initialized');
-  console.log(`   URL: ${supabaseUrl}`);
 } else {
   console.log('ℹ️  Supabase not configured — using SQLite');
 }
@@ -43,5 +42,5 @@ module.exports = {
   supabaseAdmin,
   isSupabaseConfigured,
   getSupabase: () => supabase,
-  getSupabaseAdmin: () => supabaseAdmin
+  getSupabaseAdmin: () => supabaseAdmin,
 };

@@ -233,13 +233,24 @@ router.get('/', authMiddleware, requirePermission('students', 'read'), async (re
 });
 
 // Get single student (admin/teacher/self)
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authMiddleware, requirePermission('students', 'read'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 
     // Allow self-access or admin/teacher
     if (req.user.role === 'student' && req.user.id !== id) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Parents can only view their linked children
+    if (req.user.role === 'parent') {
+      const link = await db.get(
+        'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+        [req.user.id, id]
+      );
+      if (!link) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     const student = await db.get(
@@ -327,38 +338,53 @@ router.post('/', authMiddleware, requirePermission('students', 'create'), async 
     );
     const userId = userResult.lastInsertRowid;
 
-    // Generate unique student ID (use max existing number + 1)
-    const maxRow = await db.get('SELECT student_id FROM students ORDER BY id DESC LIMIT 1');
-    let nextNum = 1;
-    if (maxRow?.student_id) {
-      const match = maxRow.student_id.match(/(\d+)$/);
-      nextNum = match ? parseInt(match[1], 10) + 1 : 1;
-    }
-    const studentId = `STU-${new Date().getFullYear()}-${String(nextNum).padStart(3, '0')}`;
+    // Generate unique student ID with retry to handle concurrent requests
+    let studentId;
+    const yearPrefix = `STU-${new Date().getFullYear()}-`;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const maxRow = await db.get(
+        'SELECT student_id FROM students WHERE student_id LIKE ? ORDER BY id DESC LIMIT 1',
+        [`${yearPrefix}%`]
+      );
+      let nextNum = 1;
+      if (maxRow?.student_id) {
+        const match = maxRow.student_id.match(/(\d+)$/);
+        nextNum = match ? parseInt(match[1], 10) + 1 : 1;
+      }
+      studentId = `${yearPrefix}${String(nextNum).padStart(3, '0')}`;
 
-    // Create student profile
-    await db.run(
-      `
-      INSERT INTO students (user_id, student_id, grade_id, section, date_of_birth, gender, phone, address, parent_name, parent_phone, parent_email, photo_url, blood_type, allergies)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-      [
-        userId,
-        studentId,
-        grade_id || null,
-        section || 'A',
-        date_of_birth || null,
-        gender || null,
-        phone || null,
-        address || null,
-        parent_name || null,
-        parent_phone || null,
-        parent_email || null,
-        photo_url || null,
-        blood_type || null,
-        allergies || null,
-      ]
-    );
+      // UNIQUE constraint on student_id will catch duplicates — retry if needed
+      try {
+        await db.run(
+          `
+          INSERT INTO students (user_id, student_id, grade_id, section, date_of_birth, gender, phone, address, parent_name, parent_phone, parent_email, photo_url, blood_type, allergies)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+          [
+            userId,
+            studentId,
+            grade_id || null,
+            section || 'A',
+            date_of_birth || null,
+            gender || null,
+            phone || null,
+            address || null,
+            parent_name || null,
+            parent_phone || null,
+            parent_email || null,
+            photo_url || null,
+            blood_type || null,
+            allergies || null,
+          ]
+        );
+        break; // Success — exit retry loop
+      } catch (insertErr) {
+        if (insertErr.message && insertErr.message.includes('UNIQUE constraint failed')) {
+          continue; // Duplicate — retry with next number
+        }
+        throw insertErr; // Non-duplicate error — rethrow
+      }
+    }
 
     res.status(201).json({
       message: 'Student created',

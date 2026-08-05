@@ -9,7 +9,10 @@ const { messageRules } = require('../middleware/validate');
 router.post('/', authMiddleware, messageRules, async (req, res) => {
   try {
     const { receiver_id, subject, body } = req.body;
-    const result = await db.run('INSERT INTO messages (sender_id, receiver_id, subject, body) VALUES (?, ?, ?, ?)', [req.user.id, receiver_id, subject || null, body]);
+    const result = await db.run(
+      'INSERT INTO messages (sender_id, receiver_id, subject, body) VALUES (?, ?, ?, ?)',
+      [req.user.id, receiver_id, subject || null, body]
+    );
     res.status(201).json({ id: result.lastInsertRowid, message: 'Message sent' });
   } catch (err) {
     sendError(res, err);
@@ -19,13 +22,16 @@ router.post('/', authMiddleware, messageRules, async (req, res) => {
 // Get inbox (received messages)
 router.get('/inbox', authMiddleware, async (req, res) => {
   try {
-    const messages = await db.all(`
+    const messages = await db.all(
+      `
       SELECT m.*, u.name as sender_name, u.role as sender_role
       FROM messages m
       JOIN users u ON u.id = m.sender_id
       WHERE m.receiver_id = ?
       ORDER BY m.created_at DESC
-    `, [req.user.id]);
+    `,
+      [req.user.id]
+    );
     res.json(messages);
   } catch (err) {
     sendError(res, err);
@@ -35,13 +41,16 @@ router.get('/inbox', authMiddleware, async (req, res) => {
 // Get sent messages
 router.get('/sent', authMiddleware, async (req, res) => {
   try {
-    const messages = await db.all(`
+    const messages = await db.all(
+      `
       SELECT m.*, u.name as receiver_name, u.role as receiver_role
       FROM messages m
       JOIN users u ON u.id = m.receiver_id
       WHERE m.sender_id = ?
       ORDER BY m.created_at DESC
-    `, [req.user.id]);
+    `,
+      [req.user.id]
+    );
     res.json(messages);
   } catch (err) {
     sendError(res, err);
@@ -51,7 +60,10 @@ router.get('/sent', authMiddleware, async (req, res) => {
 // Mark message as read
 router.put('/:id/read', authMiddleware, async (req, res) => {
   try {
-    await db.run('UPDATE messages SET is_read = 1 WHERE id = ? AND receiver_id = ?', [req.params.id, req.user.id]);
+    await db.run('UPDATE messages SET is_read = 1 WHERE id = ? AND receiver_id = ?', [
+      req.params.id,
+      req.user.id,
+    ]);
     res.json({ message: 'Marked as read' });
   } catch (err) {
     sendError(res, err);
@@ -61,7 +73,11 @@ router.put('/:id/read', authMiddleware, async (req, res) => {
 // Delete message
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    await db.run('DELETE FROM messages WHERE id = ? AND (sender_id = ? OR receiver_id = ?)', [req.params.id, req.user.id, req.user.id]);
+    await db.run('DELETE FROM messages WHERE id = ? AND (sender_id = ? OR receiver_id = ?)', [
+      req.params.id,
+      req.user.id,
+      req.user.id,
+    ]);
     res.json({ message: 'Deleted' });
   } catch (err) {
     sendError(res, err);
@@ -71,7 +87,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // Get unread count
 router.get('/unread-count', authMiddleware, async (req, res) => {
   try {
-    const result = await db.get('SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = 0', [req.user.id]);
+    const result = await db.get(
+      'SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = 0',
+      [req.user.id]
+    );
     res.json(result);
   } catch (err) {
     sendError(res, err);
@@ -81,7 +100,10 @@ router.get('/unread-count', authMiddleware, async (req, res) => {
 // Get all users (for composing messages)
 router.get('/users', authMiddleware, async (req, res) => {
   try {
-    const users = await db.all('SELECT id, name, role FROM users WHERE id != ? ORDER BY name', [req.user.id]);
+    const users = await db.all(
+      'SELECT id, name, role FROM users WHERE id != ? AND role != ? ORDER BY name',
+      [req.user.id, 'admin']
+    );
     res.json(users);
   } catch (err) {
     sendError(res, err);
