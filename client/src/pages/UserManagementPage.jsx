@@ -15,7 +15,7 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const limit = 20;
+  const [limit, setLimit] = useState(20);
 
   // Modal states
   const [showEditModal, setShowEditModal] = useState(false);
@@ -34,9 +34,9 @@ export default function UserManagementPage() {
 
   const roles = ['admin', 'teacher', 'student', 'parent', 'accountant', 'staff'];
 
-  const fetchUsers = (q = '', role = '', p = 1) => {
+  const fetchUsers = (q = '', role = '', p = 1, l = limit) => {
     setLoading(true);
-    const params = { page: p, limit };
+    const params = { page: p, limit: l };
     if (q) params.search = q;
     if (role) params.role = role;
     api
@@ -50,8 +50,15 @@ export default function UserManagementPage() {
   };
 
   useEffect(() => {
-    fetchUsers(search, roleFilter, page);
+    fetchUsers(search, roleFilter, page, limit);
   }, []);
+
+  const handleLimitChange = (e) => {
+    const newLimit = parseInt(e.target.value);
+    setLimit(newLimit);
+    setPage(1);
+    fetchUsers(search, roleFilter, 1, newLimit);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -379,25 +386,57 @@ export default function UserManagementPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 0 && (
           <div className="flex justify-between items-center px-6 py-3 bg-purple-50/50 dark:bg-purple-950/20 border-t border-purple-100 dark:border-purple-900">
-            <span className="text-sm text-purple-600 dark:text-purple-400">
-              Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
-            </span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">
+              <span>Rows per page:</span>
+              <select
+                value={limit}
+                onChange={handleLimitChange}
+                className="px-2 py-1 border border-purple-200 dark:border-purple-800 rounded-lg text-sm bg-white dark:bg-gray-800 text-purple-900 dark:text-purple-100 cursor-pointer focus:outline-none focus:border-purple-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="ml-2">
+                {total === 0
+                  ? '0 results'
+                  : `${(page - 1) * limit + 1}–${Math.min(page * limit, total)} of ${total}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={page === 1}
+                className="px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
+              >
+                «
+              </button>
               <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="px-3 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
+                className="px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
               >
-                Previous
+                ‹
               </button>
+              <span className="px-3 py-1 text-sm font-medium text-purple-700 dark:text-purple-300">
+                Page {page} of {totalPages}
+              </span>
               <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="px-3 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
+                className="px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
               >
-                Next
+                ›
+              </button>
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={page === totalPages}
+                className="px-2 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-sm text-purple-700 dark:text-purple-300 disabled:opacity-50 hover:bg-purple-100 dark:hover:bg-purple-900/50 cursor-pointer"
+              >
+                »
               </button>
             </div>
           </div>
