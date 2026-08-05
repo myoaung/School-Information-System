@@ -1,6 +1,6 @@
 # 🏫 SchoolHub — School Information System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 > A full-stack school management platform built with React, Express, and Supabase — designed for schools in Myanmar with multi-language support.
 
@@ -126,7 +126,7 @@ School-Information-System/
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is proprietary and closed-source. All rights reserved. No part of this repository may be used, copied, modified, or distributed without prior written permission from the copyright holder — see the [LICENSE](LICENSE) file for details.
 
 ---
 

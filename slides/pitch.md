@@ -83,5 +83,5 @@ Built with Claude Code — skills, agents, and MCP servers
 # Try it
 
 - **Live:** https://schoolhub-mu.vercel.app
-- **Repo:** github.com/myoaung/School-Information-System · **License:** MIT
+- **Repo:** github.com/myoaung/School-Information-System · **License:** Proprietary (All Rights Reserved)
 - **Test accounts:** admin@school.com / teacher@school.com / student@school.com (password: password123)

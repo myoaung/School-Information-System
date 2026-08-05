@@ -5,7 +5,7 @@
 - **GitHub username:** @myoaung
 - **Repo URL:** https://github.com/myoaung/School-Information-System
 - **Live URL (deployed, public):** https://schoolhub-mm.vercel.app
-- **License:** MIT
+- **License:** Proprietary (All Rights Reserved)
 
 ## Issues Closed (from Chapter 5 feedback)
 
